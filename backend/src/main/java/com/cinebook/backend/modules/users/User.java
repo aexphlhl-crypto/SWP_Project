@@ -2,6 +2,7 @@ package com.cinebook.backend.modules.users;
 
 import com.cinebook.backend.common.enums.UserRole;
 import com.cinebook.backend.common.enums.UserStatus;
+import com.cinebook.backend.modules.cinemas.entity.Cinema;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
@@ -77,6 +78,10 @@ public class User {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cinema_id")
+    private Cinema cinema;
 
     @PrePersist
     protected void onCreate() {
