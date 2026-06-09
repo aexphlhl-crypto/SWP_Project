@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/rooms")
@@ -33,13 +34,18 @@ public class RoomController {
         return ApiResponse.ok(roomService.createRoom(request));
     }
 
+    @PatchMapping("/{id}/status")
+    public ApiResponse<RoomDto> updateRoomStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return ApiResponse.ok(roomService.updateRoomStatus(id, body.get("status")));
+    }
+
     @GetMapping("/{id}/seats")
-    public ApiResponse<List<Seat>> getRoomSeats(@PathVariable Long id) {
+    public ApiResponse<List<SeatConfigDto>> getRoomSeats(@PathVariable Long id) {
         return ApiResponse.ok(roomService.getSeatsByRoomId(id));
     }
 
     @PostMapping("/{id}/seats")
-    public ApiResponse<List<Seat>> configureSeats(@PathVariable Long id, @RequestBody List<SeatConfigDto> seatConfigs) {
+    public ApiResponse<List<SeatConfigDto>> configureSeats(@PathVariable Long id, @RequestBody List<SeatConfigDto> seatConfigs) {
         return ApiResponse.ok(roomService.configureSeats(id, seatConfigs));
     }
 }
