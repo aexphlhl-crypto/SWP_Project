@@ -1,5 +1,5 @@
 -- ============================================================
---  CineBook – Flyway Migration V2 (Seed Data)
+--  CineBook ΓÇô Flyway Migration V2 (Seed Data)
 -- ============================================================
 
 -- 1. Insert Admin and Customer Users (Password: 123456)

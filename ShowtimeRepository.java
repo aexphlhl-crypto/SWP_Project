@@ -14,9 +14,6 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
     @Query("SELECT COUNT(s) > 0 FROM Showtime s WHERE s.room.roomId = :roomId AND s.status = 'Scheduled' AND (s.startTime < :endTime AND s.endTime > :startTime)")
     boolean existsConflictingShowtime(@Param("roomId") Long roomId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 
-    @Query("SELECT COUNT(s) > 0 FROM Showtime s WHERE s.room.roomId = :roomId AND s.status = 'Scheduled' AND s.showtimeId != :showtimeId AND (s.startTime < :endTime AND s.endTime > :startTime)")
-    boolean existsConflictingShowtimeExcludingId(@Param("roomId") Long roomId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, @Param("showtimeId") Long showtimeId);
-
     @Query("SELECT s FROM Showtime s WHERE " +
            "(:movieId IS NULL OR s.movie.movieId = :movieId) AND " +
            "(:cinemaId IS NULL OR s.cinema.cinemaId = :cinemaId) AND " +

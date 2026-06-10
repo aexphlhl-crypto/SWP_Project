@@ -18,6 +18,10 @@ import com.cinebook.backend.modules.rooms.entity.Seat;
 import com.cinebook.backend.modules.bookings.repository.BookingSeatRepository;
 import com.cinebook.backend.modules.bookings.entity.BookingSeat;
 import com.cinebook.backend.modules.config.service.SystemConfigService;
+import com.cinebook.backend.modules.showtimes.repository.SeatHoldRepository;
+import com.cinebook.backend.modules.showtimes.entity.SeatHold;
+import com.cinebook.backend.modules.users.UserRepository;
+import com.cinebook.backend.modules.users.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +45,8 @@ public class ShowtimeService {
     private final RoomRepository roomRepository;
     private final SeatRepository seatRepository;
     private final BookingSeatRepository bookingSeatRepository;
+    private final SeatHoldRepository seatHoldRepository;
+    private final UserRepository userRepository;
     private final SystemConfigService systemConfigService;
 
     @Transactional(readOnly = true)
@@ -61,9 +67,7 @@ public class ShowtimeService {
     }
 
     private ShowtimeDto mapToDto(Showtime s) {
-        int booked = bookingSeatRepository.countBookedSeatsByShowtime(s.getShowtimeId());
-        int capacity = s.getRoom().getCapacity();
-        double occupancy = capacity > 0 ? ((double) booked / capacity) * 100 : 0.0;
+        int bookedCount = bookingSeatRepository.findBookedSeatsByShowtime(s.getShowtimeId()).size();
         return ShowtimeDto.builder()
                 .showtimeId(s.getShowtimeId())
                 .movieId(s.getMovie().getMovieId())
@@ -76,9 +80,8 @@ public class ShowtimeService {
                 .endTime(s.getEndTime())
                 .priceOverride(s.getPriceOverride())
                 .status(s.getStatus())
-                .totalSeats(capacity)
-                .availableSeats(capacity - booked)
-                .occupancyRate(Math.round(occupancy * 100.0) / 100.0)
+                .totalSeats(s.getRoom().getCapacity())
+                .availableSeats(s.getRoom().getCapacity() - bookedCount)
                 .build();
     }
 
@@ -94,18 +97,79 @@ public class ShowtimeService {
                 .map(bs -> bs.getSeat().getSeatId())
                 .collect(Collectors.toSet());
 
+        List<SeatHold> activeHolds = seatHoldRepository.findActiveHoldsByShowtime(showtimeId, LocalDateTime.now());
+        java.util.Map<Long, Long> heldSeatMap = activeHolds.stream()
+                .collect(Collectors.toMap(h -> h.getSeat().getSeatId(), h -> h.getUser().getUserId()));
+
         return allSeats.stream().map(seat -> {
             boolean isBooked = bookedSeatIds.contains(seat.getSeatId());
+            String status = "Available";
+            Long heldByUserId = null;
+
+            if (isBooked) {
+                status = "Booked";
+            } else if (heldSeatMap.containsKey(seat.getSeatId())) {
+                status = "Held";
+                heldByUserId = heldSeatMap.get(seat.getSeatId());
+            }
+
             return SeatStatusDto.builder()
                     .seatId(seat.getSeatId())
                     .rowLabel(seat.getRowLabel())
                     .colNumber(seat.getColNumber())
                     .seatLabel(seat.getSeatLabel())
                     .seatType(seat.getSeatType().name())
-                    .status(isBooked ? "Booked" : "Available")
+                    .status(status)
+                    .heldByUserId(heldByUserId)
                     .price(calculateTicketPrice(showtime, seat))
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void holdSeat(Long showtimeId, Long seatId, String username) {
+        Showtime showtime = showtimeRepository.findById(showtimeId)
+                .orElseThrow(() -> new RuntimeException("Showtime not found"));
+        Seat seat = seatRepository.findById(seatId)
+                .orElseThrow(() -> new RuntimeException("Seat not found"));
+        User user = userRepository.findByEmailAndDeletedAtIsNull(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check if booked
+        List<BookingSeat> bookedSeats = bookingSeatRepository.findBookedSeatsByShowtime(showtimeId);
+        if (bookedSeats.stream().anyMatch(bs -> bs.getSeat().getSeatId().equals(seatId))) {
+            throw AppException.badRequest("Ghß║┐ n├áy ─æ├ú ─æ╞░ß╗úc ng╞░ß╗¥i kh├íc ─æß║╖t.");
+        }
+
+        // Check if held by someone else
+        java.util.Optional<SeatHold> existingHold = seatHoldRepository.findActiveHoldBySeat(showtimeId, seatId, LocalDateTime.now());
+        if (existingHold.isPresent() && !existingHold.get().getUser().getUserId().equals(user.getUserId())) {
+            throw AppException.badRequest("Ghß║┐ n├áy ─æang ─æ╞░ß╗úc ng╞░ß╗¥i kh├íc giß╗».");
+        }
+
+        // Create or update hold
+        int holdMinutes = systemConfigService.getSeatHoldMinutes();
+        if (existingHold.isEmpty()) {
+            SeatHold newHold = SeatHold.builder()
+                    .showtime(showtime)
+                    .seat(seat)
+                    .user(user)
+                    .expiresAt(LocalDateTime.now().plusMinutes(holdMinutes))
+                    .build();
+            seatHoldRepository.save(newHold);
+        } else {
+            // Refresh hold
+            SeatHold hold = existingHold.get();
+            hold.setExpiresAt(LocalDateTime.now().plusMinutes(holdMinutes));
+            seatHoldRepository.save(hold);
+        }
+    }
+
+    @Transactional
+    public void releaseSeat(Long showtimeId, Long seatId, String username) {
+        User user = userRepository.findByEmailAndDeletedAtIsNull(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        seatHoldRepository.deleteUserHold(showtimeId, seatId, user.getUserId());
     }
 
     private Integer calculateTicketPrice(Showtime showtime, Seat seat) {
@@ -152,12 +216,18 @@ public class ShowtimeService {
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
         LocalDateTime startTime = request.getStartTime();
+        if (startTime == null) {
+            throw AppException.badRequest("Thß╗¥i gian bß║»t ─æß║ºu kh├┤ng ─æ╞░ß╗úc ─æß╗â trß╗æng.");
+        }
+        if (startTime.isBefore(LocalDateTime.now())) {
+            throw AppException.badRequest("Kh├┤ng thß╗â tß║ío suß║Ñt chiß║┐u ß╗ƒ thß╗¥i gian trong qu├í khß╗⌐.");
+        }
         LocalDateTime endTime = startTime.plusMinutes(movie.getDurationMin());
         LocalDateTime endTimeWithBuffer = endTime.plusMinutes(15);
 
         boolean conflict = showtimeRepository.existsConflictingShowtime(room.getRoomId(), startTime, endTimeWithBuffer);
         if (conflict) {
-            throw AppException.badRequest("Lịch chiếu này bị trùng thời gian với một lịch chiếu khác trong cùng phòng.");
+            throw AppException.badRequest("Lß╗ïch chiß║┐u n├áy bß╗ï tr├╣ng thß╗¥i gian vß╗¢i mß╗Öt lß╗ïch chiß║┐u kh├íc trong c├╣ng ph├▓ng.");
         }
 
         Showtime showtime = Showtime.builder()
@@ -193,6 +263,9 @@ public class ShowtimeService {
             showtime.setRoom(room);
         }
         if (request.getStartTime() != null) {
+            if (request.getStartTime().isBefore(LocalDateTime.now())) {
+                throw AppException.badRequest("Kh├┤ng thß╗â cß║¡p nhß║¡t suß║Ñt chiß║┐u sang thß╗¥i gian trong qu├í khß╗⌐.");
+            }
             showtime.setStartTime(request.getStartTime());
             showtime.setEndTime(request.getStartTime().plusMinutes(showtime.getMovie().getDurationMin()));
         }
@@ -201,18 +274,6 @@ public class ShowtimeService {
         }
         if (request.getStatus() != null) {
             showtime.setStatus(request.getStatus());
-        }
-
-        // Check scheduling conflicts for active/scheduled showtime
-        if (!"Cancelled".equalsIgnoreCase(showtime.getStatus())) {
-            LocalDateTime startTime = showtime.getStartTime();
-            LocalDateTime endTime = showtime.getEndTime();
-            LocalDateTime endTimeWithBuffer = endTime.plusMinutes(15);
-            boolean conflict = showtimeRepository.existsConflictingShowtimeExcludingId(
-                    showtime.getRoom().getRoomId(), startTime, endTimeWithBuffer, showtime.getShowtimeId());
-            if (conflict) {
-                throw AppException.badRequest("Lịch chiếu này bị trùng thời gian với một lịch chiếu khác trong cùng phòng.");
-            }
         }
         
         return mapToDto(showtimeRepository.save(showtime));

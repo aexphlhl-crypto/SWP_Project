@@ -11,6 +11,7 @@ public class SeatStatusDto {
     private Integer colNumber;
     private String seatLabel;
     private String seatType;
-    private String status; // "Available" or "Booked"
+    private String status; // "Available", "Booked", or "Held"
+    private Long heldByUserId;
     private Integer price;
 }

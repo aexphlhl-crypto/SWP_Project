@@ -10,7 +10,4 @@ public interface BookingSeatRepository extends JpaRepository<BookingSeat, Long> 
 
     @org.springframework.data.jpa.repository.Query("SELECT bs FROM BookingSeat bs WHERE bs.booking.showtime.showtimeId = :showtimeId AND bs.booking.status IN (com.cinebook.backend.modules.bookings.entity.BookingStatus.Pending, com.cinebook.backend.modules.bookings.entity.BookingStatus.Confirmed, com.cinebook.backend.modules.bookings.entity.BookingStatus.CheckedIn)")
     java.util.List<BookingSeat> findBookedSeatsByShowtime(@org.springframework.data.repository.query.Param("showtimeId") Long showtimeId);
-
-    @org.springframework.data.jpa.repository.Query("SELECT COUNT(bs) FROM BookingSeat bs WHERE bs.booking.showtime.showtimeId = :showtimeId AND bs.booking.status IN (com.cinebook.backend.modules.bookings.entity.BookingStatus.Pending, com.cinebook.backend.modules.bookings.entity.BookingStatus.Confirmed, com.cinebook.backend.modules.bookings.entity.BookingStatus.CheckedIn)")
-    int countBookedSeatsByShowtime(@org.springframework.data.repository.query.Param("showtimeId") Long showtimeId);
 }

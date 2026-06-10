@@ -10,19 +10,19 @@ const showtimeApi = {
     },
 
     getSeats: (id) => {
-        return axiosClient.get(`/showtimes/${id}/seats`);
+        return axiosClient.get(`/showtimes/${id}/seats?t=${new Date().getTime()}`);
     },
 
     createShowtime: (data) => {
         return axiosClient.post('/showtimes', data);
     },
 
-    updateShowtime: (id, data) => {
-        return axiosClient.put(`/showtimes/${id}`, data);
+    holdSeat: (showtimeId, seatId) => {
+        return axiosClient.post(`/showtimes/${showtimeId}/seats/${seatId}/hold`);
     },
 
-    deleteShowtime: (id) => {
-        return axiosClient.delete(`/showtimes/${id}`);
+    releaseSeat: (showtimeId, seatId) => {
+        return axiosClient.delete(`/showtimes/${showtimeId}/seats/${seatId}/hold`);
     }
 };
 

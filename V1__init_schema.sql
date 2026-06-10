@@ -1,5 +1,5 @@
 -- ============================================================
---  CineBook – Flyway Migration V1
+--  CineBook ΓÇô Flyway Migration V1
 --  Full schema from SRS v16
 -- ============================================================
 
