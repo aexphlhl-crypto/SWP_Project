@@ -14,6 +14,10 @@ import java.util.Optional;
 @Repository
 public interface SeatHoldRepository extends JpaRepository<SeatHold, Long> {
 
+    @Modifying
+    @Query("DELETE FROM SeatHold sh WHERE sh.showtime.showtimeId = :showtimeId AND sh.user.userId = :userId")
+    void deleteByShowtimeAndUser(@Param("showtimeId") Long showtimeId, @Param("userId") Long userId);
+
     @Query("SELECT sh FROM SeatHold sh WHERE sh.showtime.showtimeId = :showtimeId AND sh.expiresAt > :now")
     List<SeatHold> findActiveHoldsByShowtime(@Param("showtimeId") Long showtimeId, @Param("now") LocalDateTime now);
 
