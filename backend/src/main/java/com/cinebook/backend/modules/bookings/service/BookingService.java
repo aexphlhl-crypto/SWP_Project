@@ -14,13 +14,14 @@ import com.cinebook.backend.modules.showtimes.entity.Showtime;
 import com.cinebook.backend.modules.showtimes.repository.ShowtimeRepository;
 import com.cinebook.backend.modules.users.User;
 import com.cinebook.backend.modules.users.UserRepository;
-import com.cinebook.backend.modules.notifications.service.NotificationService;
+
 import com.cinebook.backend.modules.bookings.entity.FnBOrderItem;
 import com.cinebook.backend.modules.bookings.repository.FnBOrderItemRepository;
 import com.cinebook.backend.modules.fnb.entity.FnBProduct;
 import com.cinebook.backend.modules.fnb.repository.FnBProductRepository;
 import com.cinebook.backend.modules.bookings.dto.FnBItemRequest;
 import com.cinebook.backend.modules.bookings.dto.FnBItemDto;
+import com.cinebook.backend.modules.promos.repository.PromoCodeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,12 +41,14 @@ public class BookingService {
     private final ShowtimeRepository showtimeRepository;
     private final SeatRepository seatRepository;
     private final SystemConfigService systemConfigService;
-    private final NotificationService notificationService;
+
     private final FnBOrderItemRepository fnbOrderItemRepository;
     private final FnBProductRepository fnbProductRepository;
+    private final PromoCodeRepository promoCodeRepository;
+    private final com.cinebook.backend.modules.promos.service.PromoService promoService;
 
     @Transactional
-    public Booking createBooking(Long customerId, Long showtimeId, List<Long> seatIds, List<FnBItemRequest> fnbItems) {
+    public Booking createBooking(Long customerId, Long showtimeId, List<Long> seatIds, List<FnBItemRequest> fnbItems, String promoCode) {
         User customer = userRepository.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
@@ -76,26 +79,46 @@ public class BookingService {
             Seat seat = seatRepository.findById(seatId)
                     .orElseThrow(() -> new RuntimeException("Seat not found: " + seatId));
             
-            BigDecimal multiplier = BigDecimal.ONE;
+            int seatPrice;
+            BigDecimal basePrice = systemConfigService.getBasePrice();
+            
+            // Seat type multiplier
+            BigDecimal seatMultiplier = BigDecimal.ONE;
             if (seat.getSeatType() == SeatType.VIP) {
-                multiplier = vipMultiplier;
+                seatMultiplier = vipMultiplier;
             } else if (seat.getSeatType() == SeatType.Couple) {
-                multiplier = coupleMultiplier;
+                seatMultiplier = coupleMultiplier;
             }
             
-            int basePrice = systemConfigService.getBasePrice().intValue();
-            
-            BigDecimal roomMultiplier = BigDecimal.ONE;
-            if ("3D".equalsIgnoreCase(room.getRoomType())) {
-                roomMultiplier = systemConfigService.getRoom3DMultiplier();
-            } else if ("IMAX".equalsIgnoreCase(room.getRoomType())) {
-                roomMultiplier = systemConfigService.getRoomIMAXMultiplier();
+            // Day-of-week multiplier (weekend surcharge)
+            BigDecimal dayMultiplier = BigDecimal.ONE;
+            java.time.DayOfWeek day = showtime.getStartTime().getDayOfWeek();
+            if (day == java.time.DayOfWeek.SATURDAY || day == java.time.DayOfWeek.SUNDAY) {
+                BigDecimal weekendSurcharge = systemConfigService.getWeekendSurchargePercent()
+                        .divide(BigDecimal.valueOf(100), 4, java.math.RoundingMode.HALF_UP);
+                dayMultiplier = BigDecimal.ONE.add(weekendSurcharge);
             }
             
-            int seatPrice = BigDecimal.valueOf(basePrice)
-                .multiply(roomMultiplier)
-                .multiply(multiplier)
+            // Time-of-day multiplier (evening surcharge)
+            BigDecimal timeMultiplier = BigDecimal.ONE;
+            try {
+                String eveningTimeStr = systemConfigService.getEveningSurchargeTime();
+                if (eveningTimeStr != null && eveningTimeStr.contains(":")) {
+                    java.time.LocalTime eveningTime = java.time.LocalTime.parse(eveningTimeStr);
+                    if (!showtime.getStartTime().toLocalTime().isBefore(eveningTime)) {
+                        BigDecimal eveningSurcharge = systemConfigService.getEveningSurchargePercent()
+                                .divide(BigDecimal.valueOf(100), 4, java.math.RoundingMode.HALF_UP);
+                        timeMultiplier = BigDecimal.ONE.add(eveningSurcharge);
+                    }
+                }
+            } catch (Exception e) { /* use default timeMultiplier = 1 */ }
+            
+            seatPrice = basePrice
+                .multiply(seatMultiplier)
+                .multiply(dayMultiplier)
+                .multiply(timeMultiplier)
                 .intValue();
+
             totalBeforeTax += seatPrice;
 
             BookingSeat bookingSeat = new BookingSeat();
@@ -150,13 +173,69 @@ public class BookingService {
             savedBooking = bookingRepository.save(savedBooking);
         }
 
-        // Trigger notification
-        String notificationTitle = "Đặt vé thành công";
-        String notificationMessage = String.format("Vé xem phim %s của bạn đã được đặt. Vui lòng thanh toán trong vòng %d phút.",
-                showtime.getMovie().getTitle(), holdMinutes);
-        notificationService.createNotification(customer.getUserId(), notificationTitle, notificationMessage);
+        if (promoCode != null && !promoCode.isEmpty()) {
+            try {
+                com.cinebook.backend.modules.promos.entity.PromoCode promo = promoService.validateAndReservePromo(promoCode, customerId, savedBooking.getId(), savedBooking.getTotalBeforeTax());
+                int discountAmount = 0;
+                if (promo.getDiscountType() == com.cinebook.backend.modules.promos.entity.PromoDiscountType.Percentage) {
+                    discountAmount = savedBooking.getTotalBeforeTax() * promo.getDiscountValue().intValue() / 100;
+                    if (promo.getMaxDiscountVnd() != null && discountAmount > promo.getMaxDiscountVnd()) {
+                        discountAmount = promo.getMaxDiscountVnd();
+                    }
+                } else {
+                    discountAmount = promo.getDiscountValue().intValue();
+                }
+                
+                int newTotalBeforeTax = savedBooking.getTotalBeforeTax() - discountAmount;
+                if (newTotalBeforeTax < 0) newTotalBeforeTax = 0;
+                int newVatAmount = java.math.BigDecimal.valueOf(newTotalBeforeTax).multiply(vatRate).setScale(0, java.math.RoundingMode.HALF_UP).intValue();
+                int newTotalAfterTax = newTotalBeforeTax + newVatAmount;
+
+                savedBooking.setPromoId(promo.getId());
+                savedBooking.setDiscountAmount(discountAmount);
+                savedBooking.setVatAmount(newVatAmount);
+                savedBooking.setTotalAfterTax(newTotalAfterTax);
+                savedBooking = bookingRepository.save(savedBooking);
+            } catch (Exception e) {
+                // If promo validation fails, we throw an exception to abort the booking
+                throw new RuntimeException("Invalid promo code: " + e.getMessage());
+            }
+        }
+
+
 
         return savedBooking;
+    }
+
+    @Transactional
+    public void cancelMyBooking(Long bookingId, String email) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        
+        if (!booking.getCustomer().getEmail().equals(email)) {
+            throw new RuntimeException("Not authorized to cancel this booking");
+        }
+        
+        if (booking.getStatus() != BookingStatus.Pending) {
+            throw new RuntimeException("Only pending bookings can be cancelled");
+        }
+        
+        booking.setStatus(BookingStatus.Cancelled);
+        bookingRepository.save(booking);
+        
+        // Release promo
+        if (booking.getPromoId() != null) {
+            promoService.releasePromoUsage(booking.getPromoId(), booking.getId());
+        }
+        
+        // Release seat holds
+        com.cinebook.backend.modules.showtimes.repository.SeatHoldRepository seatHoldRepository = 
+            org.springframework.web.context.support.WebApplicationContextUtils.getWebApplicationContext(
+                org.springframework.web.context.request.RequestContextHolder.getRequestAttributes() != null ? 
+                ((org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.getRequestAttributes()).getRequest().getServletContext() : null
+            ).getBean(com.cinebook.backend.modules.showtimes.repository.SeatHoldRepository.class);
+            
+        seatHoldRepository.deleteByShowtimeAndUser(booking.getShowtime().getShowtimeId(), booking.getCustomer().getUserId());
     }
 
     public org.springframework.data.domain.Page<com.cinebook.backend.modules.bookings.dto.BookingAdminDto> getAllBookingsAdmin(org.springframework.data.domain.Pageable pageable) {
@@ -251,7 +330,14 @@ public class BookingService {
                     .seatType(s.getSeatType().name())
                     .price(s.getPriceAtBooking())
                     .ticketCode(bookingCode + "-" + s.getSeat().getSeatLabel())
-                    .qrCodeValue(bookingCode + "-" + s.getSeat().getSeatLabel())
+                    .qrCodeValue(String.format("Mã vé: %s-%s\nPhim: %s\nRạp: %s\nPhòng: %s\nSuất chiếu: %s %s\nGhế: %s",
+                            bookingCode, s.getSeat().getSeatLabel(),
+                            booking.getShowtime().getMovie().getTitle(),
+                            booking.getShowtime().getRoom().getCinema().getName(),
+                            booking.getShowtime().getRoom().getName(),
+                            booking.getShowtime().getStartTime().toLocalDate().toString(),
+                            booking.getShowtime().getStartTime().toLocalTime().toString(),
+                            s.getSeat().getSeatLabel()))
                     .build()).collect(java.util.stream.Collectors.toList());
 
             if (!fnbItemDtos.isEmpty()) {
@@ -260,7 +346,9 @@ public class BookingService {
                         .seatType("FNB")
                         .price(booking.getTotalFnbAmount())
                         .ticketCode(bookingCode + "-FNB")
-                        .qrCodeValue(bookingCode + "-FNB")
+                        .qrCodeValue(String.format("Mã đơn: %s-FNB\nBắp nước: %s",
+                                bookingCode,
+                                fnbItemDtos.stream().map(item -> item.getProductName() + " (x" + item.getQuantity() + ")").collect(java.util.stream.Collectors.joining(", "))))
                         .build());
             }
 
@@ -305,7 +393,14 @@ public class BookingService {
                 .seatType(s.getSeatType().name())
                 .price(s.getPriceAtBooking())
                 .ticketCode(bookingCode + "-" + s.getSeat().getSeatLabel())
-                .qrCodeValue(bookingCode + "-" + s.getSeat().getSeatLabel())
+                .qrCodeValue(String.format("Mã vé: %s-%s\nPhim: %s\nRạp: %s\nPhòng: %s\nSuất chiếu: %s %s\nGhế: %s",
+                        bookingCode, s.getSeat().getSeatLabel(),
+                        booking.getShowtime().getMovie().getTitle(),
+                        booking.getShowtime().getRoom().getCinema().getName(),
+                        booking.getShowtime().getRoom().getName(),
+                        booking.getShowtime().getStartTime().toLocalDate().toString(),
+                        booking.getShowtime().getStartTime().toLocalTime().toString(),
+                        s.getSeat().getSeatLabel()))
                 .build()).collect(java.util.stream.Collectors.toList());
 
         if (!fnbItemDtos.isEmpty()) {
@@ -314,7 +409,9 @@ public class BookingService {
                     .seatType("FNB")
                     .price(booking.getTotalFnbAmount())
                     .ticketCode(bookingCode + "-FNB")
-                    .qrCodeValue(bookingCode + "-FNB")
+                    .qrCodeValue(String.format("Mã đơn: %s-FNB\nBắp nước: %s",
+                            bookingCode,
+                            fnbItemDtos.stream().map(item -> item.getProductName() + " (x" + item.getQuantity() + ")").collect(java.util.stream.Collectors.joining(", "))))
                     .build());
         }
 
