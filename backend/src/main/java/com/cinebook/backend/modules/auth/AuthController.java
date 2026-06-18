@@ -29,9 +29,9 @@ public class AuthController {
 
     @PostMapping("/verify-otp")
     @Operation(summary = "Verify email OTP (UC-01)")
-    public ResponseEntity<ApiResponse<String>> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
-        String message = authService.verifyOtp(request);
-        return ResponseEntity.ok(ApiResponse.ok(message));
+    public ResponseEntity<ApiResponse<AuthResponse>> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
+        AuthResponse response = authService.verifyOtp(request);
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @PostMapping("/login")
@@ -82,11 +82,8 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> changePassword(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody ChangePasswordRequest request) {
-        // Extract userId from UserDetails via JwtUtil
-        // Since UserDetails.username = email, fetch from UserRepository (injected in future)
-        // For now we get userId from the request context
-        // TODO: inject UserRepository to get userId by email
-        return ResponseEntity.ok(ApiResponse.ok("Password changed successfully."));
+        authService.changePassword(userDetails.getUsername(), request);
+        return ResponseEntity.ok(ApiResponse.ok("Đổi mật khẩu thành công."));
     }
 
     @PutMapping("/profile")

@@ -38,8 +38,6 @@ public class Showtime {
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
-    @Column(name = "price_override")
-    private Integer priceOverride;
 
     @Column(name = "status", nullable = false)
     @Builder.Default

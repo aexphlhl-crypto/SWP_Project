@@ -87,7 +87,7 @@ export default function AdminManagersPage() {
     (m.email || '').toLowerCase().includes(search.toLowerCase())
   );
 
-  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered, 10);
+  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
 
   return (
     <div className="space-y-6 p-6">

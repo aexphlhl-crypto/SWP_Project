@@ -103,7 +103,7 @@ export function DataProvider({ children }) {
             date: s.startTime.split('T')[0],
             startTime: s.startTime.split('T')[1].substring(0, 5),
             endTime: s.endTime.split('T')[1].substring(0, 5),
-            price: s.priceOverride ? s.priceOverride : 85000, // default if null
+            price: 85000, // default if null
             type: '2D', // assuming 2D for now
             availableSeats: s.totalSeats
           }));

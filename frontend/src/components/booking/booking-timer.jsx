@@ -2,22 +2,29 @@
 
 import { Clock, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useCountdown } from '@/hooks/use-countdown';
+import { useCountdown, useBookingTimer } from '@/hooks/use-countdown';
 export function BookingTimer({
   initialMinutes = 15,
   onExpire,
-  isStarted = true
+  isStarted = true,
+  expiresAt = null
 }) {
+  const countdownResult = useCountdown({
+    initialMinutes,
+    onExpire,
+    isStarted
+  });
+  
+  const bookingTimerResult = useBookingTimer(expiresAt, onExpire);
+  
+  const activeResult = expiresAt ? bookingTimerResult : countdownResult;
+  
   const {
     formattedTime,
     isWarning,
     isCritical,
     isExpired
-  } = useCountdown({
-    initialMinutes,
-    onExpire,
-    isStarted
-  });
+  } = activeResult;
   if (isExpired) {
     return <div className="flex items-center gap-2 px-4 py-2 bg-destructive/20 border border-destructive rounded-lg">
         <AlertCircle className="size-5 text-destructive" />

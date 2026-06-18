@@ -14,7 +14,6 @@ import com.cinebook.backend.modules.showtimes.entity.Showtime;
 import com.cinebook.backend.modules.showtimes.repository.ShowtimeRepository;
 import com.cinebook.backend.modules.users.User;
 import com.cinebook.backend.modules.users.UserRepository;
-
 import com.cinebook.backend.modules.bookings.entity.FnBOrderItem;
 import com.cinebook.backend.modules.bookings.repository.FnBOrderItemRepository;
 import com.cinebook.backend.modules.fnb.entity.FnBProduct;
@@ -41,7 +40,6 @@ public class BookingService {
     private final ShowtimeRepository showtimeRepository;
     private final SeatRepository seatRepository;
     private final SystemConfigService systemConfigService;
-
     private final FnBOrderItemRepository fnbOrderItemRepository;
     private final FnBProductRepository fnbProductRepository;
     private final PromoCodeRepository promoCodeRepository;
@@ -89,7 +87,7 @@ public class BookingService {
             } else if (seat.getSeatType() == SeatType.Couple) {
                 seatMultiplier = coupleMultiplier;
             }
-            
+
             // Day-of-week multiplier (weekend surcharge)
             BigDecimal dayMultiplier = BigDecimal.ONE;
             java.time.DayOfWeek day = showtime.getStartTime().getDayOfWeek();
@@ -201,8 +199,6 @@ public class BookingService {
                 throw new RuntimeException("Invalid promo code: " + e.getMessage());
             }
         }
-
-
 
         return savedBooking;
     }

@@ -43,7 +43,6 @@ import AdminMovies from './pages/Admin/movies/index.jsx'
 import AdminGenres from './pages/Admin/genres/index.jsx'
 import AdminPromotions from './pages/Admin/promotions/index.jsx'
 import AdminResale from './pages/Admin/resale/index.jsx'
-import AdminResaleReport from './pages/Admin/resale/report/index.jsx'
 import AdminRooms from './pages/Admin/rooms/index.jsx'
 import AdminSeats from './pages/Admin/seats/index.jsx'
 import AdminSettings from './pages/Admin/settings/index.jsx'
@@ -117,7 +116,6 @@ export default function App() {
             <Route path="movies" element={<AdminMovies />} />
             <Route path="promotions" element={<AdminPromotions />} />
             <Route path="resale" element={<ProtectedRoute allowedRoles={['admin']}><AdminResale /></ProtectedRoute>} />
-            <Route path="resale/report" element={<ProtectedRoute allowedRoles={['admin']}><AdminResaleReport /></ProtectedRoute>} />
             <Route path="rooms" element={<AdminRooms />} />
             <Route path="seats" element={<AdminSeats />} />
             <Route path="settings" element={<ProtectedRoute allowedRoles={['admin']}><AdminSettings /></ProtectedRoute>} />

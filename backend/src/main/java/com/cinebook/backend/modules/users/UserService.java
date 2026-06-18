@@ -123,6 +123,14 @@ public class UserService {
         if (userRepository.existsByEmailAndDeletedAtIsNull(dto.getEmail())) {
             throw AppException.badRequest("Email already exists");
         }
+        
+        if (dto.getCinemaId() == null) {
+            throw AppException.badRequest("Cinema ID is required");
+        }
+        
+        Cinema cinema = cinemaRepository.findById(dto.getCinemaId())
+                .orElseThrow(() -> AppException.badRequest("Cinema not found"));
+        
         User manager = new User();
         manager.setFullName(dto.getFullName());
         manager.setEmail(dto.getEmail());
@@ -130,12 +138,7 @@ public class UserService {
         manager.setPhone(dto.getPhone());
         manager.setRole(UserRole.ScheduleManager);
         manager.setStatus(UserStatus.Active);
-        
-        if (dto.getCinemaId() != null) {
-            Cinema cinema = cinemaRepository.findById(dto.getCinemaId())
-                    .orElseThrow(() -> AppException.badRequest("Cinema not found"));
-            manager.setCinema(cinema);
-        }
+        manager.setCinema(cinema);
         
         userRepository.save(manager);
         
@@ -149,8 +152,8 @@ public class UserService {
                 .role(manager.getRole())
                 .totalBookings(0)
                 .totalSpent(0)
-                .cinemaId(manager.getCinema() != null ? manager.getCinema().getCinemaId() : null)
-                .cinemaName(manager.getCinema() != null ? manager.getCinema().getName() : null)
+                .cinemaId(manager.getCinema().getCinemaId())
+                .cinemaName(manager.getCinema().getName())
                 .build();
     }
 
