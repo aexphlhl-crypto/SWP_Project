@@ -139,6 +139,12 @@ export default function MovieDetailPage() {
     return showtimes.filter(s => String(s.movieId) === String(movie.movieId || movie.id));
   }, [id, movie, showtimes]);
 
+  const currentRating = useMemo(() => {
+    if (!reviews || reviews.length === 0) return movie?.rating || 0;
+    const sum = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
+    return Number((sum / reviews.length).toFixed(1));
+  }, [reviews, movie]);
+
   if (!movie) {
     return (
       <div className="container flex min-h-[60vh] flex-col items-center justify-center py-16">
@@ -260,7 +266,10 @@ export default function MovieDetailPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-4">
-                <StarRating rating={movie.rating} size="lg" />
+                <div className="flex items-center gap-2">
+                  <StarRating rating={currentRating} size="lg" />
+                  <span className="text-sm font-medium text-muted-foreground ml-1">({reviews.length} đánh giá)</span>
+                </div>
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Clock className="size-4" />
                   <span>{movie.duration} phút</span>

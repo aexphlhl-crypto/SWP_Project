@@ -69,7 +69,7 @@ export default function AdminRoomsPage() {
   }, []);
 
   const filtered = rooms.filter(r => selectedCinema === 'all' || r.cinemaId?.toString() === selectedCinema.toString());
-  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered, 10);
+  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
   
   const activeCount = filtered.filter(r => r.status === 'Active' || r.status === 'active').length;
 

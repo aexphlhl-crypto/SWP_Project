@@ -41,6 +41,25 @@ const STATUS = {
   }
 };
 
+export const formatSeatType = (type) => {
+  if (!type) return 'Ghế Thường';
+  if (type.toLowerCase() === 'vip') return 'Ghế VIP';
+  if (type.toLowerCase() === 'couple') return 'Ghế Đôi';
+  if (type.toLowerCase() === 'sweetbox') return 'Sweetbox';
+  return 'Ghế Thường';
+};
+
+export const renderSeatsByType = (tickets) => {
+  if (!tickets || tickets.length === 0) return null;
+  const groups = {};
+  tickets.forEach(t => {
+    const type = formatSeatType(t.seatType);
+    if (!groups[type]) groups[type] = [];
+    groups[type].push(t.seatLabel);
+  });
+  return Object.entries(groups).map(([type, seats]) => `${type}: ${seats.join(', ')}`).join(' | ');
+};
+
 const mapStatus = (ticket) => {
   if (!ticket) return 'upcoming';
   const backendStatus = ticket.status;
@@ -125,7 +144,7 @@ export default function MyTicketsPage() {
     return matchTab && matchSearch;
   });
 
-  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered, 10);
+  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
 
   const downloadPDF = async (ticket) => {
     setSelectedTicket(ticket);
@@ -227,12 +246,15 @@ export default function MyTicketsPage() {
                           <div className="flex items-center gap-1">
                             <Clock className="w-3 h-3" /> {ticket.showTime}
                           </div>
+                          <div className="flex items-center gap-2">
+                            <Armchair className="w-4 h-4 shrink-0" />
+                            <span className="line-clamp-2">
+                              {renderSeatsByType(ticket.tickets)}
+                            </span>
+                          </div>
                           <div className="flex items-center gap-1 col-span-2 truncate">
                             <MapPin className="w-3 h-3 shrink-0" />
                             <span className="truncate">{ticket.cinemaName} • {ticket.roomName}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Armchair className="w-3 h-3" /> Ghế: {ticket.seatNumber}
                           </div>
                         </div>
 

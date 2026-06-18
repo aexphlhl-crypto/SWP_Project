@@ -86,7 +86,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String verifyOtp(VerifyOtpRequest request) {
+    public AuthResponse verifyOtp(VerifyOtpRequest request) {
         PendingUser pendingUser = pendingUserRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> AppException.badRequest("No pending registration found for this email."));
 
@@ -118,7 +118,7 @@ public class AuthService {
         userRepository.save(user);
         pendingUserRepository.delete(pendingUser);
 
-        return "Email verified successfully. You can now login.";
+        return buildAuthResponse(user);
     }
 
     @Transactional
@@ -259,15 +259,15 @@ public class AuthService {
     }
 
     @Transactional
-    public void changePassword(Long userId, ChangePasswordRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> AppException.notFound("User not found."));
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmailAndDeletedAtIsNull(email)
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy người dùng."));
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
-            throw AppException.badRequest("Current password is incorrect.");
+            throw AppException.badRequest("Mật khẩu hiện tại không chính xác.");
         }
         if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
-            throw AppException.badRequest("New password must not be the same as the current password.");
+            throw AppException.badRequest("Mật khẩu mới không được trùng với mật khẩu hiện tại.");
         }
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
@@ -295,6 +295,7 @@ public class AuthService {
                 .phone(user.getPhone())
                 .dateOfBirth(user.getDateOfBirth())
                 .address(user.getAddress())
+                .cinemaId(user.getCinema() != null ? user.getCinema().getCinemaId() : null)
                 .build();
     }
 
@@ -310,6 +311,7 @@ public class AuthService {
                 .phone(user.getPhone())
                 .dateOfBirth(user.getDateOfBirth())
                 .address(user.getAddress())
+                .cinemaId(user.getCinema() != null ? user.getCinema().getCinemaId() : null)
                 .build();
     }
 
@@ -389,6 +391,7 @@ public class AuthService {
                         .phone(user.getPhone())
                         .dateOfBirth(user.getDateOfBirth())
                         .address(user.getAddress())
+                        .cinemaId(user.getCinema() != null ? user.getCinema().getCinemaId() : null)
                         .build())
                 .build();
     }
