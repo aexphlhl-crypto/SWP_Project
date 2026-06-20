@@ -96,6 +96,14 @@ function BookingContent() {
       }
       const newQty = existing.quantity + delta;
       if (newQty <= 0) return prev.filter(o => o.item.id !== item.id);
+      if (newQty > 10) {
+        toast({
+          title: 'Giới hạn số lượng',
+          description: 'Bạn chỉ có thể chọn tối đa 10 phần cho mỗi món.',
+          variant: 'destructive'
+        });
+        return prev;
+      }
       return prev.map(o => o.item.id === item.id ? { ...o, quantity: newQty } : o);
     });
   };
