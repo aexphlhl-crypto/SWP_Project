@@ -56,7 +56,7 @@ export default function PromotionsPage() {
   const now = new Date();
   const active = promotions.filter(p => p.status === 'Active' && new Date(p.validUntil) >= now);
   const expired = promotions.filter(p => p.status !== 'Active' || new Date(p.validUntil) < now);
-  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(active, 10);
+  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(active);
   
   return (
     <div className="container mx-auto px-4 py-10 space-y-10">

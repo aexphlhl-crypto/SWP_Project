@@ -88,7 +88,7 @@ export default function AdminMoviesPage() {
 
   const filtered = movies.filter(m => m.title.toLowerCase().includes(search.toLowerCase()) || (m.originalTitle ?? '').toLowerCase().includes(search.toLowerCase()));
 
-  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered, 10);
+  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
 
   const openAdd = () => {
     setEditingMovie(null);

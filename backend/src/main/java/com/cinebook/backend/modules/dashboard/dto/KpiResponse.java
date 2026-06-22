@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class KpiResponse {
     private Integer totalRevenue;
-    private Long totalTickets;
+    private Integer totalTickets;
     private Long newUsers;
 }

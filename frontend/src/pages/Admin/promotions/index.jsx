@@ -165,7 +165,7 @@ export default function AdminPromotionsPage() {
   const activeCount = currentPromos.filter(p => p.derivedStatus === 'Active').length;
   const expiredCount = currentPromos.filter(p => p.derivedStatus === 'Expired' || p.derivedStatus === 'Inactive').length;
 
-  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered, 10);
+  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
 
   return (
     <div className="space-y-6 p-6">
@@ -336,7 +336,7 @@ export default function AdminPromotionsPage() {
                     <SelectTrigger id="discountType"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Percentage">Theo phần trăm (%)</SelectItem>
-                      <SelectItem value="FixedAmount">Số tiền cố định (VNĐ)</SelectItem>
+                      <SelectItem value="Fixed">Số tiền cố định (VNĐ)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

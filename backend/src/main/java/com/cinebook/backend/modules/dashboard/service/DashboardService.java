@@ -24,6 +24,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -46,14 +47,13 @@ public class DashboardService {
     public KpiResponse getKpiSummary() {
         List<BookingStatus> validStatuses = Arrays.asList(BookingStatus.Confirmed, BookingStatus.CheckedIn);
         Integer totalRevenue = bookingRepository.sumTotalAfterTaxByStatusIn(validStatuses);
-        Long totalTickets = bookingSeatRepository.countByBookingStatusIn(validStatuses);
+        Integer totalTickets = bookingRepository.sumTotalTicketsAmountByStatusIn(validStatuses);
         
         YearMonth currentMonth = YearMonth.now();
         LocalDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay();
         LocalDateTime endOfMonth = currentMonth.atEndOfMonth().atTime(23, 59, 59);
         
         Long newUsers = userRepository.countByCreatedAtBetween(startOfMonth, endOfMonth);
-        //(YearMonth.now().minusMonths(1)
 
         return KpiResponse.builder()
                 .totalRevenue(totalRevenue)
@@ -140,7 +140,7 @@ public class DashboardService {
 
     public List<RecentBookingResponse> getRecentBookings(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        org.springframework.data.domain.Page<Booking> page = bookingRepository.findAllByOrderByCreatedAtAsc(pageable);
+        org.springframework.data.domain.Page<Booking> page = bookingRepository.findAllByOrderByCreatedAtDesc(pageable);
         return page.getContent().stream().map(b -> {
             List<BookingSeat> bookingSeats = bookingSeatRepository.findByBooking_Id(b.getId());
             String seats = "";
