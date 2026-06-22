@@ -30,6 +30,10 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -235,7 +239,28 @@ public class BookingService {
     }
 
     public org.springframework.data.domain.Page<com.cinebook.backend.modules.bookings.dto.BookingAdminDto> getAllBookingsAdmin(org.springframework.data.domain.Pageable pageable) {
-        org.springframework.data.domain.Page<Booking> bookings = bookingRepository.findAll(pageable);
+        org.springframework.data.domain.Page<Booking> bookings;
+
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            boolean isScheduleManager = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ScheduleManager"));
+            if (isScheduleManager) {
+                String email = auth.getName();
+                com.cinebook.backend.modules.users.User user = userRepository.findByEmailAndDeletedAtIsNull(email)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+                if (user.getCinema() != null) {
+                    bookings = bookingRepository.findByShowtimeCinemaCinemaId(user.getCinema().getCinemaId(), pageable);
+                } else {
+                    return org.springframework.data.domain.Page.empty(pageable);
+                }
+            } else {
+                bookings = bookingRepository.findAll(pageable);
+            }
+        } else {
+            bookings = bookingRepository.findAll(pageable);
+        }
+
         return bookings.map(booking -> {
             List<BookingSeat> seats = bookingSeatRepository.findByBooking_Id(booking.getId());
             String seatNames = seats.stream()
@@ -426,5 +451,217 @@ public class BookingService {
                 .fnbItems(fnbItemDtos)
                 .tickets(ticketDtos)
                 .build();
+    }
+
+    public byte[] exportBookingsToExcel() throws IOException {
+        List<Booking> bookings;
+
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            boolean isScheduleManager = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ScheduleManager"));
+            if (isScheduleManager) {
+                String email = auth.getName();
+                com.cinebook.backend.modules.users.User user = userRepository.findByEmailAndDeletedAtIsNull(email)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+                if (user.getCinema() != null) {
+                    bookings = bookingRepository.findByShowtimeCinemaCinemaIdOrderByCreatedAtDesc(user.getCinema().getCinemaId());
+                } else {
+                    bookings = List.of();
+                }
+            } else {
+                bookings = bookingRepository.findAllByOrderByCreatedAtDesc();
+            }
+        } else {
+            bookings = bookingRepository.findAllByOrderByCreatedAtDesc();
+        }
+
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("Báo cáo đặt vé");
+
+            // Define styles
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle borderStyle = workbook.createCellStyle();
+            borderStyle.setBorderBottom(BorderStyle.THIN);
+            borderStyle.setBorderTop(BorderStyle.THIN);
+            borderStyle.setBorderLeft(BorderStyle.THIN);
+            borderStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.cloneStyleFrom(borderStyle);
+            DataFormat format = workbook.createDataFormat();
+            amountStyle.setDataFormat(format.getFormat("#,##0\" ₫\""));
+            amountStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            // Header Row
+            String[] headers = {
+                "STT", "Mã đặt vé", "Ngày đặt", "Tên khách hàng", "Email", "Số điện thoại",
+                "Phim", "Rạp", "Phòng chiếu", "Suất chiếu", "Ghế", "Chi tiết bắp nước",
+                "Tiền vé", "Tiền bắp nước", "Giảm giá", "Thuế VAT", "Tổng thanh toán", "Trạng thái"
+            };
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 1;
+            for (Booking booking : bookings) {
+                Row row = sheet.createRow(rowIdx++);
+
+                // Get seats string
+                List<BookingSeat> seats = bookingSeatRepository.findByBooking_Id(booking.getId());
+                String seatNames = seats.stream()
+                        .map(s -> s.getSeat().getSeatLabel())
+                        .collect(java.util.stream.Collectors.joining(", "));
+
+                // Get FNB details string
+                List<FnBOrderItem> fnbOrderItems = fnbOrderItemRepository.findByBookingId(booking.getId());
+                String fnbDetails = fnbOrderItems.stream()
+                        .map(item -> item.getProduct().getName() + " (x" + item.getQuantity() + ")")
+                        .collect(java.util.stream.Collectors.joining(", "));
+
+                // Get format time
+                String showtimeStr = "";
+                if (booking.getShowtime() != null) {
+                    showtimeStr = booking.getShowtime().getStartTime().toLocalDate().toString() + " " +
+                                  booking.getShowtime().getStartTime().toLocalTime().toString();
+                }
+
+                // Get formatted date booking
+                String createdAtStr = "";
+                if (booking.getCreatedAt() != null) {
+                    createdAtStr = booking.getCreatedAt().toLocalDate().toString() + " " +
+                                   booking.getCreatedAt().toLocalTime().toString();
+                }
+
+                // Map status to Vietnamese
+                String statusVi = "";
+                if (booking.getStatus() != null) {
+                    switch (booking.getStatus()) {
+                        case Confirmed: statusVi = "Hoàn thành"; break;
+                        case Pending: statusVi = "Chờ xử lý"; break;
+                        case Cancelled: statusVi = "Đã hủy"; break;
+                        case Expired: statusVi = "Hết hạn"; break;
+                        case CheckedIn: statusVi = "Đã vào rạp"; break;
+                        case Failed: statusVi = "Thất bại"; break;
+                        default: statusVi = booking.getStatus().toString();
+                    }
+                }
+
+                int col = 0;
+                // STT
+                Cell cellStt = row.createCell(col++);
+                cellStt.setCellValue(rowIdx - 1);
+                cellStt.setCellStyle(borderStyle);
+
+                // Mã đặt vé
+                Cell cellCode = row.createCell(col++);
+                cellCode.setCellValue("BK" + String.format("%03d", booking.getId()));
+                cellCode.setCellStyle(borderStyle);
+
+                // Ngày đặt
+                Cell cellDate = row.createCell(col++);
+                cellDate.setCellValue(createdAtStr);
+                cellDate.setCellStyle(borderStyle);
+
+                // Tên khách hàng
+                Cell cellCust = row.createCell(col++);
+                cellCust.setCellValue(booking.getCustomer() != null ? booking.getCustomer().getFullName() : "");
+                cellCust.setCellStyle(borderStyle);
+
+                // Email
+                Cell cellEmail = row.createCell(col++);
+                cellEmail.setCellValue(booking.getCustomer() != null ? booking.getCustomer().getEmail() : "");
+                cellEmail.setCellStyle(borderStyle);
+
+                // Số điện thoại
+                Cell cellPhone = row.createCell(col++);
+                cellPhone.setCellValue(booking.getCustomer() != null ? booking.getCustomer().getPhone() : "");
+                cellPhone.setCellStyle(borderStyle);
+
+                // Phim
+                Cell cellMovie = row.createCell(col++);
+                cellMovie.setCellValue(booking.getShowtime() != null && booking.getShowtime().getMovie() != null ? booking.getShowtime().getMovie().getTitle() : "");
+                cellMovie.setCellStyle(borderStyle);
+
+                // Rạp
+                Cell cellCinema = row.createCell(col++);
+                cellCinema.setCellValue(booking.getShowtime() != null && booking.getShowtime().getRoom() != null && booking.getShowtime().getRoom().getCinema() != null ? booking.getShowtime().getRoom().getCinema().getName() : "");
+                cellCinema.setCellStyle(borderStyle);
+
+                // Phòng chiếu
+                Cell cellRoom = row.createCell(col++);
+                cellRoom.setCellValue(booking.getShowtime() != null && booking.getShowtime().getRoom() != null ? booking.getShowtime().getRoom().getName() : "");
+                cellRoom.setCellStyle(borderStyle);
+
+                // Suất chiếu
+                Cell cellShow = row.createCell(col++);
+                cellShow.setCellValue(showtimeStr);
+                cellShow.setCellStyle(borderStyle);
+
+                // Ghế
+                Cell cellSeats = row.createCell(col++);
+                cellSeats.setCellValue(seatNames);
+                cellSeats.setCellStyle(borderStyle);
+
+                // Chi tiết bắp nước
+                Cell cellFnbDetail = row.createCell(col++);
+                cellFnbDetail.setCellValue(fnbDetails);
+                cellFnbDetail.setCellStyle(borderStyle);
+
+                // Tiền vé
+                Cell cellTicketAmt = row.createCell(col++);
+                cellTicketAmt.setCellValue(booking.getTotalTicketsAmount() != null ? booking.getTotalTicketsAmount() : 0);
+                cellTicketAmt.setCellStyle(amountStyle);
+
+                // Tiền bắp nước
+                Cell cellFnbAmt = row.createCell(col++);
+                cellFnbAmt.setCellValue(booking.getTotalFnbAmount() != null ? booking.getTotalFnbAmount() : 0);
+                cellFnbAmt.setCellStyle(amountStyle);
+
+                // Giảm giá
+                Cell cellDiscount = row.createCell(col++);
+                cellDiscount.setCellValue(booking.getDiscountAmount() != null ? booking.getDiscountAmount() : 0);
+                cellDiscount.setCellStyle(amountStyle);
+
+                // Thuế VAT
+                Cell cellVat = row.createCell(col++);
+                cellVat.setCellValue(booking.getVatAmount() != null ? booking.getVatAmount() : 0);
+                cellVat.setCellStyle(amountStyle);
+
+                // Tổng thanh toán
+                Cell cellTotal = row.createCell(col++);
+                cellTotal.setCellValue(booking.getTotalAfterTax() != null ? booking.getTotalAfterTax() : 0);
+                cellTotal.setCellStyle(amountStyle);
+
+                // Trạng thái
+                Cell cellStatus = row.createCell(col++);
+                cellStatus.setCellValue(statusVi);
+                cellStatus.setCellStyle(borderStyle);
+            }
+
+            // Auto-size columns
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
+        }
     }
 }

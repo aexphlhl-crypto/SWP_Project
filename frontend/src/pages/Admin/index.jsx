@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Ticket, Film, Users, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, Calendar, MapPin } from 'lucide-react';
+import { Ticket, Film, Users, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, Calendar, MapPin, Clapperboard } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
 
@@ -28,7 +28,7 @@ export default function AdminDashboard() {
         setLoading(true);
         const [kpiRes, bookingsRes] = await Promise.all([
           dashboardApi.getKpiSummary(),
-          dashboardApi.getRecentBookings(5)
+          dashboardApi.getRecentBookings(5, { sort: { createdAt: -1 } })
         ]);
         if (kpiRes.success && kpiRes.data) {
           setKpi(kpiRes.data);
@@ -164,18 +164,37 @@ export default function AdminDashboard() {
                     <span>Lịch chiếu</span>
                   </Link>
                 </Button>
-                <Button variant="outline" className="h-24 flex-col gap-2 hover:border-primary hover:text-primary" asChild>
-                  <Link to="/admin/cinemas">
-                    <MapPin className="w-6 h-6" />
-                    <span>Quản lý Rạp</span>
-                  </Link>
-                </Button>
-                <Button variant="outline" className="h-24 flex-col gap-2 hover:border-primary hover:text-primary" asChild>
-                  <Link to="/admin/analytics">
-                    <TrendingUp className="w-6 h-6" />
-                    <span>Báo cáo</span>
-                  </Link>
-                </Button>
+                {user?.role === 'admin' ? (
+                  <>
+                    <Button variant="outline" className="h-24 flex-col gap-2 hover:border-primary hover:text-primary" asChild>
+                      <Link to="/admin/cinemas">
+                        <MapPin className="w-6 h-6" />
+                        <span>Quản lý Rạp</span>
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="h-24 flex-col gap-2 hover:border-primary hover:text-primary" asChild>
+                      <Link to="/admin/analytics">
+                        <TrendingUp className="w-6 h-6" />
+                        <span>Báo cáo</span>
+                      </Link>
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" className="h-24 flex-col gap-2 hover:border-primary hover:text-primary" asChild>
+                      <Link to="/admin/rooms">
+                        <Clapperboard className="w-6 h-6" />
+                        <span>Phòng chiếu</span>
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="h-24 flex-col gap-2 hover:border-primary hover:text-primary" asChild>
+                      <Link to="/admin/bookings">
+                        <Ticket className="w-6 h-6" />
+                        <span>Quản lý Đặt vé</span>
+                      </Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
