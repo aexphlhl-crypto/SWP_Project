@@ -80,7 +80,7 @@ export default function AdminConcessionsPage() {
     return matchType && matchSearch;
   });
 
-  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered, 10);
+  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
 
   const openAdd = () => {
     setEditingItem(null);
@@ -135,7 +135,7 @@ export default function AdminConcessionsPage() {
       setDialogOpen(false);
       fetchConcessions();
     } catch (error) {
-      setErrorMsg(error.response?.data?.error?.message || error.message || "Lỗi khi lưu sản phẩm");
+      setErrorMsg(error.error?.message || error.message || "Lỗi khi lưu sản phẩm");
     }
   };
 
@@ -169,7 +169,7 @@ export default function AdminConcessionsPage() {
       setDeleteConfirmId(null);
       fetchConcessions();
     } catch (error) {
-      toast({ title: "Lỗi", description: error.response?.data?.error?.message || "Không thể xóa sản phẩm", variant: "destructive" });
+      toast({ title: "Lỗi", description: error.error?.message || error.message || "Không thể xóa sản phẩm", variant: "destructive" });
     }
   };
 

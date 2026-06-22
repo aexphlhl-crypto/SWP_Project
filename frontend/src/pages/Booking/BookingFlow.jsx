@@ -14,6 +14,8 @@ import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import fnbApi from '@/api/fnbApi';
+import bookingApi from '@/api/bookingApi';
+import showtimeApi from '@/api/showtimeApi';
 import { useAuth } from '@/contexts/auth-context';
 const TYPE_LABELS = {
   drink: '🥤 Đồ uống',
@@ -49,20 +51,26 @@ function BookingContent() {
   const [pendingSeats, setPendingSeats] = useState([]);
   const [orderItems, setOrderItems] = useState([]);
   const [realConcessions, setRealConcessions] = useState([]);
+  const [isLoadingConcessions, setIsLoadingConcessions] = useState(true);
   
   useEffect(() => {
+    setIsLoadingConcessions(true);
     fnbApi.getAllProducts({ size: 100 })
       .then(res => {
         if (res.success && res.data?.content) {
           setRealConcessions(res.data.content);
+        } else if (Array.isArray(res.data)) {
+          // Handle case where backend returns array directly
+          setRealConcessions(res.data);
         }
       })
-      .catch(err => console.error("Failed to load concessions", err));
+      .catch(err => {
+        console.error("Failed to load concessions:", err);
+      })
+      .finally(() => setIsLoadingConcessions(false));
   }, []);
 
-  const activeItems = realConcessions.length > 0 
-    ? realConcessions.filter(i => i.status === 'Available')
-    : concessions.filter(i => i.status === 'active');
+  const activeItems = realConcessions.filter(i => (i.status || '').toLowerCase() === 'active');
   const tabs = ['drink', 'popcorn', 'combo'];
   const [activeTab, setActiveTab] = useState('drink');
   
@@ -88,6 +96,14 @@ function BookingContent() {
       }
       const newQty = existing.quantity + delta;
       if (newQty <= 0) return prev.filter(o => o.item.id !== item.id);
+      if (newQty > 10) {
+        toast({
+          title: 'Giới hạn số lượng',
+          description: 'Bạn chỉ có thể chọn tối đa 10 phần cho mỗi món.',
+          variant: 'destructive'
+        });
+        return prev;
+      }
       return prev.map(o => o.item.id === item.id ? { ...o, quantity: newQty } : o);
     });
   };
@@ -145,6 +161,35 @@ function BookingContent() {
     router(`/payment?${queryParams.toString()}`);
   };
 
+  const handleCancelTransaction = async () => {
+    try {
+      const pendingBookingId = sessionStorage.getItem('pendingBookingId');
+      if (pendingBookingId) {
+        await bookingApi.cancelBooking(pendingBookingId);
+        sessionStorage.removeItem('pendingBookingId');
+      } else if (showtimeId) {
+        // Just release seats
+        await showtimeApi.releaseAllHolds(showtimeId);
+      }
+      
+      toast({
+        title: 'Đã hủy giao dịch',
+        description: 'Các ghế bạn chọn đã được nhả.',
+      });
+      
+      setPendingSeats([]);
+      setOrderItems([]);
+      setConcessionOpen(false);
+      setStep(1);
+    } catch (err) {
+      toast({
+        title: 'Lỗi',
+        description: 'Không thể hủy giao dịch, vui lòng thử lại sau.',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const renderStepper = () => (
     <div className="flex items-center justify-center mb-8 px-4">
       <div className="flex items-center w-full max-w-3xl">
@@ -169,17 +214,19 @@ function BookingContent() {
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => step === 2 ? setStep(1) : router(-1)}>
-          <ArrowLeft className="size-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Đặt vé xem phim</h1>
-          {step === 2 && movie && (
-            <p className="text-muted-foreground">
-              {movie.title} - {time}, {new Date(date).toLocaleDateString('vi-VN')}
-            </p>
-          )}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => step === 2 ? setStep(1) : router(-1)}>
+            <ArrowLeft className="size-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Đặt vé xem phim</h1>
+            {step === 2 && movie && (
+              <p className="text-muted-foreground">
+                {movie.title} - {time}, {new Date(date).toLocaleDateString('vi-VN')}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -190,6 +237,7 @@ function BookingContent() {
           movies={movies} 
           cinemas={cinemas} 
           initialMovieId={movieIdParam} 
+          initialDate={date}
           onNext={handleNextFromStep1} 
         />
       )}
@@ -206,7 +254,7 @@ function BookingContent() {
           showTime={time} 
           pricing={dynamicPricing} 
           onConfirm={handleConfirmSeats} 
-          onCancel={() => setStep(1)} 
+          onCancel={handleCancelTransaction} 
           maxSeats={8} 
         />
       )}
@@ -239,35 +287,58 @@ function BookingContent() {
 
           {/* Items grid */}
           <div className="flex-1 overflow-y-auto px-6 py-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-              {activeItems.filter(i => {
-                const typeMap = { drink: 'Drink', popcorn: 'Snack', combo: 'Combo' };
-                return i.type === typeMap[activeTab] || i.type === activeTab;
-              }).map(item => {
-                const qty = getQty(item.id);
+            {isLoadingConcessions ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : (() => {
+              const filtered = activeItems.filter(i => {
+                const itemType = (i.category || i.type || '').toLowerCase();
+                return itemType === activeTab;
+              });
+              if (filtered.length === 0) {
                 return (
-                  <div key={item.id} className={cn('flex items-center gap-2 p-2 rounded-xl border transition-colors', qty > 0 ? 'border-primary bg-primary/5' : 'border-border bg-secondary/30')}>
-                    <img src={item.imageUrl || item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-xs leading-tight">{item.name}</p>
-                      {item.description && <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>}
-                      <p className="text-xs font-bold text-primary mt-1">{item.price.toLocaleString('vi-VN')}₫</p>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {qty > 0 ? (
-                        <>
-                          <button onClick={() => changeQty(item, -1)} className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center hover:bg-border transition-colors"><Minus className="w-3 h-3" /></button>
-                          <span className="w-4 text-center text-[10px] font-bold">{qty}</span>
-                          <button onClick={() => changeQty(item, 1)} className="w-6 h-6 rounded-full bg-primary flex items-center justify-center hover:bg-primary/80 transition-colors text-primary-foreground"><Plus className="w-3 h-3" /></button>
-                        </>
-                      ) : (
-                        <button onClick={() => changeQty(item, 1)} className="w-6 h-6 rounded-full bg-primary flex items-center justify-center hover:bg-primary/80 transition-colors text-primary-foreground"><Plus className="w-3 h-3" /></button>
-                      )}
-                    </div>
+                  <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+                    <ShoppingCart className="w-10 h-10 mb-3 opacity-30" />
+                    <p className="text-sm">Không có sản phẩm nào</p>
                   </div>
                 );
-              })}
-            </div>
+              }
+              return (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {filtered.map(item => {
+                    const qty = getQty(item.id);
+                    return (
+                      <div key={item.id} className={cn('flex items-center gap-2 p-2 rounded-xl border transition-colors', qty > 0 ? 'border-primary bg-primary/5' : 'border-border bg-secondary/30')}>
+                        {item.imageUrl ? (
+                          <img src={item.imageUrl} alt={item.name} className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                            <ShoppingCart className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-xs leading-tight">{item.name}</p>
+                          {item.description && <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>}
+                          <p className="text-xs font-bold text-primary mt-1">{Number(item.price).toLocaleString('vi-VN')}₫</p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {qty > 0 ? (
+                            <>
+                              <button onClick={() => changeQty(item, -1)} className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center hover:bg-border transition-colors"><Minus className="w-3 h-3" /></button>
+                              <span className="w-4 text-center text-[10px] font-bold">{qty}</span>
+                              <button onClick={() => changeQty(item, 1)} className="w-6 h-6 rounded-full bg-primary flex items-center justify-center hover:bg-primary/80 transition-colors text-primary-foreground"><Plus className="w-3 h-3" /></button>
+                            </>
+                          ) : (
+                            <button onClick={() => changeQty(item, 1)} className="w-6 h-6 rounded-full bg-primary flex items-center justify-center hover:bg-primary/80 transition-colors text-primary-foreground"><Plus className="w-3 h-3" /></button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Order summary */}

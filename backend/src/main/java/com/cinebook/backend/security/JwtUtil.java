@@ -47,6 +47,16 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generateResetPasswordToken(String email) {
+        return Jwts.builder()
+                .subject(email)
+                .claims(Map.of("purpose", "RESET_PASSWORD"))
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 5 * 60 * 1000))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
     public Claims parseToken(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())

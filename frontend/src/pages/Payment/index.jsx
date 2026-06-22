@@ -16,7 +16,7 @@ import { useAuth } from '@/contexts/auth-context';
 import bookingApi from '@/api/bookingApi';
 import promoApi from '@/api/promoApi';
 import paymentApi from '@/api/paymentApi';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 // VNPay logo inline SVG
 const VNPayIcon = () => (
@@ -91,7 +91,6 @@ function PaymentContent() {
   const [promoData, setPromoData] = useState(null);
   const [promoError, setPromoError] = useState('');
   const [processing, setProcessing] = useState(false);
-  const { toast } = useToast();
   const { user } = useAuth();
   
   const discount = (() => {
@@ -121,17 +120,14 @@ function PaymentContent() {
       if (res.success && res.data) {
         setPromoApplied(true);
         setPromoData(res.data);
-        toast({
-          title: 'Áp dụng mã thành công',
-          description: `Đã áp dụng mã ${promoCode}.`
-        });
+        toast.success(`Đã áp dụng mã ${promoCode}.`);
       } else {
         setPromoError('Mã không hợp lệ hoặc không đủ điều kiện.');
         setPromoApplied(false);
         setPromoData(null);
       }
     } catch (err) {
-      setPromoError(err?.response?.data?.error?.message || 'Không thể kiểm tra mã khuyến mãi.');
+      setPromoError(err.error?.message || err.message || 'Không thể kiểm tra mã khuyến mãi.');
       setPromoApplied(false);
       setPromoData(null);
     }
@@ -158,15 +154,12 @@ function PaymentContent() {
       const res = await bookingApi.createBooking(payload);
       
       if (!res.success) {
-        toast({
-          title: 'Lỗi tạo booking',
-          description: res.error?.message || 'Không thể tạo đặt vé',
-          variant: 'destructive'
-        });
+        toast.error(res.error?.message || 'Không thể tạo đặt vé');
         return;
       }
 
       const bookingId = res.data.id || res.data.bookingId;
+      sessionStorage.setItem('pendingBookingId', bookingId);
 
       // Step 2: Nếu chọn VNPay, lấy URL và redirect
       if (method === 'vnpay') {
@@ -176,11 +169,7 @@ function PaymentContent() {
           window.location.href = payRes.data;
           return;
         } else {
-          toast({
-            title: 'Không thể tạo link VNPay',
-            description: payRes.error?.message || 'Lỗi kết nối cổng thanh toán',
-            variant: 'destructive'
-          });
+          toast.error(payRes.error?.message || 'Lỗi kết nối cổng thanh toán');
           return;
         }
       }
@@ -202,11 +191,7 @@ function PaymentContent() {
       router(`/booking/success?${successParams.toString()}`);
 
     } catch (err) {
-      toast({
-        title: 'Lỗi',
-        description: err?.response?.data?.error?.message || 'Có lỗi xảy ra',
-        variant: 'destructive'
-      });
+      toast.error(err.error?.message || err.message || 'Có lỗi xảy ra');
     } finally {
       setProcessing(false);
     }

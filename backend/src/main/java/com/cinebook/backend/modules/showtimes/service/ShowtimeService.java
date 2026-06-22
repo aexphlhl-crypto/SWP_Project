@@ -28,6 +28,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.DayOfWeek;
@@ -78,7 +81,7 @@ public class ShowtimeService {
                 .roomName(s.getRoom().getName())
                 .startTime(s.getStartTime())
                 .endTime(s.getEndTime())
-                .priceOverride(s.getPriceOverride())
+
                 .status(s.getStatus())
                 .totalSeats(s.getRoom().getCapacity())
                 .availableSeats(s.getRoom().getCapacity() - bookedCount)
@@ -98,19 +101,20 @@ public class ShowtimeService {
                 .collect(Collectors.toSet());
 
         List<SeatHold> activeHolds = seatHoldRepository.findActiveHoldsByShowtime(showtimeId, LocalDateTime.now());
-        java.util.Map<Long, Long> heldSeatMap = activeHolds.stream()
-                .collect(Collectors.toMap(h -> h.getSeat().getSeatId(), h -> h.getUser().getUserId()));
-
         return allSeats.stream().map(seat -> {
             boolean isBooked = bookedSeatIds.contains(seat.getSeatId());
-            String status = "Available";
+            String status = isBooked ? "Booked" : "Available";
             Long heldByUserId = null;
-
-            if (isBooked) {
-                status = "Booked";
-            } else if (heldSeatMap.containsKey(seat.getSeatId())) {
-                status = "Held";
-                heldByUserId = heldSeatMap.get(seat.getSeatId());
+            String holdExpiresAt = null;
+            if ("Available".equals(status)) {
+                java.util.Optional<SeatHold> hold = activeHolds.stream()
+                        .filter(h -> h.getSeat().getSeatId().equals(seat.getSeatId()))
+                        .findFirst();
+                if (hold.isPresent()) {
+                    status = "Held";
+                    heldByUserId = hold.get().getUser().getUserId();
+                    holdExpiresAt = hold.get().getExpiresAt().toString();
+                }
             }
 
             return SeatStatusDto.builder()
@@ -121,6 +125,7 @@ public class ShowtimeService {
                     .seatType(seat.getSeatType().name())
                     .status(status)
                     .heldByUserId(heldByUserId)
+                    .holdExpiresAt(holdExpiresAt)
                     .price(calculateTicketPrice(showtime, seat))
                     .build();
         }).collect(Collectors.toList());
@@ -172,11 +177,14 @@ public class ShowtimeService {
         seatHoldRepository.deleteUserHold(showtimeId, seatId, user.getUserId());
     }
 
-    private Integer calculateTicketPrice(Showtime showtime, Seat seat) {
-        if (showtime.getPriceOverride() != null) {
-            return showtime.getPriceOverride();
-        }
+    @Transactional
+    public void releaseAllHoldsForUser(Long showtimeId, String username) {
+        User user = userRepository.findByEmailAndDeletedAtIsNull(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        seatHoldRepository.deleteByShowtimeAndUser(showtimeId, user.getUserId());
+    }
 
+    private Integer calculateTicketPrice(Showtime showtime, Seat seat) {
         BigDecimal basePrice = systemConfigService.getBasePrice();
         
         // Seat Multiplier
@@ -208,6 +216,8 @@ public class ShowtimeService {
 
     @Transactional
     public ShowtimeDto createShowtime(ShowtimeRequest request) {
+        validateCinemaAccess(request.getCinemaId());
+        
         Movie movie = movieRepository.findById(request.getMovieId())
                 .orElseThrow(() -> new RuntimeException("Movie not found"));
         Cinema cinema = cinemaRepository.findById(request.getCinemaId())
@@ -236,7 +246,7 @@ public class ShowtimeService {
                 .room(room)
                 .startTime(startTime)
                 .endTime(endTime)
-                .priceOverride(request.getPriceOverride())
+
                 .build();
 
         return mapToDto(showtimeRepository.save(showtime));
@@ -247,31 +257,57 @@ public class ShowtimeService {
         Showtime showtime = showtimeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Showtime not found"));
 
+        validateCinemaAccess(showtime.getCinema().getCinemaId());
+        
+        // Kiểm tra xem đã có vé nào được đặt cho suất chiếu này chưa
+        int bookedCount = bookingSeatRepository.findBookedSeatsByShowtime(id).size();
+        if (bookedCount > 0) {
+            throw AppException.badRequest("Không thể chỉnh sửa suất chiếu đã có vé bán.");
+        }
+
+        Movie targetMovie = showtime.getMovie();
         if (request.getMovieId() != null) {
-            Movie movie = movieRepository.findById(request.getMovieId())
+            targetMovie = movieRepository.findById(request.getMovieId())
                     .orElseThrow(() -> new RuntimeException("Movie not found"));
-            showtime.setMovie(movie);
+            showtime.setMovie(targetMovie);
         }
         if (request.getCinemaId() != null) {
+            validateCinemaAccess(request.getCinemaId());
             Cinema cinema = cinemaRepository.findById(request.getCinemaId())
                     .orElseThrow(() -> new RuntimeException("Cinema not found"));
             showtime.setCinema(cinema);
         }
+        Room targetRoom = showtime.getRoom();
         if (request.getRoomId() != null) {
-            Room room = roomRepository.findById(request.getRoomId())
+            targetRoom = roomRepository.findById(request.getRoomId())
                     .orElseThrow(() -> new RuntimeException("Room not found"));
-            showtime.setRoom(room);
+            showtime.setRoom(targetRoom);
         }
+        LocalDateTime targetStartTime = showtime.getStartTime();
         if (request.getStartTime() != null) {
-            if (request.getStartTime().isBefore(LocalDateTime.now())) {
+            targetStartTime = request.getStartTime();
+            if (targetStartTime.isBefore(LocalDateTime.now())) {
                 throw AppException.badRequest("Không thể cập nhật suất chiếu sang thời gian trong quá khứ.");
             }
-            showtime.setStartTime(request.getStartTime());
-            showtime.setEndTime(request.getStartTime().plusMinutes(showtime.getMovie().getDurationMin()));
+            showtime.setStartTime(targetStartTime);
         }
-        if (request.getPriceOverride() != null) {
-            showtime.setPriceOverride(request.getPriceOverride());
+
+        // Cập nhật EndTime dựa trên Movie mới/cũ và StartTime mới/cũ
+        LocalDateTime targetEndTime = targetStartTime.plusMinutes(targetMovie.getDurationMin());
+        showtime.setEndTime(targetEndTime);
+        LocalDateTime targetEndTimeWithBuffer = targetEndTime.plusMinutes(15);
+
+        // Kiểm tra conflict trùng lịch
+        boolean conflict = showtimeRepository.existsConflictingShowtimeForUpdate(
+                targetRoom.getRoomId(), 
+                id, 
+                targetStartTime, 
+                targetEndTimeWithBuffer
+        );
+        if (conflict) {
+            throw AppException.badRequest("Lịch chiếu này bị trùng thời gian với một lịch chiếu khác trong cùng phòng.");
         }
+
         if (request.getStatus() != null) {
             showtime.setStatus(request.getStatus());
         }
@@ -283,7 +319,37 @@ public class ShowtimeService {
     public void deleteShowtime(Long id) {
         Showtime showtime = showtimeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Showtime not found"));
+
+        validateCinemaAccess(showtime.getCinema().getCinemaId());
+
+        // Kiểm tra xem đã có vé nào được đặt cho suất chiếu này chưa
+        int bookedCount = bookingSeatRepository.findBookedSeatsByShowtime(id).size();
+        if (bookedCount > 0) {
+            throw AppException.badRequest("Không thể xóa suất chiếu đã có vé bán.");
+        }
+
         showtime.setStatus("Cancelled");
         showtimeRepository.save(showtime);
+    }
+
+    private void validateCinemaAccess(Long cinemaId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            boolean isSystemAdmin = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_SystemAdmin"));
+            if (isSystemAdmin) {
+                return;
+            }
+            boolean isScheduleManager = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ScheduleManager"));
+            if (isScheduleManager) {
+                String email = auth.getName();
+                com.cinebook.backend.modules.users.User user = userRepository.findByEmailAndDeletedAtIsNull(email)
+                        .orElseThrow(() -> AppException.unauthorized("User not found"));
+                if (user.getCinema() == null || !user.getCinema().getCinemaId().equals(cinemaId)) {
+                    throw AppException.forbidden("You do not have permission to manage showtimes for this cinema.");
+                }
+            }
+        }
     }
 }

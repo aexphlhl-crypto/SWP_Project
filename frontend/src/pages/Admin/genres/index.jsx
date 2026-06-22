@@ -50,7 +50,7 @@ export default function AdminGenresPage() {
   }, []);
 
   const filtered = genres.filter(g => g.name.toLowerCase().includes(search.toLowerCase()));
-  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered, 10);
+  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
 
   const openAdd = () => {
     setEditingGenre(null);

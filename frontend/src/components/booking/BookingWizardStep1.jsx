@@ -8,10 +8,10 @@ import { vi } from 'date-fns/locale';
 import { Clock, MapPin, Loader2 } from 'lucide-react';
 import showtimeApi from '@/api/showtimeApi';
 
-export function BookingWizardStep1({ movies, cinemas, initialMovieId, onNext }) {
+export function BookingWizardStep1({ movies, cinemas, initialMovieId, initialDate, onNext }) {
   const [selectedMovieId, setSelectedMovieId] = useState(initialMovieId || '');
   const [selectedCinemaId, setSelectedCinemaId] = useState('all');
-  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedDate, setSelectedDate] = useState(initialDate || format(new Date(), 'yyyy-MM-dd'));
   
   const [showtimes, setShowtimes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +39,17 @@ export function BookingWizardStep1({ movies, cinemas, initialMovieId, onNext }) 
           if (res.success && res.data?.content) {
             const allShowtimes = res.data.content;
             // Filter by movie
-            const movieShowtimes = allShowtimes.filter(s => s.movieId.toString() === selectedMovieId.toString());
+            const movieShowtimes = allShowtimes
+              .filter(s => s.movieId.toString() === selectedMovieId.toString())
+              .map(s => {
+                const [datePart, timePart] = s.startTime.split('T');
+                return {
+                  ...s,
+                  id: s.showtimeId,
+                  date: datePart,
+                  startTime: timePart.substring(0, 5) // "HH:mm"
+                };
+              });
             setShowtimes(movieShowtimes);
           }
         })
@@ -171,18 +181,27 @@ export function BookingWizardStep1({ movies, cinemas, initialMovieId, onNext }) 
                           <div className="flex flex-wrap gap-2">
                             {roomShowtimes.sort((a, b) => a.startTime.localeCompare(b.startTime)).map(showtime => {
                               const isLowSeats = showtime.availableSeats < 20;
+                              
+                              const now = new Date();
+                              const [hours, minutes] = showtime.startTime.split(':');
+                              const [year, month, day] = showtime.date.split('-');
+                              const showtimeDate = new Date(year, month - 1, day, hours, minutes);
+                              const isExpired = showtimeDate < now;
+                              
+                              const isDisabled = showtime.availableSeats === 0 || isExpired;
+
                               return (
                                 <Button 
                                   key={showtime.id} 
                                   variant="outline" 
                                   size="sm" 
-                                  disabled={showtime.availableSeats === 0}
-                                  className={`group relative flex-col h-auto py-1.5 px-3 hover:border-primary hover:bg-primary/10 ${isLowSeats ? 'border-orange-500/50' : ''}`}
+                                  disabled={isDisabled}
+                                  className={`group relative flex-col h-auto py-1.5 px-3 hover:border-primary hover:bg-primary/10 ${isLowSeats && !isDisabled ? 'border-orange-500/50' : ''}`}
                                   onClick={() => handleSelectShowtime(showtime)}
                                 >
-                                  <span className="text-sm font-bold">{showtime.startTime}</span>
+                                  <span className={`text-sm font-bold ${isExpired ? 'line-through text-muted-foreground' : ''}`}>{showtime.startTime}</span>
                                   <span className="text-[10px] text-muted-foreground mt-0.5">
-                                    {showtime.availableSeats === 0 ? <span className="text-destructive">Hết chỗ</span> : `${showtime.availableSeats} chỗ trống`}
+                                    {isExpired ? <span className="text-muted-foreground">Đã chiếu</span> : showtime.availableSeats === 0 ? <span className="text-destructive">Hết chỗ</span> : `${showtime.availableSeats} chỗ trống`}
                                   </span>
                                 </Button>
                               );

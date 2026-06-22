@@ -107,7 +107,7 @@ export default function AdminSeatsPage() {
         setSeats(recalculateSeatLabels(res.data || []));
       }
     } catch (error) {
-      toast.error('Không thể tải sơ đồ ghế: ' + (error.response?.data?.error?.message || error.message));
+      toast.error('Không thể tải sơ đồ ghế: ' + (error.error?.message || error.message || 'Lỗi không xác định'));
     } finally {
       setIsLoading(false);
     }
@@ -182,7 +182,7 @@ export default function AdminSeatsPage() {
         setSeats(recalculateSeatLabels(res.data));
       }
     } catch (error) {
-      toast.error('Lỗi khi lưu sơ đồ: ' + (error.response?.data?.error?.message || error.message));
+      toast.error('Lỗi khi lưu sơ đồ: ' + (error.error?.message || error.message || 'Lỗi không xác định'));
     } finally {
       setIsSaving(false);
     }
