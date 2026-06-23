@@ -26,7 +26,7 @@ const showtimeApi = {
     },
 
     releaseAllHolds: (showtimeId) => {
-        return axiosClient.delete(`/showtimes/${showtimeId}/seats/hold/all`);
+        return axiosClient.delete(`/showtimes/${showtimeId}/holds`);
     },
 
     updateShowtime: (id, data) => {
