@@ -29,6 +29,7 @@ export default function AdminSettingsPage() {
   const [weekendSurcharge, setWeekendSurcharge] = useState(20);
   const [eveningSurcharge, setEveningSurcharge] = useState(10);
   const [eveningSurchargeTime, setEveningSurchargeTime] = useState('17:00');
+  const [eveningSurchargeEndTime, setEveningSurchargeEndTime] = useState('23:59');
 
   const [basePrice, setBasePrice] = useState(75000);
   const [seatVipMultiplier, setSeatVipMultiplier] = useState(1.5);
@@ -38,7 +39,60 @@ export default function AdminSettingsPage() {
 
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    configApi.getAllConfigs().then(res => {
+      if (res.success) {
+        res.data.forEach(config => {
+          if (config.configKey === 'vat_rate') setVatPercent(Number(config.configValue) * 100);
+          if (config.configKey === 'weekend_surcharge_percent') setWeekendSurcharge(Number(config.configValue));
+          if (config.configKey === 'evening_surcharge_percent') setEveningSurcharge(Number(config.configValue));
+          if (config.configKey === 'evening_surcharge_time') setEveningSurchargeTime(config.configValue);
+          if (config.configKey === 'evening_surcharge_end_time') setEveningSurchargeEndTime(config.configValue);
+          if (config.configKey === 'base_price') setBasePrice(Number(config.configValue));
+          if (config.configKey === 'seat_vip_multiplier') setSeatVipMultiplier(Number(config.configValue));
+          if (config.configKey === 'seat_couple_multiplier') setSeatCoupleMultiplier(Number(config.configValue));
+          if (config.configKey === 'seat_hold_minutes') setHoldTime(Number(config.configValue));
+          if (config.configKey === 'max_seats_per_booking') setMaxSeats(Number(config.configValue));
+          if (config.configKey === 'cinema_name') setCinemaName(config.configValue);
+          if (config.configKey === 'hotline') setHotline(config.configValue);
+          if (config.configKey === 'address') setAddress(config.configValue);
+          if (config.configKey === 'description') setDescription(config.configValue);
+          if (config.configKey === 'currency') setCurrency(config.configValue);
+          if (config.configKey === 'language') setLanguage(config.configValue);
+          if (config.configKey === 'email_notif') setEmailNotif(config.configValue === 'true');
+          if (config.configKey === 'maintenance_mode') setMaintenanceMode(config.configValue === 'true');
+        });
+      }
+    }).finally(() => setLoading(false));
+  }, []);
 
+  const handleSave = async () => {
+    try {
+      await Promise.all([
+        configApi.updateConfig('vat_rate', String(vatPercent / 100)),
+        configApi.updateConfig('weekend_surcharge_percent', String(weekendSurcharge)),
+        configApi.updateConfig('evening_surcharge_percent', String(eveningSurcharge)),
+        configApi.updateConfig('evening_surcharge_time', eveningSurchargeTime),
+        configApi.updateConfig('evening_surcharge_end_time', eveningSurchargeEndTime),
+        configApi.updateConfig('base_price', String(basePrice)),
+        configApi.updateConfig('seat_vip_multiplier', String(seatVipMultiplier)),
+        configApi.updateConfig('seat_couple_multiplier', String(seatCoupleMultiplier)),
+        configApi.updateConfig('seat_hold_minutes', String(holdTime)),
+        configApi.updateConfig('max_seats_per_booking', String(maxSeats)),
+        configApi.updateConfig('cinema_name', cinemaName),
+        configApi.updateConfig('hotline', hotline),
+        configApi.updateConfig('address', address),
+        configApi.updateConfig('description', description),
+        configApi.updateConfig('currency', currency),
+        configApi.updateConfig('language', language),
+        configApi.updateConfig('email_notif', String(emailNotif)),
+        configApi.updateConfig('maintenance_mode', String(maintenanceMode))
+      ]);
+      toast.success('Đã lưu thay đổi cài đặt.');
+    } catch (err) {
+      toast.error(err.error?.message || err.message || 'Không thể lưu cài đặt');
+    }
+  };
   return (
     <div className="space-y-6 max-w-3xl">
       {/* Header */}
@@ -168,9 +222,13 @@ export default function AdminSettingsPage() {
               <Input id="evening-surcharge-time" type="time" value={eveningSurchargeTime} onChange={e => setEveningSurchargeTime(e.target.value)} />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="evening-surcharge-end-time">Giờ kết thúc phụ thu tối</Label>
+              <Input id="evening-surcharge-end-time" type="time" value={eveningSurchargeEndTime} onChange={e => setEveningSurchargeEndTime(e.target.value)} />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="evening-surcharge">Phụ thu buổi tối (%)</Label>
               <Input id="evening-surcharge" type="number" value={eveningSurcharge} onChange={e => setEveningSurcharge(e.target.value)} />
-              <p className="text-[10px] text-muted-foreground mt-1">Áp dụng từ {eveningSurchargeTime} trở đi</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Áp dụng từ {eveningSurchargeTime} đến {eveningSurchargeEndTime}</p>
             </div>
           </div>
         </CardContent>
