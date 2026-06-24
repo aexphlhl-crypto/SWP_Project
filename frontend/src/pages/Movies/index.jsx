@@ -7,6 +7,10 @@ export default function MoviesPage() {
   const { movies, genres, cinemas, showtimes } = useData();
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
+  const requestedStatus = searchParams.get('status');
+  const status = ['now_showing', 'coming_soon'].includes(requestedStatus)
+    ? requestedStatus
+    : 'all';
 
   const filteredMovies = useMemo(() => {
     if (!query) return movies;
@@ -35,6 +39,7 @@ export default function MoviesPage() {
         genres={genres}
         cinemas={cinemas}
         showtimes={showtimes}
+        initialStatus={status}
         title={query ? `Kết quả tìm kiếm cho "${query}"` : "Danh sách phim"}
         subtitle={query ? "" : "Khám phá những bộ phim hay nhất đang chiếu và sắp ra mắt"}
       />
