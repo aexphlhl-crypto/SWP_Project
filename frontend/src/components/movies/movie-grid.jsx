@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Film } from 'lucide-react';
 import { MovieCard } from './movie-card';
 import { MovieFilters } from './movie-filters';
@@ -11,12 +11,18 @@ export function MovieGrid({
   genres,
   cinemas,
   showtimes = [],
+  initialStatus = 'all',
   title = 'Danh sách phim',
   subtitle
 }) {
-  const [status, setStatus] = useState('all');
+  const [status, setStatus] = useState(initialStatus);
   const [genre, setGenre] = useState('all');
   const [cinema, setCinema] = useState('all');
+
+  useEffect(() => {
+    setStatus(initialStatus);
+  }, [initialStatus]);
+
   const filteredMovies = useMemo(() => {
     return movies.filter(movie => {
       if (status !== 'all' && movie.status !== status) return false;
