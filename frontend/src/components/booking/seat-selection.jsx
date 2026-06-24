@@ -78,7 +78,7 @@ export function SeatSelection({
     loadSeats();
     setIsLoadingSeats(false);
 
-    interval = setInterval(loadSeats, 5000);
+    interval = setInterval(loadSeats, 2000);
 
     return () => {
       if (interval) clearInterval(interval);
@@ -208,9 +208,15 @@ export function SeatSelection({
       setIsConfirming(false);
     }, 1000);
   }, [selectedSeats, onConfirm, toast]);
-  const handleCancel = useCallback(() => {
+  const handleCancel = useCallback(async () => {
+    // Clear UI immediately for responsiveness
     setSelectedSeats([]);
-    onCancel?.();
+    // Then call the parent's cancel handler (which calls the backend API)
+    try {
+      await onCancel?.();
+    } catch (err) {
+      console.error('Failed to cancel and release seats', err);
+    }
   }, [onCancel]);
   const handleTimerExpire = useCallback(() => {
     toast({

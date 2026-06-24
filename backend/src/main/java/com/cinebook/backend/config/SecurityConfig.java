@@ -64,6 +64,8 @@ public class SecurityConfig {
                 // Allow anyone authenticated to hold/release seats
                 .requestMatchers(HttpMethod.POST, "/api/showtimes/*/seats/*/hold").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/showtimes/*/seats/*/hold").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/showtimes/*/holds").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/showtimes/*/seats/hold/all").authenticated()
 
                 // SystemAdmin & ScheduleManager (Management)
                 .requestMatchers("/api/bookings/admin/**", "/api/admin/users/**").hasAnyRole("SystemAdmin", "ScheduleManager")
