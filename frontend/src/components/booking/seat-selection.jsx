@@ -93,10 +93,11 @@ export function SeatSelection({
       const myHeldSeats = realSeats
         .filter(s => s.status === 'Held' && s.heldByUserId == user.userId)
         .map(s => ({
-          id: s.seatId.toString(),
+          id: s.seatLabel,
           seatId: s.seatId,
           label: s.seatLabel,
-          type: s.seatType.toLowerCase(),
+          number: s.seatLabel,
+          type: s.seatType.toLowerCase() === 'normal' ? 'standard' : s.seatType.toLowerCase(),
           status: 'selected',
           price: s.price,
           holdExpiresAt: s.holdExpiresAt
@@ -122,10 +123,11 @@ export function SeatSelection({
     realSeats.forEach(s => {
       if (!grouped[s.rowLabel]) grouped[s.rowLabel] = [];
       grouped[s.rowLabel].push({
-        id: s.seatId.toString(),
+        id: s.seatLabel,
         seatId: s.seatId, // Keep numerical ID for API calls
         label: s.seatLabel,
-        type: s.seatType.toLowerCase(),
+        number: s.seatLabel,
+        type: s.seatType.toLowerCase() === 'normal' ? 'standard' : s.seatType.toLowerCase(),
         status: s.status === 'Booked' ? 'booked' : (s.status === 'Held' ? (s.heldByUserId == user?.userId ? 'available' : 'held') : 'available'),
         price: s.price
       });
