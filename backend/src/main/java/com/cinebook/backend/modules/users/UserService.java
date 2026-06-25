@@ -2,6 +2,7 @@ package com.cinebook.backend.modules.users;
 
 import com.cinebook.backend.common.enums.UserStatus;
 import com.cinebook.backend.common.exception.AppException;
+import com.cinebook.backend.modules.auth.EmailService;
 import com.cinebook.backend.modules.bookings.entity.BookingStatus;
 import com.cinebook.backend.modules.bookings.repository.BookingRepository;
 import com.cinebook.backend.modules.users.dto.UserAdminDto;
@@ -10,6 +11,7 @@ import com.cinebook.backend.common.enums.UserRole;
 import com.cinebook.backend.modules.cinemas.repository.CinemaRepository;
 import com.cinebook.backend.modules.cinemas.entity.Cinema;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,7 @@ public class UserService {
     private final BookingRepository bookingRepository;
     private final PasswordEncoder passwordEncoder;
     private final CinemaRepository cinemaRepository;
+    private final EmailService emailService;
 
     public Page<UserAdminDto> getUsersByRole(UserRole role, Pageable pageable) {
         Page<User> users = userRepository.findByRoleAndDeletedAtIsNull(role, pageable);
@@ -123,25 +126,29 @@ public class UserService {
         if (userRepository.existsByEmailAndDeletedAtIsNull(dto.getEmail())) {
             throw AppException.badRequest("Email already exists");
         }
-        
+
         if (dto.getCinemaId() == null) {
             throw AppException.badRequest("Cinema ID is required");
         }
-        
+
         Cinema cinema = cinemaRepository.findById(dto.getCinemaId())
                 .orElseThrow(() -> AppException.badRequest("Cinema not found"));
-        
+
+        String tempPassword = generateTempPassword();
+
         User manager = new User();
         manager.setFullName(dto.getFullName());
         manager.setEmail(dto.getEmail());
-        manager.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+        manager.setPasswordHash(passwordEncoder.encode(tempPassword));
         manager.setPhone(dto.getPhone());
         manager.setRole(UserRole.ScheduleManager);
         manager.setStatus(UserStatus.Active);
         manager.setCinema(cinema);
-        
+
         userRepository.save(manager);
-        
+
+        emailService.sendManagerCredentials(dto.getEmail(), dto.getFullName(), tempPassword);
+
         return UserAdminDto.builder()
                 .userId(manager.getUserId())
                 .fullName(manager.getFullName())
@@ -155,6 +162,18 @@ public class UserService {
                 .cinemaId(manager.getCinema().getCinemaId())
                 .cinemaName(manager.getCinema().getName())
                 .build();
+    }
+
+    private String generateTempPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        sb.append(chars.charAt(random.nextInt(26)));                   // uppercase
+        sb.append(chars.charAt(26 + random.nextInt(26)));              // lowercase
+        sb.append(chars.charAt(52 + random.nextInt(10)));              // digit
+        sb.append(chars.charAt(62 + random.nextInt(4)));               // special
+        for (int i = 4; i < 12; i++) sb.append(chars.charAt(random.nextInt(chars.length())));
+        return sb.toString();
     }
 
     public void deleteManager(Long id) {
