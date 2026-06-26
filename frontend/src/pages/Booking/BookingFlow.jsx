@@ -108,10 +108,10 @@ function BookingContent() {
   const seatVipMultiplier = settings?.seatVipMultiplier ?? 1.5;
   const seatCoupleMultiplier = settings?.seatCoupleMultiplier ?? 2.0;
 
-  const dynamicPricing = {
-    standard: basePrice * surchargeMultiplier,
-    vip: basePrice * seatVipMultiplier * surchargeMultiplier,
-    couple: basePrice * seatCoupleMultiplier * surchargeMultiplier
+    const dynamicPricing = {
+    standard: basePrice * dayMultiplier * timeMultiplier,
+    vip: basePrice * seatVipMultiplier * dayMultiplier * timeMultiplier,
+    couple: basePrice * seatCoupleMultiplier * dayMultiplier * timeMultiplier
   };
 
   const getQty = itemId => orderItems.find(o => o.item.id === itemId)?.quantity ?? 0;
