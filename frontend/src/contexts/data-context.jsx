@@ -103,7 +103,7 @@ export function DataProvider({ children }) {
             date: s.startTime.split('T')[0],
             startTime: s.startTime.split('T')[1].substring(0, 5),
             endTime: s.endTime.split('T')[1].substring(0, 5),
-            price: 85000, // default if null
+            price: s.price || 85000,
             type: '2D', // assuming 2D for now
             availableSeats: s.totalSeats
           }));
@@ -136,6 +136,12 @@ export function DataProvider({ children }) {
               if (c.configKey === 'vat_rate') newSettings.vatPercent = parseFloat(c.configValue) * 100;
               if (c.configKey === 'weekend_surcharge_percent') newSettings.weekendSurcharge = parseFloat(c.configValue);
               if (c.configKey === 'evening_surcharge_percent') newSettings.eveningSurcharge = parseFloat(c.configValue);
+              if (c.configKey === 'evening_surcharge_time') newSettings.eveningSurchargeTime = c.configValue;
+              if (c.configKey === 'base_price') newSettings.basePrice = parseFloat(c.configValue);
+              if (c.configKey === 'seat_vip_multiplier') newSettings.seatVipMultiplier = parseFloat(c.configValue);
+              if (c.configKey === 'seat_couple_multiplier') newSettings.seatCoupleMultiplier = parseFloat(c.configValue);
+              if (c.configKey === 'seat_hold_minutes') newSettings.holdTime = parseInt(c.configValue, 10);
+              if (c.configKey === 'max_seats_per_booking') newSettings.maxSeats = parseInt(c.configValue, 10);
             });
             return newSettings;
           });
