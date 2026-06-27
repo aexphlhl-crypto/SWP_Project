@@ -51,6 +51,11 @@ public class SystemConfigService {
         return val != null ? val : "17:00";
     }
 
+    public String getEveningSurchargeEndTime() {
+        String val = getConfigValue("evening_surcharge_end_time");
+        return val != null ? val : "23:59";
+    }
+
     public BigDecimal getEveningSurchargePercent() {
         String val = getConfigValue("evening_surcharge_percent");
         return val != null ? new BigDecimal(val) : BigDecimal.valueOf(10);

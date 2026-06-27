@@ -1,5 +1,6 @@
 package com.cinebook.backend.modules.bookings.service;
 
+import com.cinebook.backend.common.exception.AppException;
 import com.cinebook.backend.modules.bookings.entity.Booking;
 import com.cinebook.backend.modules.bookings.entity.BookingSeat;
 import com.cinebook.backend.modules.bookings.entity.BookingStatus;
@@ -20,6 +21,7 @@ import com.cinebook.backend.modules.fnb.entity.FnBProduct;
 import com.cinebook.backend.modules.fnb.repository.FnBProductRepository;
 import com.cinebook.backend.modules.bookings.dto.FnBItemRequest;
 import com.cinebook.backend.modules.bookings.dto.FnBItemDto;
+import com.cinebook.backend.modules.bookings.dto.BookingCalculationResponse;
 import com.cinebook.backend.modules.promos.repository.PromoCodeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -49,37 +51,19 @@ public class BookingService {
     private final PromoCodeRepository promoCodeRepository;
     private final com.cinebook.backend.modules.promos.service.PromoService promoService;
 
-    @Transactional
-    public Booking createBooking(Long customerId, Long showtimeId, List<Long> seatIds, List<FnBItemRequest> fnbItems, String promoCode) {
-        User customer = userRepository.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
-
+    @Transactional(readOnly = true)
+    public BookingCalculationResponse calculateBooking(Long customerId, Long showtimeId, List<Long> seatIds, List<FnBItemRequest> fnbItems, String promoCode) {
         Showtime showtime = showtimeRepository.findById(showtimeId)
-                .orElseThrow(() -> new RuntimeException("Showtime not found"));
-                
-        Room room = showtime.getRoom();
+                .orElseThrow(() -> AppException.notFound("Showtime not found."));
 
         BigDecimal vipMultiplier = systemConfigService.getSeatVipMultiplier();
         BigDecimal coupleMultiplier = systemConfigService.getSeatCoupleMultiplier();
         BigDecimal vatRate = systemConfigService.getVatRate();
-        int holdMinutes = systemConfigService.getSeatHoldMinutes();
 
-        int totalBeforeTax = 0;
-        List<BookingSeat> bookingSeats = new ArrayList<>();
-
-        Booking booking = new Booking();
-        booking.setCustomer(customer);
-        booking.setShowtime(showtime);
-        booking.setStatus(BookingStatus.Pending);
-        booking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(holdMinutes));
-        booking.setVatRateSnapshot(vatRate);
-
-        // Save early to get ID for booking seats
-        booking = bookingRepository.save(booking);
-
+        int ticketTotal = 0;
         for (Long seatId : seatIds) {
             Seat seat = seatRepository.findById(seatId)
-                    .orElseThrow(() -> new RuntimeException("Seat not found: " + seatId));
+                    .orElseThrow(() -> AppException.notFound("Seat not found: " + seatId));
             
             int seatPrice;
             BigDecimal basePrice = systemConfigService.getBasePrice();
@@ -107,7 +91,153 @@ public class BookingService {
                 String eveningTimeStr = systemConfigService.getEveningSurchargeTime();
                 if (eveningTimeStr != null && eveningTimeStr.contains(":")) {
                     java.time.LocalTime eveningTime = java.time.LocalTime.parse(eveningTimeStr);
-                    if (!showtime.getStartTime().toLocalTime().isBefore(eveningTime)) {
+                    String eveningEndTimeStr = systemConfigService.getEveningSurchargeEndTime();
+                    java.time.LocalTime eveningEndTime = java.time.LocalTime.parse(eveningEndTimeStr != null ? eveningEndTimeStr : "23:59");
+                    
+                    java.time.LocalTime showtimeTime = showtime.getStartTime().toLocalTime();
+                    boolean isSurchargeActive = false;
+                    if (eveningEndTime.isAfter(eveningTime)) {
+                        isSurchargeActive = !showtimeTime.isBefore(eveningTime) && !showtimeTime.isAfter(eveningEndTime);
+                    } else {
+                        isSurchargeActive = !showtimeTime.isBefore(eveningTime) || !showtimeTime.isAfter(eveningEndTime);
+                    }
+
+                    if (isSurchargeActive) {
+                        BigDecimal eveningSurcharge = systemConfigService.getEveningSurchargePercent()
+                                .divide(BigDecimal.valueOf(100), 4, java.math.RoundingMode.HALF_UP);
+                        timeMultiplier = BigDecimal.ONE.add(eveningSurcharge);
+                    }
+                }
+            } catch (Exception e) { /* use default timeMultiplier = 1 */ }
+            
+            seatPrice = basePrice
+                .multiply(seatMultiplier)
+                .multiply(dayMultiplier)
+                .multiply(timeMultiplier)
+                .intValue();
+
+            ticketTotal += seatPrice;
+        }
+
+        int fnbTotal = 0;
+        if (fnbItems != null && !fnbItems.isEmpty()) {
+            for (FnBItemRequest fnbReq : fnbItems) {
+                FnBProduct product = fnbProductRepository.findById(fnbReq.getProductId())
+                        .orElseThrow(() -> AppException.notFound("F&B product not found: " + fnbReq.getProductId()));
+                fnbTotal += (product.getPrice() * fnbReq.getQuantity());
+            }
+        }
+
+        int subTotal = ticketTotal + fnbTotal;
+        int discountAmount = 0;
+        String promoDiscountType = null;
+        BigDecimal promoDiscountValue = null;
+
+        if (promoCode != null && !promoCode.trim().isEmpty()) {
+            com.cinebook.backend.modules.promos.entity.PromoCode promo = promoService.validatePromo(promoCode, customerId, subTotal);
+            promoDiscountType = promo.getDiscountType().name();
+            promoDiscountValue = promo.getDiscountValue();
+
+            if (promo.getDiscountType() == com.cinebook.backend.modules.promos.entity.PromoDiscountType.Percentage) {
+                discountAmount = subTotal * promo.getDiscountValue().intValue() / 100;
+                if (promo.getMaxDiscountVnd() != null && discountAmount > promo.getMaxDiscountVnd()) {
+                    discountAmount = promo.getMaxDiscountVnd();
+                }
+            } else {
+                discountAmount = promo.getDiscountValue().intValue();
+            }
+        }
+
+        int totalBeforeTax = subTotal - discountAmount;
+        if (totalBeforeTax < 0) {
+            totalBeforeTax = 0;
+        }
+        int vatAmount = BigDecimal.valueOf(totalBeforeTax).multiply(vatRate).setScale(0, RoundingMode.HALF_UP).intValue();
+        int totalAmount = totalBeforeTax + vatAmount;
+
+        return BookingCalculationResponse.builder()
+                .ticketTotal(ticketTotal)
+                .fnbTotal(fnbTotal)
+                .subTotal(subTotal)
+                .discountAmount(discountAmount)
+                .vatRate(vatRate)
+                .vatAmount(vatAmount)
+                .totalAmount(totalAmount)
+                .promoDiscountType(promoDiscountType)
+                .promoDiscountValue(promoDiscountValue)
+                .build();
+    }
+
+    @Transactional
+    public Booking createBooking(Long customerId, Long showtimeId, List<Long> seatIds, List<FnBItemRequest> fnbItems, String promoCode) {
+        User customer = userRepository.findById(customerId)
+                .orElseThrow(() -> AppException.notFound("Customer not found."));
+
+        Showtime showtime = showtimeRepository.findById(showtimeId)
+                .orElseThrow(() -> AppException.notFound("Showtime not found."));
+                
+        Room room = showtime.getRoom();
+
+        BigDecimal vipMultiplier = systemConfigService.getSeatVipMultiplier();
+        BigDecimal coupleMultiplier = systemConfigService.getSeatCoupleMultiplier();
+        BigDecimal vatRate = systemConfigService.getVatRate();
+        int holdMinutes = systemConfigService.getSeatHoldMinutes();
+
+        int totalBeforeTax = 0;
+        List<BookingSeat> bookingSeats = new ArrayList<>();
+
+        Booking booking = new Booking();
+        booking.setCustomer(customer);
+        booking.setShowtime(showtime);
+        booking.setStatus(BookingStatus.Pending);
+        booking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(holdMinutes));
+        booking.setVatRateSnapshot(vatRate);
+
+        // Save early to get ID for booking seats
+        booking = bookingRepository.save(booking);
+
+        for (Long seatId : seatIds) {
+            Seat seat = seatRepository.findById(seatId)
+                    .orElseThrow(() -> AppException.notFound("Seat not found: " + seatId));
+            
+            int seatPrice;
+            BigDecimal basePrice = systemConfigService.getBasePrice();
+            
+            // Seat type multiplier
+            BigDecimal seatMultiplier = BigDecimal.ONE;
+            if (seat.getSeatType() == SeatType.VIP) {
+                seatMultiplier = vipMultiplier;
+            } else if (seat.getSeatType() == SeatType.Couple) {
+                seatMultiplier = coupleMultiplier;
+            }
+
+            // Day-of-week multiplier (weekend surcharge)
+            BigDecimal dayMultiplier = BigDecimal.ONE;
+            java.time.DayOfWeek day = showtime.getStartTime().getDayOfWeek();
+            if (day == java.time.DayOfWeek.SATURDAY || day == java.time.DayOfWeek.SUNDAY) {
+                BigDecimal weekendSurcharge = systemConfigService.getWeekendSurchargePercent()
+                        .divide(BigDecimal.valueOf(100), 4, java.math.RoundingMode.HALF_UP);
+                dayMultiplier = BigDecimal.ONE.add(weekendSurcharge);
+            }
+            
+            // Time-of-day multiplier (evening surcharge)
+            BigDecimal timeMultiplier = BigDecimal.ONE;
+            try {
+                String eveningTimeStr = systemConfigService.getEveningSurchargeTime();
+                if (eveningTimeStr != null && eveningTimeStr.contains(":")) {
+                    java.time.LocalTime eveningTime = java.time.LocalTime.parse(eveningTimeStr);
+                    String eveningEndTimeStr = systemConfigService.getEveningSurchargeEndTime();
+                    java.time.LocalTime eveningEndTime = java.time.LocalTime.parse(eveningEndTimeStr != null ? eveningEndTimeStr : "23:59");
+                    
+                    java.time.LocalTime showtimeTime = showtime.getStartTime().toLocalTime();
+                    boolean isSurchargeActive = false;
+                    if (eveningEndTime.isAfter(eveningTime)) {
+                        isSurchargeActive = !showtimeTime.isBefore(eveningTime) && !showtimeTime.isAfter(eveningEndTime);
+                    } else {
+                        isSurchargeActive = !showtimeTime.isBefore(eveningTime) || !showtimeTime.isAfter(eveningEndTime);
+                    }
+
+                    if (isSurchargeActive) {
                         BigDecimal eveningSurcharge = systemConfigService.getEveningSurchargePercent()
                                 .divide(BigDecimal.valueOf(100), 4, java.math.RoundingMode.HALF_UP);
                         timeMultiplier = BigDecimal.ONE.add(eveningSurcharge);
@@ -149,7 +279,7 @@ public class BookingService {
             List<FnBOrderItem> fnbOrderItems = new ArrayList<>();
             for (FnBItemRequest fnbReq : fnbItems) {
                 FnBProduct product = fnbProductRepository.findById(fnbReq.getProductId())
-                        .orElseThrow(() -> new RuntimeException("Product not found: " + fnbReq.getProductId()));
+                        .orElseThrow(() -> AppException.notFound("F&B product not found: " + fnbReq.getProductId()));
                 
                 FnBOrderItem fnbOrderItem = new FnBOrderItem();
                 fnbOrderItem.setBookingId(savedBooking.getId());
@@ -198,9 +328,10 @@ public class BookingService {
                 savedBooking.setVatAmount(newVatAmount);
                 savedBooking.setTotalAfterTax(newTotalAfterTax);
                 savedBooking = bookingRepository.save(savedBooking);
+            } catch (AppException e) {
+                throw e;
             } catch (Exception e) {
-                // If promo validation fails, we throw an exception to abort the booking
-                throw new RuntimeException("Invalid promo code: " + e.getMessage());
+                throw AppException.badRequest("Invalid promo code: " + e.getMessage());
             }
         }
 
@@ -210,14 +341,14 @@ public class BookingService {
     @Transactional
     public void cancelMyBooking(Long bookingId, String email) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
-        
+                .orElseThrow(() -> AppException.notFound("Booking not found."));
+
         if (!booking.getCustomer().getEmail().equals(email)) {
-            throw new RuntimeException("Not authorized to cancel this booking");
+            throw AppException.forbidden("You are not authorized to cancel this booking.");
         }
-        
+
         if (booking.getStatus() != BookingStatus.Pending) {
-            throw new RuntimeException("Only pending bookings can be cancelled");
+            throw AppException.badRequest("Only pending bookings can be cancelled.");
         }
         
         booking.setStatus(BookingStatus.Cancelled);
@@ -248,7 +379,7 @@ public class BookingService {
             if (isScheduleManager) {
                 String email = auth.getName();
                 com.cinebook.backend.modules.users.User user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                        .orElseThrow(() -> new RuntimeException("User not found"));
+                        .orElseThrow(() -> AppException.notFound("User not found."));
                 if (user.getCinema() != null) {
                     bookings = bookingRepository.findByShowtimeCinemaCinemaId(user.getCinema().getCinemaId(), pageable);
                 } else {
@@ -292,7 +423,7 @@ public class BookingService {
 
     public com.cinebook.backend.modules.bookings.dto.BookingAdminDto updateBookingStatus(Long id, BookingStatus status) {
         Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+                .orElseThrow(() -> AppException.notFound("Booking not found."));
         booking.setStatus(status);
         booking = bookingRepository.save(booking);
 
@@ -325,7 +456,7 @@ public class BookingService {
 
     public List<com.cinebook.backend.modules.bookings.dto.MyBookingDto> getMyBookings(String email) {
         User customer = userRepository.findByEmailAndDeletedAtIsNull(email)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> AppException.notFound("Customer not found."));
         List<Booking> bookings = bookingRepository.findByCustomer_UserIdAndStatusInOrderByCreatedAtDesc(
                 customer.getUserId(),
                 java.util.List.of(BookingStatus.Confirmed, BookingStatus.CheckedIn, BookingStatus.Cancelled)
@@ -392,7 +523,7 @@ public class BookingService {
     }
     public com.cinebook.backend.modules.bookings.dto.MyBookingDto getBookingById(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
+                .orElseThrow(() -> AppException.notFound("Booking not found: " + bookingId));
 
         List<BookingSeat> seats = bookingSeatRepository.findByBooking_Id(booking.getId());
         String seatNames = seats.stream()
@@ -463,7 +594,7 @@ public class BookingService {
             if (isScheduleManager) {
                 String email = auth.getName();
                 com.cinebook.backend.modules.users.User user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                        .orElseThrow(() -> new RuntimeException("User not found"));
+                        .orElseThrow(() -> AppException.notFound("User not found."));
                 if (user.getCinema() != null) {
                     bookings = bookingRepository.findByShowtimeCinemaCinemaIdOrderByCreatedAtDesc(user.getCinema().getCinemaId());
                 } else {
