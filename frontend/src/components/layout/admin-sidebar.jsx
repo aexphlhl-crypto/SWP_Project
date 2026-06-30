@@ -31,6 +31,10 @@ const sidebarGroups = [{
     icon: Tags,
     href: '/admin/genres'
   }, {
+    label: 'Diễn viên',
+    icon: Users,
+    href: '/admin/actors'
+  }, {
     label: 'Phim',
     icon: Film,
     href: '/admin/movies'
