@@ -1,5 +1,6 @@
 package com.cinebook.backend.modules.reviews.service;
 
+import com.cinebook.backend.common.exception.AppException;
 import com.cinebook.backend.modules.reviews.dto.ReviewDto;
 import com.cinebook.backend.modules.reviews.entity.Review;
 import com.cinebook.backend.modules.reviews.entity.ReviewStatus;
@@ -21,19 +22,18 @@ public class ReviewService {
 
     public Review createReview(Long customerId, Long movieId, Long bookingId, Integer rating, String comment) {
         com.cinebook.backend.modules.bookings.entity.Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy vé."));
-        
+                .orElseThrow(() -> AppException.notFound("Booking not found."));
+
         if (!booking.getCustomer().getUserId().equals(customerId)) {
-            throw new RuntimeException("Bạn không có quyền đánh giá vé này.");
+            throw AppException.forbidden("You are not authorized to review this booking.");
         }
 
         if (booking.getShowtime().getEndTime().isAfter(java.time.LocalDateTime.now())) {
-            throw new RuntimeException("Suất chiếu chưa kết thúc, bạn chưa thể đánh giá.");
+            throw AppException.badRequest("The showtime has not ended yet. You can review after it finishes.");
         }
 
-        // Kiểm tra xem đã đánh giá chưa, nếu rồi thì cập nhật
         java.util.Optional<Review> existingReview = repository.findByBookingIdAndCustomerId(bookingId, customerId);
-        
+
         Review review;
         if (existingReview.isPresent()) {
             review = existingReview.get();
@@ -61,7 +61,7 @@ public class ReviewService {
                 .collect(Collectors.toList());
         
         com.cinebook.backend.modules.movies.entity.Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new RuntimeException("Movie not found"));
+                .orElseThrow(() -> AppException.notFound("Movie not found."));
         
         if (reviews.isEmpty()) {
             movie.setAvgRating(java.math.BigDecimal.ZERO);
@@ -90,12 +90,12 @@ public class ReviewService {
 
     public ReviewDto getReviewByBookingId(Long bookingId) {
         Review review = repository.findByBookingId(bookingId)
-                .orElseThrow(() -> new RuntimeException("Chưa có đánh giá cho vé này."));
+                .orElseThrow(() -> AppException.notFound("No review found for this booking."));
         return mapToDto(review);
     }
 
     public ReviewDto updateReviewStatus(Long id, ReviewStatus status) {
-        Review review = repository.findById(id).orElseThrow(() -> new RuntimeException("Review not found"));
+        Review review = repository.findById(id).orElseThrow(() -> AppException.notFound("Review not found."));
         review.setStatus(status);
         Review savedReview = repository.save(review);
         updateMovieRating(savedReview.getMovieId());
@@ -105,7 +105,7 @@ public class ReviewService {
     private ReviewDto mapToDto(Review r) {
         String customerName = userRepository.findById(r.getCustomerId())
                 .map(u -> u.getFullName())
-                .orElse("Khách hàng");
+                .orElse("Unknown");
         return ReviewDto.builder()
                 .id(r.getId())
                 .customerId(r.getCustomerId())

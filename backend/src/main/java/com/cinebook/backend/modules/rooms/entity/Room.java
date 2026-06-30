@@ -6,6 +6,7 @@ import com.cinebook.backend.modules.cinemas.entity.Cinema;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "Rooms")
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
