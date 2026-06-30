@@ -109,13 +109,7 @@ export default function HomePage() {
           <div className="container mx-auto px-4 max-w-[1400px]">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">Phim Đang Chiếu</h2>
-              <Link
-                to="/movies?status=now_showing"
-                className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                Xem tất cả
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              
             </div>
 
             <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide snap-x snap-mandatory -mx-4 px-4">
@@ -139,13 +133,7 @@ export default function HomePage() {
                 <h2 className="text-2xl font-bold">Phim Sắp Chiếu</h2>
                 <p className="text-sm text-muted-foreground mt-1">Những bom tấn sắp ra mắt</p>
               </div>
-              <Link
-                to="/movies?status=coming_soon"
-                className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                Xem tất cả
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
