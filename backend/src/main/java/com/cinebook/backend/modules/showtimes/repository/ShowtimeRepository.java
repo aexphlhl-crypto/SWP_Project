@@ -15,6 +15,7 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
     boolean existsConflictingShowtime(@Param("roomId") Long roomId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 
     @Query("SELECT s FROM Showtime s WHERE " +
+           "s.status = 'Scheduled' AND " +
            "(:movieId IS NULL OR s.movie.movieId = :movieId) AND " +
            "(:cinemaId IS NULL OR s.cinema.cinemaId = :cinemaId) AND " +
            "(:startDate IS NULL OR s.startTime >= :startDate) AND " +
@@ -25,4 +26,19 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
             @Param("startDate") LocalDateTime startDate, 
             @Param("endDate") LocalDateTime endDate, 
             org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT COUNT(s) > 0 FROM Showtime s WHERE s.room.roomId = :roomId AND s.showtimeId != :excludeShowtimeId AND s.status = 'Scheduled' AND (s.startTime < :endTime AND s.endTime > :startTime)")
+    boolean existsConflictingShowtimeForUpdate(@Param("roomId") Long roomId, @Param("excludeShowtimeId") Long excludeShowtimeId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+
+    boolean existsByMovieMovieIdAndStatusAndStartTimeAfter(Long movieId, String status, LocalDateTime time);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("DELETE FROM Showtime s WHERE s.cinema.cinemaId = :cinemaId")
+    void deleteByCinemaId(@Param("cinemaId") Long cinemaId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("DELETE FROM Showtime s WHERE s.room.roomId = :roomId")
+    void deleteByRoomId(@Param("roomId") Long roomId);
 }
