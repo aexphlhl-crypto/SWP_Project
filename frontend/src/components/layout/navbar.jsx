@@ -78,10 +78,9 @@ export function Navbar() {
                 key={item.href}
                 to={item.href}
                 className={({ isActive }) =>
-                  `px-3.5 py-2 text-sm font-semibold transition-colors rounded-md ${
-                    isActive
-                      ? 'text-primary bg-primary/10'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  `px-3.5 py-2 text-sm font-semibold transition-colors rounded-md ${isActive
+                    ? 'text-primary bg-primary/10'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   }`
                 }
               >
@@ -249,10 +248,9 @@ export function Navbar() {
                   key={item.href}
                   to={item.href}
                   className={({ isActive }) =>
-                    `px-3 py-2.5 text-sm font-medium rounded-md transition-colors ${
-                      isActive
-                        ? 'text-foreground bg-muted'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    `px-3 py-2.5 text-sm font-medium rounded-md transition-colors ${isActive
+                      ? 'text-foreground bg-muted'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                     }`
                   }
                   onClick={() => setIsMobileMenuOpen(false)}
