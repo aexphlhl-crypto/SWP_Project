@@ -29,4 +29,16 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
 
     @Query("SELECT COUNT(s) > 0 FROM Showtime s WHERE s.room.roomId = :roomId AND s.showtimeId != :excludeShowtimeId AND s.status = 'Scheduled' AND (s.startTime < :endTime AND s.endTime > :startTime)")
     boolean existsConflictingShowtimeForUpdate(@Param("roomId") Long roomId, @Param("excludeShowtimeId") Long excludeShowtimeId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+
+    boolean existsByMovieMovieIdAndStatusAndStartTimeAfter(Long movieId, String status, LocalDateTime time);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("DELETE FROM Showtime s WHERE s.cinema.cinemaId = :cinemaId")
+    void deleteByCinemaId(@Param("cinemaId") Long cinemaId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("DELETE FROM Showtime s WHERE s.room.roomId = :roomId")
+    void deleteByRoomId(@Param("roomId") Long roomId);
 }
