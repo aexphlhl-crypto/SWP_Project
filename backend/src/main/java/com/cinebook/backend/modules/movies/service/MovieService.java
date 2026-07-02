@@ -3,8 +3,12 @@ package com.cinebook.backend.modules.movies.service;
 import com.cinebook.backend.modules.movies.dto.MovieRequest;
 import com.cinebook.backend.modules.movies.entity.Movie;
 import com.cinebook.backend.modules.movies.entity.Genre;
+import com.cinebook.backend.modules.movies.entity.Actor;
 import com.cinebook.backend.modules.movies.repository.MovieRepository;
 import com.cinebook.backend.modules.movies.repository.GenreRepository;
+import com.cinebook.backend.modules.movies.repository.ActorRepository;
+import com.cinebook.backend.modules.showtimes.repository.ShowtimeRepository;
+import com.cinebook.backend.common.exception.AppException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +24,8 @@ import java.util.Set;
 public class MovieService {
     private final MovieRepository movieRepository;
     private final GenreRepository genreRepository;
+    private final ActorRepository actorRepository;
+    private final ShowtimeRepository showtimeRepository;
 
     public Page<Movie> getAllMovies(String status, String search, Pageable pageable) {
         if (status != null && !status.isEmpty() && search != null && !search.isEmpty()) {
@@ -53,12 +59,17 @@ public class MovieService {
                 .avgRating(java.math.BigDecimal.ZERO)
                 .reviewCount(0)
                 .build();
-                
+
         if (request.getGenreIds() != null && !request.getGenreIds().isEmpty()) {
             List<Genre> genres = genreRepository.findAllById(request.getGenreIds());
             movie.setGenres(new HashSet<>(genres));
         }
-        
+
+        if (request.getActorIds() != null && !request.getActorIds().isEmpty()) {
+            List<Actor> actors = actorRepository.findAllById(request.getActorIds());
+            movie.setActors(new HashSet<>(actors));
+        }
+
         return movieRepository.save(movie);
     }
 
@@ -75,23 +86,45 @@ public class MovieService {
         movie.setCastList(request.getCastList());
         movie.setPosterUrl(request.getPosterUrl());
         movie.setTrailerUrl(request.getTrailerUrl());
-        if (request.getStatus() != null) {
-            movie.setStatus(request.getStatus());
-        }
-        
         if (request.getGenreIds() != null) {
             List<Genre> genres = genreRepository.findAllById(request.getGenreIds());
             movie.setGenres(new HashSet<>(genres));
         } else {
             movie.setGenres(new HashSet<>());
         }
-        
+
+        if (request.getStatus() != null && (request.getStatus().equalsIgnoreCase("Hidden")
+                || request.getStatus().equalsIgnoreCase("Removed"))) {
+            boolean hasFutureShowtimes = showtimeRepository.existsByMovieMovieIdAndStatusAndStartTimeAfter(
+                    id, "Scheduled", java.time.LocalDateTime.now());
+            if (hasFutureShowtimes) {
+                throw AppException
+                        .badRequest("Không thể ẩn phim vì phim hiện đang có lịch chiếu hoạt động trong tương lai.");
+            }
+            movie.setStatus(request.getStatus());
+        } else if (request.getStatus() != null) {
+            movie.setStatus(request.getStatus());
+        }
+
+        if (request.getActorIds() != null) {
+            List<Actor> actors = actorRepository.findAllById(request.getActorIds());
+            movie.setActors(new HashSet<>(actors));
+        } else {
+            movie.setActors(new HashSet<>());
+        }
+
         return movieRepository.save(movie);
     }
 
     @Transactional
     public void deleteMovie(Long id) {
         Movie movie = getMovieById(id);
+        boolean hasFutureShowtimes = showtimeRepository.existsByMovieMovieIdAndStatusAndStartTimeAfter(
+                id, "Scheduled", java.time.LocalDateTime.now());
+        if (hasFutureShowtimes) {
+            throw AppException
+                    .badRequest("Không thể xóa phim vì phim hiện đang có lịch chiếu hoạt động trong tương lai.");
+        }
         movie.setDeletedAt(java.time.LocalDateTime.now());
         movie.setStatus("Hidden");
         movieRepository.save(movie);
