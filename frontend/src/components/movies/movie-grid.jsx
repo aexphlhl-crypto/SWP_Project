@@ -13,7 +13,8 @@ export function MovieGrid({
   showtimes = [],
   initialStatus = 'all',
   title = 'Danh sách phim',
-  subtitle
+  subtitle,
+  hideStatusFilter = false
 }) {
   const [status, setStatus] = useState(initialStatus);
   const [genre, setGenre] = useState('all');
@@ -55,7 +56,18 @@ export function MovieGrid({
         </div>
       </div>
 
-      <MovieFilters status={status} genre={genre} cinema={cinema} genres={genres} cinemas={cinemas} onStatusChange={setStatus} onGenreChange={setGenre} onCinemaChange={setCinema} onClearFilters={handleClearFilters} />
+      <MovieFilters 
+        status={status} 
+        genre={genre} 
+        cinema={cinema} 
+        genres={genres} 
+        cinemas={cinemas} 
+        onStatusChange={setStatus} 
+        onGenreChange={setGenre} 
+        onCinemaChange={setCinema} 
+        onClearFilters={handleClearFilters}
+        hideStatusFilter={hideStatusFilter}
+      />
 
       {filteredMovies.length > 0 ? <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">

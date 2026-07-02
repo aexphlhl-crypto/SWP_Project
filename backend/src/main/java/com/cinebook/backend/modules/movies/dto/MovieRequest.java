@@ -17,5 +17,6 @@ public class MovieRequest {
     private String posterUrl;
     private String trailerUrl;
     private Set<Integer> genreIds;
+    private Set<Long> actorIds;
     private String status;
 }
