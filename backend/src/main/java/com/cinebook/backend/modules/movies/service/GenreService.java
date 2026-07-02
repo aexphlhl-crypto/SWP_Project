@@ -41,12 +41,12 @@ public class GenreService {
     public GenreDTO updateGenre(Integer id, GenreDTO genreDTO) {
         Genre genre = genreRepository.findById(id)
                 .orElseThrow(() -> AppException.notFound("Genre not found."));
-
+        
         // Only check name existence if it changed
         if (!genre.getName().equalsIgnoreCase(genreDTO.getName()) && genreRepository.existsByName(genreDTO.getName())) {
             throw AppException.conflict("Genre name already exists.");
         }
-
+        
         genre.setName(genreDTO.getName());
         Genre updatedGenre = genreRepository.save(genre);
         return mapToDTO(updatedGenre);

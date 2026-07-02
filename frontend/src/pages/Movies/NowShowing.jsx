@@ -13,6 +13,7 @@ export default function NowShowingPage() {
         showtimes={showtimes}
         title="Phim đang chiếu"
         subtitle="Những bộ phim hấp dẫn đang được công chiếu tại rạp"
+        hideStatusFilter={true}
       />
     </div>
   )
