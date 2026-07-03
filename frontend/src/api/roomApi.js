@@ -18,6 +18,9 @@ const roomApi = {
   },
   updateRoomStatus: (id, status) => {
     return axiosClient.patch(`/rooms/${id}/status`, { status });
+  },
+  deleteRoom: (id) => {
+    return axiosClient.delete(`/rooms/${id}`);
   }
 };
 
