@@ -52,7 +52,7 @@ public class RoomController {
     @PostMapping("/{id}/seats")
     @PreAuthorize("hasAnyRole('SystemAdmin', 'ScheduleManager')")
     public ApiResponse<List<SeatConfigDto>> configureSeats(@PathVariable Long id,
-                                                            @RequestBody List<SeatConfigDto> seatConfigs) {
+            @RequestBody List<SeatConfigDto> seatConfigs) {
         return ApiResponse.ok(roomService.configureSeats(id, seatConfigs));
     }
 
@@ -63,4 +63,3 @@ public class RoomController {
         return ApiResponse.ok("Room deleted successfully");
     }
 }
-

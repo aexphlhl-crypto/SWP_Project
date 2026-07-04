@@ -59,7 +59,7 @@ public class MovieService {
                 .avgRating(java.math.BigDecimal.ZERO)
                 .reviewCount(0)
                 .build();
-
+                
         if (request.getGenreIds() != null && !request.getGenreIds().isEmpty()) {
             List<Genre> genres = genreRepository.findAllById(request.getGenreIds());
             movie.setGenres(new HashSet<>(genres));
@@ -69,7 +69,7 @@ public class MovieService {
             List<Actor> actors = actorRepository.findAllById(request.getActorIds());
             movie.setActors(new HashSet<>(actors));
         }
-
+        
         return movieRepository.save(movie);
     }
 
@@ -93,13 +93,12 @@ public class MovieService {
             movie.setGenres(new HashSet<>());
         }
 
-        if (request.getStatus() != null && (request.getStatus().equalsIgnoreCase("Hidden")
-                || request.getStatus().equalsIgnoreCase("Removed"))) {
+        if (request.getStatus() != null && (request.getStatus().equalsIgnoreCase("Hidden") || request.getStatus().equalsIgnoreCase("Removed"))) {
             boolean hasFutureShowtimes = showtimeRepository.existsByMovieMovieIdAndStatusAndStartTimeAfter(
-                    id, "Scheduled", java.time.LocalDateTime.now());
+                id, "Scheduled", java.time.LocalDateTime.now()
+            );
             if (hasFutureShowtimes) {
-                throw AppException
-                        .badRequest("Không thể ẩn phim vì phim hiện đang có lịch chiếu hoạt động trong tương lai.");
+                throw AppException.badRequest("Không thể ẩn phim vì phim hiện đang có lịch chiếu hoạt động trong tương lai.");
             }
             movie.setStatus(request.getStatus());
         } else if (request.getStatus() != null) {
@@ -112,7 +111,7 @@ public class MovieService {
         } else {
             movie.setActors(new HashSet<>());
         }
-
+        
         return movieRepository.save(movie);
     }
 
@@ -120,10 +119,10 @@ public class MovieService {
     public void deleteMovie(Long id) {
         Movie movie = getMovieById(id);
         boolean hasFutureShowtimes = showtimeRepository.existsByMovieMovieIdAndStatusAndStartTimeAfter(
-                id, "Scheduled", java.time.LocalDateTime.now());
+            id, "Scheduled", java.time.LocalDateTime.now()
+        );
         if (hasFutureShowtimes) {
-            throw AppException
-                    .badRequest("Không thể xóa phim vì phim hiện đang có lịch chiếu hoạt động trong tương lai.");
+            throw AppException.badRequest("Không thể xóa phim vì phim hiện đang có lịch chiếu hoạt động trong tương lai.");
         }
         movie.setDeletedAt(java.time.LocalDateTime.now());
         movie.setStatus("Hidden");
