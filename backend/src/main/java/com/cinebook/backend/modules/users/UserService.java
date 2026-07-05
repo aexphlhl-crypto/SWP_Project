@@ -29,11 +29,13 @@ public class UserService {
 
     public Page<UserAdminDto> getUsersByRole(UserRole role, Pageable pageable) {
         Page<User> users = userRepository.findByRoleAndDeletedAtIsNull(role, pageable);
-        
+
         return users.map(user -> {
-            int totalBookings = bookingRepository.countByCustomer_UserIdAndStatus(user.getUserId(), BookingStatus.Confirmed);
-            Integer totalSpent = bookingRepository.sumTotalAfterTaxByCustomerIdAndStatus(user.getUserId(), BookingStatus.Confirmed);
-            
+            int totalBookings = bookingRepository.countByCustomer_UserIdAndStatus(user.getUserId(),
+                    BookingStatus.Confirmed);
+            Integer totalSpent = bookingRepository.sumTotalAfterTaxByCustomerIdAndStatus(user.getUserId(),
+                    BookingStatus.Confirmed);
+
             return UserAdminDto.builder()
                     .userId(user.getUserId())
                     .fullName(user.getFullName())
@@ -53,11 +55,13 @@ public class UserService {
 
     public Page<UserAdminDto> getAllUsersAdmin(Pageable pageable) {
         Page<User> users = userRepository.findAll(pageable);
-        
+
         return users.map(user -> {
-            int totalBookings = bookingRepository.countByCustomer_UserIdAndStatus(user.getUserId(), BookingStatus.Confirmed);
-            Integer totalSpent = bookingRepository.sumTotalAfterTaxByCustomerIdAndStatus(user.getUserId(), BookingStatus.Confirmed);
-            
+            int totalBookings = bookingRepository.countByCustomer_UserIdAndStatus(user.getUserId(),
+                    BookingStatus.Confirmed);
+            Integer totalSpent = bookingRepository.sumTotalAfterTaxByCustomerIdAndStatus(user.getUserId(),
+                    BookingStatus.Confirmed);
+
             return UserAdminDto.builder()
                     .userId(user.getUserId())
                     .fullName(user.getFullName())
@@ -80,8 +84,10 @@ public class UserService {
         user.setStatus(status);
         userRepository.save(user);
 
-        int totalBookings = bookingRepository.countByCustomer_UserIdAndStatus(user.getUserId(), BookingStatus.Confirmed);
-        Integer totalSpent = bookingRepository.sumTotalAfterTaxByCustomerIdAndStatus(user.getUserId(), BookingStatus.Confirmed);
+        int totalBookings = bookingRepository.countByCustomer_UserIdAndStatus(user.getUserId(),
+                BookingStatus.Confirmed);
+        Integer totalSpent = bookingRepository.sumTotalAfterTaxByCustomerIdAndStatus(user.getUserId(),
+                BookingStatus.Confirmed);
 
         return UserAdminDto.builder()
                 .userId(user.getUserId())
@@ -168,22 +174,23 @@ public class UserService {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$";
         SecureRandom random = new SecureRandom();
         StringBuilder sb = new StringBuilder();
-        sb.append(chars.charAt(random.nextInt(26)));                   // uppercase
-        sb.append(chars.charAt(26 + random.nextInt(26)));              // lowercase
-        sb.append(chars.charAt(52 + random.nextInt(10)));              // digit
-        sb.append(chars.charAt(62 + random.nextInt(4)));               // special
-        for (int i = 4; i < 12; i++) sb.append(chars.charAt(random.nextInt(chars.length())));
+        sb.append(chars.charAt(random.nextInt(26))); // uppercase
+        sb.append(chars.charAt(26 + random.nextInt(26))); // lowercase
+        sb.append(chars.charAt(52 + random.nextInt(10))); // digit
+        sb.append(chars.charAt(62 + random.nextInt(4))); // special
+        for (int i = 4; i < 12; i++)
+            sb.append(chars.charAt(random.nextInt(chars.length())));
         return sb.toString();
     }
 
     public void deleteManager(Long id) {
         User manager = userRepository.findById(id)
                 .orElseThrow(() -> AppException.notFound("Manager not found"));
-        
+
         if (manager.getRole() != UserRole.ScheduleManager) {
             throw AppException.badRequest("Can only delete managers");
         }
-        
+
         manager.setDeletedAt(LocalDateTime.now());
         manager.setStatus(UserStatus.Inactive);
         userRepository.save(manager);
