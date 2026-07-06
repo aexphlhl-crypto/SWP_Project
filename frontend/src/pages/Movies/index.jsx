@@ -20,7 +20,7 @@ export default function MoviesPage() {
       const titleMatch = movie.title?.toLowerCase().includes(lowerQuery);
       const originalTitleMatch = movie.originalTitle?.toLowerCase().includes(lowerQuery);
       const directorMatch = movie.director?.toLowerCase().includes(lowerQuery);
-
+      
       let castMatch = false;
       if (Array.isArray(movie.cast)) {
         castMatch = movie.cast.some(c => c.name?.toLowerCase().includes(lowerQuery));
