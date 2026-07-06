@@ -1,169 +1,190 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tag, Copy, Clock, Ticket, Gift, Star } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import promoApi from '@/api/promoApi';
-import { toast } from 'sonner';
-import { useClientPagination } from '@/hooks/use-client-pagination';
-import { ClientPagination } from '@/components/ui/client-pagination';
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Copy, Clock, Ticket, Tag } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import promoApi from '@/api/promoApi'
+import { toast } from 'sonner'
+import { useClientPagination } from '@/hooks/use-client-pagination'
+import { ClientPagination } from '@/components/ui/client-pagination'
 
-const TAG_CONFIG = {
-  hot: {
-    label: 'Hot',
-    className: 'bg-red-500/20 text-red-500'
-  },
-  new: {
-    label: 'Mới',
-    className: 'bg-green-500/20 text-green-500'
-  },
-  edu: {
-    label: 'Sinh viên',
-    className: 'bg-blue-500/20 text-blue-400'
-  },
-  gift: {
-    label: 'Quà tặng',
-    className: 'bg-pink-500/20 text-pink-400'
-  },
-  special: {
-    label: 'Đặc biệt',
-    className: 'bg-yellow-500/20 text-yellow-500'
-  },
-  expired: {
-    label: 'Hết hạn',
-    className: 'bg-secondary text-muted-foreground'
+function PromoCard({ promo, expired = false }) {
+  const isPercentage = promo.discountType === 'Percentage'
+  const discountLabel = isPercentage
+    ? `${promo.discountValue}%`
+    : `${Number(promo.discountValue).toLocaleString('vi-VN')}₫`
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(promo.code)
+    toast.success('Đã sao chép mã!')
   }
-};
+
+  return (
+    <div className={`relative flex overflow-hidden rounded-xl border transition-colors ${expired
+        ? 'border-border/40 bg-card/40 opacity-60'
+        : 'border-border/60 bg-card hover:border-primary/40'
+      }`}>
+      {/* Left accent bar */}
+      {!expired && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-xl" />}
+
+      {/* Discount block */}
+      <div className={`flex flex-col items-center justify-center px-5 py-4 shrink-0 border-r ${expired ? 'border-border/30 w-24' : 'border-border/40 w-28 bg-primary/5'
+        }`}>
+        <span className={`text-2xl font-black leading-none ${expired ? 'line-through text-muted-foreground' : 'text-primary'}`}>
+          {discountLabel}
+        </span>
+        <span className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide font-medium">
+          {isPercentage ? 'Giảm' : 'Tiết kiệm'}
+        </span>
+      </div>
+
+      {/* Content */}
+      <div className={`flex-1 min-w-0 p-4 space-y-2.5 ${!expired ? 'pl-5' : 'pl-4'}`}>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <code className="font-mono font-bold text-sm tracking-widest text-foreground">
+                {promo.code}
+              </code>
+              {!expired && (
+                <Badge className="text-[10px] px-1.5 py-0 bg-primary/15 text-primary border-0 font-medium">
+                  Đang áp dụng
+                </Badge>
+              )}
+            </div>
+          </div>
+          {!expired && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="shrink-0 h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+              onClick={handleCopy}
+            >
+              <Copy className="w-3 h-3" />
+              Sao chép
+            </Button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          {promo.minOrderValue > 0 && (
+            <span>
+              Đơn tối thiểu{' '}
+              <strong className="text-foreground font-medium">
+                {Number(promo.minOrderValue).toLocaleString('vi-VN')}₫
+              </strong>
+            </span>
+          )}
+          {promo.maxDiscountVnd > 0 && isPercentage && (
+            <span>
+              Giảm tối đa{' '}
+              <strong className="text-foreground font-medium">
+                {Number(promo.maxDiscountVnd).toLocaleString('vi-VN')}₫
+              </strong>
+            </span>
+          )}
+          {promo.validUntil && (
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              Hết hạn {new Date(promo.validUntil).toLocaleDateString('vi-VN')}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function PromotionsPage() {
-  const [promotions, setPromotions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [promotions, setPromotions] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     promoApi.getAllPromos({ page: 0, size: 100 })
       .then(res => {
-        if (res.success) {
-          setPromotions(res.data.content);
-        }
+        if (res.success) setPromotions(res.data.content)
       })
-      .catch(err => {
-        console.error(err);
-        toast.error('Lỗi tải danh sách khuyến mãi');
-      })
-      .finally(() => setLoading(false));
-  }, []);
+      .catch(() => toast.error('Lỗi tải danh sách khuyến mãi'))
+      .finally(() => setLoading(false))
+  }, [])
 
-  const now = new Date();
-  const active = promotions.filter(p => p.status === 'Active' && new Date(p.validUntil) >= now);
-  const expired = promotions.filter(p => p.status !== 'Active' || new Date(p.validUntil) < now);
-  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(active);
-  
-  return (
-    <div className="container mx-auto px-4 py-10 space-y-10">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">Khuyến mãi & Ưu đãi</h1>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            Tiết kiệm hơn với các mã giảm giá và chương trình ưu đãi hấp dẫn từ CineBook
-          </p>
+  const now = new Date()
+  const active = promotions.filter(p => p.status === 'Active' && new Date(p.validUntil) >= now)
+  const expired = promotions.filter(p => p.status !== 'Active' || new Date(p.validUntil) < now)
+
+  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } =
+    useClientPagination(active, 8)
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 max-w-[1400px] py-10">
+        <div className="space-y-3">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 rounded-xl border border-border/60 bg-card animate-pulse" />
+          ))}
         </div>
-
-        {/* Active promotions */}
-        <div>
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Ticket className="w-5 h-5 text-primary" /> Đang áp dụng
-          </h2>
-          
-          {active.length > 0 ? (
-            <div className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                {currentDataOnPage.map(promo => {
-                const tag = TAG_CONFIG['hot'];
-              const Icon = Ticket;
-              return <Card key={promo.id} className="bg-card border-border hover:border-primary/40 transition-colors overflow-hidden">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
-                    <CardHeader className="pb-2 pl-6">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                            <Icon className="w-5 h-5 text-primary" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-base leading-tight">Mã ưu đãi {promo.code}</CardTitle>
-                            <Badge className={`mt-1 text-xs ${tag.className}`}>{tag.label}</Badge>
-                          </div>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-2xl font-bold text-primary">Giảm {promo.discountValue}{promo.discountType === 'Percentage' ? '%' : '₫'}</p>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pl-6 space-y-3">
-                      <p className="text-sm text-muted-foreground">Áp dụng cho đơn hàng đáp ứng điều kiện tối thiểu.</p>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                        <span>Đơn tối thiểu: <strong className="text-foreground">{promo.minOrderValue ? promo.minOrderValue.toLocaleString('vi-VN') : 0}₫</strong></span>
-                        <span>Giảm tối đa: <strong className="text-foreground">{promo.maxDiscountVnd ? promo.maxDiscountVnd.toLocaleString('vi-VN') + '₫' : 'Không giới hạn'}</strong></span>
-                        <span>Hết hạn: <strong className="text-foreground">{promo.validUntil ? new Date(promo.validUntil).toLocaleDateString('vi-VN') : 'Không giới hạn'}</strong></span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <code className="flex-1 text-center font-mono font-bold text-sm bg-secondary rounded-lg px-3 py-2 tracking-widest">
-                          {promo.code}
-                        </code>
-                        <Button size="sm" variant="outline" className="gap-1.5 shrink-0" onClick={() => {
-                          navigator.clipboard.writeText(promo.code);
-                          toast.success('Đã sao chép mã!');
-                        }}>
-                          <Copy className="w-3.5 h-3.5" />
-                          Sao chép
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>;
-              })}
-              </div>
-              
-              <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-card border border-border rounded-xl">
-                <div className="text-sm text-muted-foreground mb-4 sm:mb-0">
-                  Hiển thị {startIndex + 1}-{endIndex} trên tổng số {totalItems} khuyến mãi
-                </div>
-                <ClientPagination 
-                  currentPage={currentPage} 
-                  totalPages={totalPages} 
-                  onPageChange={handlePageChange} 
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-10 text-muted-foreground border border-dashed rounded-xl border-border">
-              Hiện tại không có chương trình khuyến mãi nào.
-            </div>
-          )}
-        </div>
-
-        {/* Expired */}
-        {expired.length > 0 && <div>
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-muted-foreground">
-              <Clock className="w-5 h-5" /> Đã hết hạn
-            </h2>
-            <div className="grid gap-4 md:grid-cols-2 opacity-60">
-              {expired.map(promo => {
-            const Icon = Clock;
-            return <Card key={promo.id} className="bg-card border-border">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5 text-muted-foreground" />
-                        <div>
-                          <CardTitle className="text-base leading-tight line-through">
-                            Mã ưu đãi {promo.code}
-                          </CardTitle>
-                          <p className="text-xs text-muted-foreground mt-0.5">Hết hạn: {promo.validUntil ? new Date(promo.validUntil).toLocaleDateString('vi-VN') : '—'}</p>
-                        </div>
-                      </div>
-                    </CardHeader>
-                  </Card>;
-          })}
-            </div>
-          </div>}
       </div>
-    );
+    )
+  }
+
+  return (
+    <div className="container mx-auto px-4 max-w-[1400px] py-10 space-y-10">
+
+      {/* Header */}
+      <div className="space-y-1.5">
+        <h1 className="text-3xl font-bold tracking-tight">Khuyến mãi &amp; Ưu đãi</h1>
+        <p className="text-muted-foreground text-sm">
+          Tiết kiệm hơn với các mã giảm giá từ CineBook
+        </p>
+      </div>
+
+      {/* Active */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Ticket className="w-4 h-4 text-primary" />
+          Đang áp dụng
+          {active.length > 0 && (
+            <Badge variant="secondary" className="font-normal text-xs">{active.length}</Badge>
+          )}
+        </h2>
+
+        {currentDataOnPage.length > 0 ? (
+          <div className="space-y-3">
+            <div className="grid gap-3 md:grid-cols-2">
+              {currentDataOnPage.map(promo => (
+                <PromoCard key={promo.id} promo={promo} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                <p className="text-sm text-muted-foreground">
+                  Hiển thị {startIndex + 1}-{endIndex} / {totalItems} ưu đãi
+                </p>
+                <ClientPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="py-14 text-center border border-dashed border-border rounded-xl text-muted-foreground text-sm">
+            Hiện không có chương trình khuyến mãi nào đang áp dụng.
+          </div>
+        )}
+      </div>
+
+      {/* Expired */}
+      {expired.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2 text-muted-foreground">
+            <Clock className="w-4 h-4" />
+            Đã hết hạn
+          </h2>
+          <div className="grid gap-3 md:grid-cols-2">
+            {expired.slice(0, 6).map(promo => (
+              <PromoCard key={promo.id} promo={promo} expired />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
