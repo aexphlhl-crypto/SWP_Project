@@ -5,8 +5,9 @@ import { useState, useMemo, useEffect } from 'react';
  * @param {Array} data - Mảng dữ liệu gốc (sau khi đã được filter/search)
  * @param {number} itemsPerPage - Số phần tử trên mỗi trang (mặc định 10)
  * @param {number} initialPage - Trang bắt đầu (mặc định 1)
+ * @param {string} sortDirection - Hướng sắp xếp theo thời gian ('desc' hoặc 'asc', mặc định 'desc')
  */
-export function useClientPagination(data = [], itemsPerPage = 10, initialPage = 1) {
+export function useClientPagination(data = [], itemsPerPage = 10, initialPage = 1, sortDirection = 'desc') {
   const [currentPage, setCurrentPage] = useState(initialPage);
 
   const totalPages = Math.max(1, Math.ceil(data.length / itemsPerPage));
@@ -15,9 +16,26 @@ export function useClientPagination(data = [], itemsPerPage = 10, initialPage = 
   const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
 
   const currentDataOnPage = useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    
+    // Tự động sắp xếp dữ liệu theo thời gian mới nhất lên đầu
+    const sortedData = [...data].sort((a, b) => {
+      const timeA = a?.createdAt || a?.created_at || a?.updatedAt || a?.releaseDate;
+      const timeB = b?.createdAt || b?.created_at || b?.updatedAt || b?.releaseDate;
+      
+      if (timeA && timeB) {
+        if (sortDirection === 'asc') {
+          return new Date(timeA) - new Date(timeB); // Cũ nhất lên đầu
+        } else {
+          return new Date(timeB) - new Date(timeA); // Mới nhất lên đầu
+        }
+      }
+      return 0;
+    });
+
     const startIndex = (safeCurrentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return data.slice(startIndex, endIndex);
+    return sortedData.slice(startIndex, endIndex);
   }, [data, safeCurrentPage, itemsPerPage]);
 
   const handlePageChange = (newPage) => {

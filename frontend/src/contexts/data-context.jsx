@@ -3,6 +3,64 @@ import { movies as initialMovies, cinemas as initialCinemas, concessionItems as 
 
 const DataContext = createContext(undefined);
 
+const ACTOR_AVATARS = {
+  // Minions
+  'Steve Carell': 'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=100&h=100&fit=crop&q=80',
+  'Pierre Coffin': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80',
+  'Alan Arkin': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80',
+  
+  // Spider-Man
+  'Tom Holland': 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop&q=80',
+  'Zendaya': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80',
+  'Benedict Cumberbatch': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80',
+  
+  // The Dark Knight
+  'Christian Bale': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&q=80',
+  'Heath Ledger': 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&q=80',
+  'Gary Oldman': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&q=80',
+  
+  // Inside Out 2
+  'Amy Poehler': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80',
+  'Maya Hawke': 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&q=80',
+  
+  // Avatar
+  'Sam Worthington': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&q=80',
+  'Zoe Saldana': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80',
+  'Sigourney Weaver': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80',
+  
+  // Dune 2
+  'Timothée Chalamet': 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop&q=80',
+  'Rebecca Ferguson': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80',
+  
+  // Deadpool & Wolverine
+  'Ryan Reynolds': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80',
+  'Hugh Jackman': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&q=80',
+  
+  // Oppenheimer
+  'Cillian Murphy': 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop&q=80',
+  'Emily Blunt': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80',
+  'Matt Damon': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&q=80',
+  
+  // Godzilla x Kong
+  'Rebecca Hall': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&q=80',
+  
+  // Garfield
+  'Chris Pratt': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80',
+  
+  // Furiosa
+  'Anya Taylor-Joy': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80',
+  'Chris Hemsworth': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&q=80',
+  
+  // Bad Boys
+  'Will Smith': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80',
+  'Martin Lawrence': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&q=80',
+  
+  // Lật Mặt 7
+  'Thanh Hiền': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&q=80',
+  'Trương Minh Cường': 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&q=80',
+  'Đinh Y Nhung': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80'
+};
+
 const mapMovieFromApi = (m) => ({
   ...m,
   id: m.movieId?.toString(),
@@ -14,13 +72,25 @@ const mapMovieFromApi = (m) => ({
   status: m.status === 'NowShowing' ? 'now_showing' : (m.status === 'ComingSoon' ? 'coming_soon' : m.status),
   genres: m.genres ? m.genres.map(g => g.name) : [],
   description: m.synopsis,
-  cast: m.castList ? m.castList.split(',').map((c, i) => ({ id: i.toString(), name: c.trim() })) : []
+  cast: m.actors && m.actors.length > 0
+    ? m.actors.map(a => ({
+        id: a.actorId.toString(),
+        name: a.name,
+        role: 'Diễn viên',
+        avatar: a.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(a.name)}&background=random&color=fff&size=128&bold=true`
+      }))
+    : (m.castList ? m.castList.split(',').map((c, i) => {
+        const name = c.trim();
+        const avatar = ACTOR_AVATARS[name] || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128&bold=true`;
+        return { id: i.toString(), name, role: 'Diễn viên', avatar };
+      }) : [])
 });
 
 export function DataProvider({ children }) {
   // Khởi tạo state rỗng ban đầu, sẽ được fetch từ backend
   const [movies, setMovies] = useState([]);
   const [genres, setGenres] = useState([]);
+  const [actors, setActors] = useState([]);
 
   const refreshMovies = async () => {
     try {
@@ -34,9 +104,22 @@ export function DataProvider({ children }) {
     }
   };
 
-  // Fetch movies from real backend API on mount
+  const refreshActors = async () => {
+    try {
+      const { default: actorApi } = await import('@/api/actorApi');
+      const response = await actorApi.getAll();
+      if (response.success && response.data) {
+        setActors(response.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch actors from API', err);
+    }
+  };
+
+  // Fetch movies and actors from real backend API on mount
   useEffect(() => {
     refreshMovies();
+    refreshActors();
   }, []);
 
   useEffect(() => {
@@ -103,7 +186,7 @@ export function DataProvider({ children }) {
             date: s.startTime.split('T')[0],
             startTime: s.startTime.split('T')[1].substring(0, 5),
             endTime: s.endTime.split('T')[1].substring(0, 5),
-            price: s.priceOverride ? s.priceOverride : 85000, // default if null
+            price: s.price || 85000,
             type: '2D', // assuming 2D for now
             availableSeats: s.totalSeats
           }));
@@ -136,6 +219,12 @@ export function DataProvider({ children }) {
               if (c.configKey === 'vat_rate') newSettings.vatPercent = parseFloat(c.configValue) * 100;
               if (c.configKey === 'weekend_surcharge_percent') newSettings.weekendSurcharge = parseFloat(c.configValue);
               if (c.configKey === 'evening_surcharge_percent') newSettings.eveningSurcharge = parseFloat(c.configValue);
+              if (c.configKey === 'evening_surcharge_time') newSettings.eveningSurchargeTime = c.configValue;
+              if (c.configKey === 'base_price') newSettings.basePrice = parseFloat(c.configValue);
+              if (c.configKey === 'seat_vip_multiplier') newSettings.seatVipMultiplier = parseFloat(c.configValue);
+              if (c.configKey === 'seat_couple_multiplier') newSettings.seatCoupleMultiplier = parseFloat(c.configValue);
+              if (c.configKey === 'seat_hold_minutes') newSettings.holdTime = parseInt(c.configValue, 10);
+              if (c.configKey === 'max_seats_per_booking') newSettings.maxSeats = parseInt(c.configValue, 10);
             });
             return newSettings;
           });
@@ -286,8 +375,8 @@ export function DataProvider({ children }) {
 
   return (
     <DataContext.Provider value={{
-      movies, genres, cinemas, concessions, resaleListings, bookings, showtimes, news, settings,
-      refreshMovies, addMovie, updateMovie, deleteMovie,
+      movies, genres, actors, cinemas, concessions, resaleListings, bookings, showtimes, news, settings,
+      refreshMovies, refreshActors, addMovie, updateMovie, deleteMovie,
       addShowtime, updateShowtime, deleteShowtime,
       createBooking,
       addConcession, updateConcession, deleteConcession,

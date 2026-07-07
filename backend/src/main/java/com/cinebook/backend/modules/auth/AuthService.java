@@ -86,7 +86,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String verifyOtp(VerifyOtpRequest request) {
+    public AuthResponse verifyOtp(VerifyOtpRequest request) {
         PendingUser pendingUser = pendingUserRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> AppException.badRequest("No pending registration found for this email."));
 
@@ -100,7 +100,8 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getOtp(), pendingUser.getOtpCode())) {
             pendingUser.setOtpRetryCount(pendingUser.getOtpRetryCount() + 1);
             pendingUserRepository.save(pendingUser);
-            throw AppException.badRequest("Incorrect OTP. " + (MAX_OTP_RETRIES - pendingUser.getOtpRetryCount()) + " attempts remaining.");
+            throw AppException.badRequest(
+                    "Incorrect OTP. " + (MAX_OTP_RETRIES - pendingUser.getOtpRetryCount()) + " attempts remaining.");
         }
 
         // OTP Valid -> Move to User
@@ -118,7 +119,7 @@ public class AuthService {
         userRepository.save(user);
         pendingUserRepository.delete(pendingUser);
 
-        return "Email verified successfully. You can now login.";
+        return buildAuthResponse(user);
     }
 
     @Transactional
@@ -128,7 +129,8 @@ public class AuthService {
 
         // Check account lock
         if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
-            throw AppException.unauthorized("Account is temporarily locked due to multiple failed attempts. Please try again later.");
+            throw AppException.unauthorized(
+                    "Account is temporarily locked due to multiple failed attempts. Please try again later.");
         }
 
         // Check account status
@@ -183,7 +185,8 @@ public class AuthService {
 
     @Transactional
     public void logout(String rawRefreshToken) {
-        if (rawRefreshToken == null) return;
+        if (rawRefreshToken == null)
+            return;
         String tokenHash = hashToken(rawRefreshToken);
         refreshTokenRepository.findByTokenHashAndIsRevokedFalse(tokenHash).ifPresent(rt -> {
             rt.setRevoked(true);
@@ -194,11 +197,11 @@ public class AuthService {
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
-                .orElseThrow(() -> AppException.notFound("Email không tồn tại trong hệ thống."));
-        
+                .orElseThrow(() -> AppException.notFound("No account found with this email address."));
+
         String otp = generateOtp();
         saveOtp(user, otp, OtpType.PasswordReset, 5);
-        
+
         emailService.sendResetPasswordOtp(user.getEmail(), otp);
         log.info("[DEV MODE] Reset password OTP for {} : {}", request.getEmail(), otp);
     }
@@ -206,26 +209,29 @@ public class AuthService {
     @Transactional
     public String verifyForgotPasswordOtp(VerifyForgotOtpRequest request) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
-                .orElseThrow(() -> AppException.notFound("Email không tồn tại trong hệ thống."));
+                .orElseThrow(() -> AppException.notFound("No account found with this email address."));
 
-        OtpToken otpToken = otpTokenRepository.findTopByUserAndTokenTypeAndIsUsedFalseOrderByCreatedAtDesc(user, OtpType.PasswordReset)
-                .orElseThrow(() -> AppException.badRequest("Mã xác nhận không tồn tại hoặc đã được sử dụng."));
+        OtpToken otpToken = otpTokenRepository
+                .findTopByUserAndTokenTypeAndIsUsedFalseOrderByCreatedAtDesc(user, OtpType.PasswordReset)
+                .orElseThrow(() -> AppException.badRequest("OTP not found or already used. Please request a new one."));
 
         if (otpToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw AppException.badRequest("Mã xác nhận đã hết hạn.");
+            throw AppException.badRequest("OTP has expired. Please request a new one.");
         }
 
         if (otpToken.getRetryCount() >= MAX_OTP_RETRIES) {
-            throw AppException.badRequest("Vượt quá số lần thử mã xác nhận tối đa.");
+            throw AppException.badRequest("Too many OTP attempts. Please request a new one.");
         }
 
         if (!passwordEncoder.matches(request.getOtpCode(), otpToken.getTokenValue())) {
             otpToken.setRetryCount(otpToken.getRetryCount() + 1);
             otpTokenRepository.save(otpToken);
-            throw AppException.badRequest("Mã xác nhận không chính xác. Còn lại " + (MAX_OTP_RETRIES - otpToken.getRetryCount()) + " lần thử.");
+            throw AppException.badRequest(
+                    "Incorrect OTP. " + (MAX_OTP_RETRIES - otpToken.getRetryCount()) + " attempts remaining.");
         }
 
-        // MANDATORY SECURITY ACTION: Immediately delete/invalidate the OTP from the database
+        // MANDATORY SECURITY ACTION: Immediately delete/invalidate the OTP from the
+        // database
         otpTokenRepository.delete(otpToken);
         otpTokenRepository.flush();
 
@@ -238,18 +244,18 @@ public class AuthService {
         try {
             claims = jwtUtil.parseToken(request.getToken());
         } catch (Exception e) {
-            throw AppException.badRequest("Mã khôi phục không hợp lệ hoặc đã hết hạn.");
+            throw AppException.badRequest("Reset token is invalid or has expired.");
         }
 
         String email = claims.getSubject();
         String purpose = claims.get("purpose", String.class);
 
         if (email == null || !email.equalsIgnoreCase(request.getEmail()) || !"RESET_PASSWORD".equals(purpose)) {
-            throw AppException.badRequest("Mã khôi phục không hợp lệ.");
+            throw AppException.badRequest("Reset token is invalid.");
         }
 
         User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
-                .orElseThrow(() -> AppException.notFound("Email không tồn tại trong hệ thống."));
+                .orElseThrow(() -> AppException.notFound("No account found with this email address."));
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
@@ -259,8 +265,8 @@ public class AuthService {
     }
 
     @Transactional
-    public void changePassword(Long userId, ChangePasswordRequest request) {
-        User user = userRepository.findById(userId)
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseThrow(() -> AppException.notFound("User not found."));
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
@@ -279,7 +285,7 @@ public class AuthService {
     public AuthResponse.UserInfo updateProfile(String email, UpdateProfileRequest request) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseThrow(() -> AppException.notFound("User not found."));
-        
+
         user.setFullName(request.getFullName());
         user.setPhone(request.getPhone());
         user.setDateOfBirth(request.getDateOfBirth());
@@ -295,6 +301,7 @@ public class AuthService {
                 .phone(user.getPhone())
                 .dateOfBirth(user.getDateOfBirth())
                 .address(user.getAddress())
+                .cinemaId(user.getCinema() != null ? user.getCinema().getCinemaId() : null)
                 .build();
     }
 
@@ -310,6 +317,7 @@ public class AuthService {
                 .phone(user.getPhone())
                 .dateOfBirth(user.getDateOfBirth())
                 .address(user.getAddress())
+                .cinemaId(user.getCinema() != null ? user.getCinema().getCinemaId() : null)
                 .build();
     }
 
@@ -337,7 +345,10 @@ public class AuthService {
             // Find by googleUid first, then by email
             User user = userRepository.findByGoogleUidAndDeletedAtIsNull(googleUid)
                     .or(() -> userRepository.findByEmailAndDeletedAtIsNull(email)
-                            .map(u -> { u.setGoogleUid(googleUid); return u; }))
+                            .map(u -> {
+                                u.setGoogleUid(googleUid);
+                                return u;
+                            }))
                     .orElseGet(() -> User.builder()
                             .email(email)
                             .fullName(fullName != null ? fullName : email)
@@ -357,7 +368,8 @@ public class AuthService {
             throw e;
         } catch (Exception e) {
             log.error("Google login failed", e);
-            throw new AppException("INTERNAL_ERROR", "Google login failed: " + e.getMessage(), org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new AppException("INTERNAL_ERROR", "Google login failed: " + e.getMessage(),
+                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -389,6 +401,7 @@ public class AuthService {
                         .phone(user.getPhone())
                         .dateOfBirth(user.getDateOfBirth())
                         .address(user.getAddress())
+                        .cinemaId(user.getCinema() != null ? user.getCinema().getCinemaId() : null)
                         .build())
                 .build();
     }
@@ -406,7 +419,8 @@ public class AuthService {
         sb.append(chars.charAt(26 + random.nextInt(26)));
         sb.append(chars.charAt(52 + random.nextInt(10)));
         sb.append(chars.charAt(62 + random.nextInt(4)));
-        for (int i = 4; i < 12; i++) sb.append(chars.charAt(random.nextInt(chars.length())));
+        for (int i = 4; i < 12; i++)
+            sb.append(chars.charAt(random.nextInt(chars.length())));
         return sb.toString();
     }
 

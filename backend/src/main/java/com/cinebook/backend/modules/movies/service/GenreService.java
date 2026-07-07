@@ -1,5 +1,6 @@
 package com.cinebook.backend.modules.movies.service;
 
+import com.cinebook.backend.common.exception.AppException;
 import com.cinebook.backend.modules.movies.dto.GenreDTO;
 import com.cinebook.backend.modules.movies.entity.Genre;
 import com.cinebook.backend.modules.movies.repository.GenreRepository;
@@ -22,13 +23,13 @@ public class GenreService {
 
     public GenreDTO getGenreById(Integer id) {
         Genre genre = genreRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Genre not found"));
+                .orElseThrow(() -> AppException.notFound("Genre not found."));
         return mapToDTO(genre);
     }
 
     public GenreDTO createGenre(GenreDTO genreDTO) {
         if (genreRepository.existsByName(genreDTO.getName())) {
-            throw new RuntimeException("Genre name already exists");
+            throw AppException.conflict("Genre name already exists.");
         }
         Genre genre = Genre.builder()
                 .name(genreDTO.getName())
@@ -39,11 +40,11 @@ public class GenreService {
 
     public GenreDTO updateGenre(Integer id, GenreDTO genreDTO) {
         Genre genre = genreRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Genre not found"));
+                .orElseThrow(() -> AppException.notFound("Genre not found."));
         
         // Only check name existence if it changed
         if (!genre.getName().equalsIgnoreCase(genreDTO.getName()) && genreRepository.existsByName(genreDTO.getName())) {
-            throw new RuntimeException("Genre name already exists");
+            throw AppException.conflict("Genre name already exists.");
         }
         
         genre.setName(genreDTO.getName());
@@ -53,7 +54,7 @@ public class GenreService {
 
     public void deleteGenre(Integer id) {
         if (!genreRepository.existsById(id)) {
-            throw new RuntimeException("Genre not found");
+            throw AppException.notFound("Genre not found.");
         }
         genreRepository.deleteById(id);
     }

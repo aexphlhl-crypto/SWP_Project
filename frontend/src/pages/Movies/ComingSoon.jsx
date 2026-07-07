@@ -13,6 +13,7 @@ export default function ComingSoonPage() {
         showtimes={showtimes}
         title="Phim sắp chiếu"
         subtitle="Đừng bỏ lỡ những siêu phẩm sắp đổ bộ rạp chiếu phim"
+        hideStatusFilter={true}
       />
     </div>
   )

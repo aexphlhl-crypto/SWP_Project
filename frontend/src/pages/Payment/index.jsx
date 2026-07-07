@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 
 import { useData } from '@/contexts/data-context'
@@ -10,18 +10,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, CreditCard, Building2, Smartphone, Loader2, Lock, Tag, ShoppingCart, Landmark } from 'lucide-react';
+import { ArrowLeft, CreditCard, Building2, Smartphone, Loader2, Lock, Tag, ShoppingCart, Landmark, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import bookingApi from '@/api/bookingApi';
 import promoApi from '@/api/promoApi';
 import paymentApi from '@/api/paymentApi';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 // VNPay logo inline SVG
 const VNPayIcon = () => (
   <svg width="20" height="20" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="40" height="40" rx="8" fill="#0066CC"/>
+    <rect width="40" height="40" rx="8" fill="#0066CC" />
     <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold">VN</text>
   </svg>
 );
@@ -31,26 +31,6 @@ const PAYMENT_METHODS = [{
   label: 'VNPay',
   icon: VNPayIcon,
   desc: 'Thẻ ATM, Visa, MasterCard, QR Code'
-}, {
-  id: 'card',
-  label: 'Thẻ tín dụng / Ghi nợ',
-  icon: CreditCard,
-  desc: 'Visa, Mastercard, JCB'
-}, {
-  id: 'bank',
-  label: 'Chuyển khoản ngân hàng',
-  icon: Building2,
-  desc: 'Internet Banking'
-}, {
-  id: 'momo',
-  label: 'Ví MoMo',
-  icon: Smartphone,
-  desc: 'Quét QR hoặc số điện thoại'
-}, {
-  id: 'zalopay',
-  label: 'ZaloPay',
-  icon: Smartphone,
-  desc: 'Quét QR hoặc liên kết tài khoản'
 }];
 
 function PaymentContent() {
@@ -66,6 +46,7 @@ function PaymentContent() {
   const seatTotal = Number(params.get('seatTotal') ?? 0);
   const vatPercent = Number(params.get('vatPercent') ?? 10);
   const seats = params.get('seats')?.split(',') || [];
+  const seatIdsParam = params.get('seatIds')?.split(',') || [];
   const showtimeId = params.get('showtimeId') ?? '1';
   const movieId = params.get('movie') ?? '1';
   const cinemaId = params.get('cinema') ?? '1';
@@ -73,7 +54,7 @@ function PaymentContent() {
   const room = params.get('room') ?? 'Phòng 1';
   const date = params.get('date') ?? '';
   const time = params.get('time') ?? '';
-  
+
   // Parse concessions
   const concessionsParam = params.get('concessions');
   const concessions = concessionsParam ? (() => {
@@ -91,50 +72,70 @@ function PaymentContent() {
   const [promoData, setPromoData] = useState(null);
   const [promoError, setPromoError] = useState('');
   const [processing, setProcessing] = useState(false);
-  const { toast } = useToast();
   const { user } = useAuth();
-  
-  const discount = (() => {
-    if (!promoApplied || !promoData) return 0;
-    if (promoData.discountType === 'Percentage') {
-      const calculated = Math.round(subtotal * (promoData.discountValue / 100));
-      return promoData.maxDiscountVnd ? Math.min(calculated, promoData.maxDiscountVnd) : calculated;
-    }
-    return promoData.discountValue;
-  })();
-  
-  // Calculate final amounts just like backend: VAT is applied AFTER discount
-  const newSubtotal = Math.max(0, subtotal - discount);
-  const calculatedVatAmount = Math.round(newSubtotal * (vatPercent / 100));
-  const finalTotal = newSubtotal + calculatedVatAmount;
 
-  const handleApplyPromo = async () => {
+  const [calcResults, setCalcResults] = useState(null);
+  const [isLoadingCalc, setIsLoadingCalc] = useState(false);
+
+  const fetchCalculation = async (appliedCode) => {
+    setIsLoadingCalc(true);
     setPromoError('');
-    if (!promoCode) return;
-    
     try {
-      const res = await promoApi.validatePromo({
-        code: promoCode,
-        userId: user?.id || user?.userId,
-        orderValue: subtotal
-      });
+      const payload = {
+        customerId: user?.userId || user?.id,
+        showtimeId: Number(showtimeId),
+        seatIds: seatIdsParam.map(s => Number(s)),
+        fnbItems: concessions.map(c => ({
+          productId: Number(c.id),
+          quantity: Number(c.qty)
+        })),
+        promoCode: appliedCode || null
+      };
+      const res = await bookingApi.calculateBooking(payload);
       if (res.success && res.data) {
-        setPromoApplied(true);
-        setPromoData(res.data);
-        toast({
-          title: 'Áp dụng mã thành công',
-          description: `Đã áp dụng mã ${promoCode}.`
-        });
-      } else {
-        setPromoError('Mã không hợp lệ hoặc không đủ điều kiện.');
-        setPromoApplied(false);
-        setPromoData(null);
+        setCalcResults(res.data);
+        if (appliedCode) {
+          setPromoApplied(true);
+          setPromoData({
+            discountType: res.data.promoDiscountType,
+            discountValue: res.data.promoDiscountValue
+          });
+          toast.success(`Đã áp dụng mã ${appliedCode}.`);
+        } else {
+          setPromoApplied(false);
+          setPromoData(null);
+        }
       }
     } catch (err) {
-      setPromoError(err?.response?.data?.error?.message || 'Không thể kiểm tra mã khuyến mãi.');
+      setPromoError(err.error?.message || err.message || 'Mã không hợp lệ hoặc không đủ điều kiện.');
       setPromoApplied(false);
       setPromoData(null);
+      if (appliedCode) {
+        // Recalculate without promo code
+        fetchCalculation(null);
+      }
+    } finally {
+      setIsLoadingCalc(false);
     }
+  };
+
+  useEffect(() => {
+    if (user && showtimeId && seats.length > 0) {
+      fetchCalculation(null);
+    }
+  }, [user, showtimeId, params.get('seats'), concessionsParam]);
+
+  const discount = calcResults ? calcResults.discountAmount : 0;
+  const calculatedVatAmount = calcResults ? calcResults.vatAmount : Math.round(subtotal * (vatPercent / 100));
+  const finalTotal = calcResults ? calcResults.totalAmount : (subtotal + calculatedVatAmount);
+
+  const displaySeatTotal = calcResults ? calcResults.ticketTotal : (subtotal - concessionTotal);
+  const displayConcessionTotal = calcResults ? calcResults.fnbTotal : concessionTotal;
+  const displayVatPercent = calcResults ? Math.round(calcResults.vatRate * 100) : vatPercent;
+
+  const handleApplyPromo = () => {
+    if (!promoCode) return;
+    fetchCalculation(promoCode);
   };
 
   const handlePayment = async () => {
@@ -144,29 +145,26 @@ function PaymentContent() {
       const payload = {
         customerId: user?.userId || user?.id,
         showtimeId: Number(showtimeId),
-        seatIds: seats.map(s => Number(s)),
+        seatIds: seatIdsParam.map(s => Number(s)),
         fnbItems: concessions.map(c => ({
           productId: Number(c.id),
           quantity: Number(c.qty)
         }))
       };
-      
+
       if (promoApplied && promoCode) {
         payload.promoCode = promoCode;
       }
-      
+
       const res = await bookingApi.createBooking(payload);
-      
+
       if (!res.success) {
-        toast({
-          title: 'Lỗi tạo booking',
-          description: res.error?.message || 'Không thể tạo đặt vé',
-          variant: 'destructive'
-        });
+        toast.error(res.error?.message || 'Không thể tạo đặt vé');
         return;
       }
 
       const bookingId = res.data.id || res.data.bookingId;
+      sessionStorage.setItem('pendingBookingId', bookingId);
 
       // Step 2: Nếu chọn VNPay, lấy URL và redirect
       if (method === 'vnpay') {
@@ -176,11 +174,7 @@ function PaymentContent() {
           window.location.href = payRes.data;
           return;
         } else {
-          toast({
-            title: 'Không thể tạo link VNPay',
-            description: payRes.error?.message || 'Lỗi kết nối cổng thanh toán',
-            variant: 'destructive'
-          });
+          toast.error(payRes.error?.message || 'Lỗi kết nối cổng thanh toán');
           return;
         }
       }
@@ -202,11 +196,7 @@ function PaymentContent() {
       router(`/booking/success?${successParams.toString()}`);
 
     } catch (err) {
-      toast({
-        title: 'Lỗi',
-        description: err?.response?.data?.error?.message || 'Có lỗi xảy ra',
-        variant: 'destructive'
-      });
+      toast.error(err.error?.message || err.message || 'Có lỗi xảy ra');
     } finally {
       setProcessing(false);
     }
@@ -219,266 +209,287 @@ function PaymentContent() {
     year: 'numeric'
   }) : '';
 
-  return <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Button variant="ghost" size="icon" onClick={() => router(-1)}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Thanh toán</h1>
-          <p className="text-muted-foreground text-sm">Hoàn tất đặt vé xem phim</p>
-        </div>
-      </div>
+  return (
+    <div className="min-h-screen bg-background text-foreground pb-16">
+      {/* ── Top Header Navigation & Stepper ── */}
+      <header className="border-b border-border bg-card/85 backdrop-blur-md sticky top-0 z-50">
+        <div className="container max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={() => router(-1)}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <span className="font-extrabold text-foreground text-lg tracking-tight">Thanh Toán</span>
+          </div>
 
-      <div className="grid gap-6 lg:grid-cols-5">
-        {/* Left: Payment form */}
-        <div className="lg:col-span-3 space-y-5">
-          {/* Payment method */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-base">Phương thức thanh toán</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {PAYMENT_METHODS.map(m => {
-              const Icon = m.icon;
-              const isVNPay = m.id === 'vnpay';
-              return <button key={m.id} className={cn('w-full flex items-center gap-3 p-3 rounded-lg border transition-colors text-left relative', method === m.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50')} onClick={() => setMethod(m.id)}>
-                    <div className={cn('w-4 h-4 rounded-full border-2 shrink-0', method === m.id ? 'border-primary bg-primary' : 'border-muted-foreground')} />
-                    <Icon className="w-5 h-5 text-muted-foreground shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium flex items-center gap-2">
-                        {m.label}
-                        {isVNPay && <span className="text-xs bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded font-semibold">Khuyến nghị</span>}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{m.desc}</p>
+          {/* Stepper progress indicator */}
+          <div className="hidden md:flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border border-border text-muted-foreground/60">1</span>
+              <span className="font-bold text-muted-foreground/60">Chọn Vé</span>
+            </div>
+            <div className="h-[1px] w-8 bg-border" />
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border border-border text-muted-foreground/60">2</span>
+              <span className="font-bold text-muted-foreground/60">Bắp Nước</span>
+            </div>
+            <div className="h-[1px] w-8 bg-primary" />
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border bg-primary text-primary-foreground border-primary">3</span>
+              <span className="font-bold text-primary">Thanh Toán</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground/80">
+            <span>VI | EN</span>
+          </div>
+        </div>
+      </header>
+
+      {/* ── Main content area ── */}
+      <main className="container max-w-[1400px] mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+          {/* Left Column (2/3 width): Order Details & Payment Method */}
+          <div className="lg:col-span-2 space-y-8">
+
+            {/* Header info */}
+            <div>
+              <h1 className="text-2xl font-black text-foreground tracking-tight">Thanh Toán Đơn Hàng</h1>
+              <p className="text-xs text-muted-foreground mt-1">Vui lòng kiểm tra lại thông tin đơn hàng và tiến hành thanh toán an toàn.</p>
+            </div>
+
+            {/* Order Summary Card */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-6">
+              <div className="flex items-center justify-between border-b border-border pb-3">
+                <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Thông tin vé</h3>
+                <span className="text-[10px] text-muted-foreground/80 font-semibold bg-muted rounded px-2 py-0.5">CineBook</span>
+              </div>
+
+              <div className="flex gap-4 items-start">
+                <img
+                  src={movie?.poster}
+                  alt={movie?.title}
+                  className="w-16 rounded-xl object-cover aspect-[2/3] border border-border shadow-md shrink-0"
+                />
+                <div className="flex-1 min-w-0 space-y-1">
+                  <h4 className="font-bold text-foreground text-base leading-tight truncate">{movie?.title}</h4>
+                  <p className="text-xs text-muted-foreground flex items-center gap-2"><Building2 className="w-3.5 h-3.5 text-primary" /> {cinema}</p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-2"><CreditCard className="w-3.5 h-3.5 text-primary" /> {room}</p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-primary" /> {displayDate} - {time}</p>
+
+                  {/* Selected Seats Badges */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-2">
+                    <span className="text-[10px] text-muted-foreground/60 font-semibold uppercase tracking-wider">Ghế:</span>
+                    {seats.map(s => (
+                      <Badge key={s} className="bg-primary hover:bg-primary text-primary-foreground font-bold text-[10px] rounded px-2 py-0.5">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Concessions details */}
+              {concessions.length > 0 && (
+                <div className="border-t border-border pt-4 space-y-3">
+                  <h4 className="text-xs text-muted-foreground font-bold uppercase tracking-wider flex items-center gap-1.5">
+                    <ShoppingCart className="w-3.5 h-3.5 text-primary" />
+                    Bắp nước đã chọn
+                  </h4>
+                  <div className="space-y-2">
+                    {concessions.map(c => (
+                      <div key={c.id} className="flex justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <span className="text-zinc-500">🍿</span>
+                          <span>{c.name}</span>
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-muted border border-border text-muted-foreground">x{c.qty}</Badge>
+                        </div>
+                        <span className="font-bold text-foreground">{new Intl.NumberFormat('vi-VN').format(c.price * c.qty)}₫</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Discount / Promo Code Card */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-4">
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider border-b border-border pb-3">Khuyến mãi / Ưu đãi</h3>
+
+              <div className="space-y-3">
+                {promoApplied ? (
+                  <div className="flex items-center justify-between rounded-xl bg-green-500/5 border border-green-500/25 px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4 text-green-500" />
+                      <span className="text-sm text-green-500 font-mono font-bold">{promoCode}</span>
                     </div>
-                  </button>;
-              })}
-            </CardContent>
-          </Card>
-
-          {/* VNPay info */}
-          {method === 'vnpay' && <Card className="bg-card border-border border-blue-500/30">
-              <CardContent className="pt-5 space-y-3">
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                  <div className="mt-0.5 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
-                    <span className="text-white text-xs font-bold">i</span>
-                  </div>
-                  <div className="text-sm space-y-1">
-                    <p className="font-medium text-blue-400">Thanh toán qua VNPay Sandbox</p>
-                    <p className="text-muted-foreground text-xs">Bạn sẽ được chuyển đến cổng thanh toán VNPay an toàn. Hỗ trợ thẻ ATM nội địa, Visa/Mastercard, và QR Code.</p>
-                    <p className="text-xs text-amber-400 mt-1">⚠️ Đây là môi trường Sandbox (thử nghiệm). Thẻ test: 9704198526191432198 / NGUYEN VAN A / 07/15 / OTP: 123456</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>}
-
-          {/* Card details (only for card method) */}
-          {method === 'card' && <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-base">Thông tin thẻ</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Số thẻ</Label>
-                  <Input placeholder="1234 5678 9012 3456" maxLength={19} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Ngày hết hạn</Label>
-                    <Input placeholder="MM/YY" maxLength={5} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>CVV</Label>
-                    <Input placeholder="•••" maxLength={3} type="password" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Tên chủ thẻ</Label>
-                  <Input placeholder="NGUYEN VAN A" className="uppercase" />
-                </div>
-              </CardContent>
-            </Card>}
-
-          {/* Bank transfer */}
-          {method === 'bank' && <Card className="bg-card border-border">
-              <CardContent className="pt-6 space-y-3">
-                <div className="rounded-lg bg-secondary/50 p-4 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Ngân hàng</span>
-                    <span className="font-medium">Vietcombank</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Số tài khoản</span>
-                    <span className="font-mono font-medium">1234 5678 90</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Chủ tài khoản</span>
-                    <span className="font-medium">CINEBOOK VN</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Nội dung CK</span>
-                    <span className="font-mono font-medium text-primary">CINEBOOK {seats.join('')}</span>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground text-center">
-                  Vé sẽ được gửi qua email sau khi hệ thống xác nhận thanh toán (5–15 phút)
-                </p>
-              </CardContent>
-            </Card>}
-
-          {/* MoMo / ZaloPay */}
-          {(method === 'momo' || method === 'zalopay') && <Card className="bg-card border-border">
-              <CardContent className="pt-6 flex flex-col items-center gap-3">
-                <div className="w-40 h-40 bg-secondary rounded-xl flex items-center justify-center">
-                  <div className="w-32 h-32 grid grid-cols-5 gap-0.5">
-                    {Array.from({
-                  length: 25
-                }).map((_, i) => <div key={i} className={cn('rounded-sm', Math.random() > 0.5 ? 'bg-foreground' : 'bg-transparent')} />)}
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Quét mã QR bằng app {method === 'momo' ? 'MoMo' : 'ZaloPay'} để thanh toán
-                </p>
-                <Badge variant="secondary" className="font-mono text-lg px-4 py-1">
-                  {finalTotal.toLocaleString('vi-VN')}₫
-                </Badge>
-              </CardContent>
-            </Card>}
-        </div>
-
-        {/* Right: Order summary */}
-        <div className="lg:col-span-2 space-y-4">
-          <Card className="bg-card border-border sticky top-20">
-            <CardHeader>
-              <CardTitle className="text-base">Thông tin đặt vé</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Movie info */}
-              <div className="flex gap-3">
-                <img src={movie?.poster} alt={movie?.title} className="w-14 rounded-lg object-cover aspect-[2/3]" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm leading-tight">{movie?.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{movie?.ageRating} • {movie?.duration} phút</p>
-                </div>
-              </div>
-
-              <Separator className="bg-border" />
-
-              {/* Booking details */}
-              <div className="space-y-2 text-sm">
-                {[{
-                label: 'Ngày chiếu',
-                value: displayDate
-              }, {
-                label: 'Suất chiếu',
-                value: time
-              }, {
-                label: 'Phòng',
-                value: room
-              }, {
-                label: 'Ghế',
-                value: seats.join(', ')
-              }].map(item => <div key={item.label} className="flex justify-between gap-2">
-                    <span className="text-muted-foreground shrink-0">{item.label}</span>
-                    <span className="font-medium text-right">{item.value}</span>
-                  </div>)}
-              </div>
-
-              <Separator className="bg-border" />
-
-              {/* Concession summary */}
-              {concessions.length > 0 && <>
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
-                      <ShoppingCart className="w-3.5 h-3.5" />
-                      Đồ ăn & Thức uống
-                    </p>
-                    {concessions.map(c => <div key={c.id} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{c.name} ×{c.qty}</span>
-                        <span className="font-medium">{(c.price * c.qty).toLocaleString('vi-VN')}₫</span>
-                      </div>)}
-                  </div>
-                  <Separator className="bg-border" />
-                </>}
-
-              {/* Promo code */}
-              <div className="space-y-2">
-                <Label className="text-sm flex items-center gap-1">
-                  <Tag className="w-3.5 h-3.5" /> Mã khuyến mãi
-                </Label>
-                {promoApplied ? <div className="flex items-center justify-between rounded-lg bg-green-500/10 border border-green-500/30 px-3 py-2">
-                    <span className="text-sm text-green-500 font-mono font-bold">{promoCode}</span>
-                    <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => {
-                  setPromoApplied(false);
-                  setPromoCode('');
-                  setPromoData(null);
-                }}>
-                      Xóa
+                    <button
+                      type="button"
+                      className="text-xs text-muted-foreground hover:text-foreground underline font-medium"
+                      onClick={() => {
+                        setPromoApplied(false);
+                        setPromoCode('');
+                        setPromoData(null);
+                        fetchCalculation(null);
+                      }}
+                    >
+                      Xóa mã
                     </button>
-                  </div> : <div className="flex gap-2">
-                    <Input placeholder="Nhập mã khuyến mãi" value={promoCode} onChange={e => {
-                  setPromoCode(e.target.value.toUpperCase());
-                  setPromoError('');
-                }} className="h-9 text-sm" />
-                    <Button variant="outline" size="sm" onClick={handleApplyPromo} className="shrink-0">
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
+                      <Input
+                        placeholder="Nhập mã khuyến mãi (ví dụ: CINE50)"
+                        value={promoCode}
+                        onChange={e => {
+                          setPromoCode(e.target.value.toUpperCase());
+                          setPromoError('');
+                        }}
+                        className="pl-10 h-10 text-sm bg-muted border-input rounded-xl focus:border-primary/60"
+                      />
+                    </div>
+                    <Button onClick={handleApplyPromo} className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold h-10 px-5 rounded-xl">
                       Áp dụng
                     </Button>
-                  </div>}
-                {promoError && <p className="text-xs text-destructive">{promoError}</p>}
+                  </div>
+                )}
+                {promoApplied && (
+                  <p className="text-[11px] text-green-500 font-medium flex items-center gap-1">
+                    ✓ Đã áp dụng mã giảm giá thành công.
+                  </p>
+                )}
+                {promoError && <p className="text-xs text-red-500 font-medium">{promoError}</p>}
               </div>
+            </div>
 
-              <Separator className="bg-border" />
+            {/* Payment Method Card (VNPay only) */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-4">
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider border-b border-border pb-3">Phương thức thanh toán</h3>
 
-              {/* Price breakdown */}
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tiền vé ({seats.length} ghế)</span>
-                  <span>{(seatTotal > 0 ? seatTotal : (subtotal - concessionTotal)).toLocaleString('vi-VN')}₫</span>
+              <div className="space-y-4">
+                <div className="w-full flex items-center justify-between p-4 rounded-xl border border-primary/25 bg-primary/5 transition-all text-left relative">
+                  <div className="flex items-center gap-3.5">
+                    <VNPayIcon />
+                    <div>
+                      <p className="text-xs font-bold text-foreground flex items-center gap-2">
+                        Thanh toán qua VNPay
+                        <span className="text-[9px] bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded font-bold uppercase">Khuyên dùng</span>
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Thẻ ATM nội địa, thẻ Visa/MasterCard hoặc quét mã QR Code để thanh toán ngay lập tức.</p>
+                    </div>
+                  </div>
+                  {/* Pre-selected gold dot */}
+                  <div className="w-4 h-4 rounded-full border-2 border-primary bg-primary flex items-center justify-center shrink-0">
+                    <div className="w-1.5 h-1.5 rounded-full bg-background" />
+                  </div>
                 </div>
-                {concessionTotal > 0 && <div className="flex justify-between">
-                    <span className="text-muted-foreground">Đồ ăn & nước</span>
-                    <span>{concessionTotal.toLocaleString('vi-VN')}₫</span>
-                  </div>}
-                {promoApplied && <div className="flex justify-between text-green-500">
+
+                {/* Informative notice block */}
+                <div className="flex items-start gap-3 p-3.5 rounded-xl bg-blue-500/5 border border-blue-500/20 text-xs text-muted-foreground">
+                  <div className="mt-0.5 w-4 h-4 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0 font-bold">i</div>
+                  <div className="space-y-1">
+                    <p className="font-bold text-blue-500">Môi trường thử nghiệm (Sandbox):</p>
+                    <p className="text-muted-foreground/80 leading-relaxed text-[11px]">Trang thanh toán thử nghiệm của VNPay sẽ tự động mở ra. Bạn có thể sử dụng thông tin thẻ ATM NCB test để kiểm tra:</p>
+                    <p className="text-primary font-mono text-[11px] mt-1 bg-muted p-2 rounded border border-border leading-relaxed">
+                      Số thẻ: 9704198526191432119 <br />
+                      Tên chủ thẻ: NGUYEN VAN A <br />
+                      Ngày phát hành: 07/15 <br />
+                      Mã OTP: 123456
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Right Column (1/3 width): Total Breakdown & Pay CTA */}
+          <div className="lg:col-span-1">
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-5 sticky top-24">
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider border-b border-border pb-3">Chi tiết thanh toán</h3>
+
+              {/* Cost detailed item list */}
+              <div className="space-y-3.5 text-xs text-muted-foreground relative">
+                {isLoadingCalc && (
+                  <div className="absolute inset-0 bg-card/80 flex items-center justify-center z-10 rounded">
+                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  </div>
+                )}
+
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground/60">Tiền vé ({seats.length} ghế)</span>
+                  <span className="font-bold text-foreground">{new Intl.NumberFormat('vi-VN').format(displaySeatTotal)}₫</span>
+                </div>
+                {displayConcessionTotal > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground/60">Tiền bắp nước</span>
+                    <span className="font-bold text-foreground">{new Intl.NumberFormat('vi-VN').format(displayConcessionTotal)}₫</span>
+                  </div>
+                )}
+                {promoApplied && (
+                  <div className="flex justify-between text-green-500 font-semibold">
                     <span>Giảm giá ({promoData?.discountType === 'Percentage' ? `${promoData.discountValue}%` : 'Trực tiếp'})</span>
-                    <span>-{discount.toLocaleString('vi-VN')}₫</span>
-                  </div>}
+                    <span>-{new Intl.NumberFormat('vi-VN').format(discount)}₫</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Thuế VAT ({vatPercent}%)</span>
-                  <span>{calculatedVatAmount.toLocaleString('vi-VN')}₫</span>
+                  <span className="text-muted-foreground/60">Thuế VAT ({displayVatPercent}%)</span>
+                  <span className="font-bold text-foreground">{new Intl.NumberFormat('vi-VN').format(calculatedVatAmount)}₫</span>
                 </div>
-                <div className="flex justify-between font-bold text-base pt-1">
-                  <span>Tổng cộng</span>
-                  <span className="text-primary">{finalTotal.toLocaleString('vi-VN')}₫</span>
+
+                {/* Divider */}
+                <div className="border-t border-border pt-4 flex justify-between items-center text-base font-extrabold text-foreground">
+                  <span>Tổng cộng:</span>
+                  <span className="text-xl text-primary font-black">
+                    {new Intl.NumberFormat('vi-VN').format(finalTotal)}₫
+                  </span>
                 </div>
               </div>
 
-              <Button className="w-full gap-2" onClick={handlePayment} disabled={processing} size="lg">
-                {processing ? <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Đang xử lý...
-                  </> : <>
-                    <Lock className="w-4 h-4" />
-                    {method === 'vnpay' ? 'Thanh toán qua VNPay' : `Thanh toán ${finalTotal.toLocaleString('vi-VN')}₫`}
-                  </>}
-              </Button>
+              {/* Action Button */}
+              <div className="pt-2">
+                <Button
+                  onClick={handlePayment}
+                  disabled={processing}
+                  className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-black h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  {processing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Đang xử lý giao dịch...
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4" />
+                      Thanh toán ngay
+                    </>
+                  )}
+                </Button>
 
-              <p className="text-xs text-center text-muted-foreground">
-                🔒 Giao dịch được mã hóa và bảo mật bởi VNPay
-              </p>
-            </CardContent>
-          </Card>
+                <p className="text-[10px] text-center text-muted-foreground/60 font-medium flex items-center justify-center gap-1.5 pt-3">
+                  <span>🛡️</span> Giao dịch được mã hóa và bảo mật bởi VNPay SSL
+                </p>
+              </div>
+            </div>
+          </div>
+
         </div>
-      </div>
-    </div>;
+      </main>
+    </div>
+  );
 }
 
 export default function PaymentPage() {
   return (
-      <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
-        <PaymentContent />
-      </Suspense>
-    );
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+      <PaymentContent />
+    </Suspense>
+  );
 }

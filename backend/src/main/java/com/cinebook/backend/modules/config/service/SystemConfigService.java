@@ -34,8 +34,6 @@ public class SystemConfigService {
         return val != null ? new BigDecimal(val) : BigDecimal.valueOf(2.00);
     }
 
-
-
     public int getSeatHoldMinutes() {
         String val = getConfigValue("seat_hold_minutes");
         return val != null ? Integer.parseInt(val) : 10;
@@ -49,6 +47,11 @@ public class SystemConfigService {
     public String getEveningSurchargeTime() {
         String val = getConfigValue("evening_surcharge_time");
         return val != null ? val : "17:00";
+    }
+
+    public String getEveningSurchargeEndTime() {
+        String val = getConfigValue("evening_surcharge_end_time");
+        return val != null ? val : "23:59";
     }
 
     public BigDecimal getEveningSurchargePercent() {

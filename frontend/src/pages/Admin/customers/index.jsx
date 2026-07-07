@@ -98,7 +98,7 @@ export default function AdminCustomersPage() {
     (c.phone || '').includes(search)
   );
 
-  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered, 10);
+  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
 
   const activeCount = customers.filter(c => c.status === 'Active').length;
   const vipCount = customers.filter(c => (c.totalSpent || 0) >= 4000000).length;

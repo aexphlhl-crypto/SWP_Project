@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import bookingApi from '@/api/bookingApi';
+import { BookingQRCard } from '@/components/booking/BookingQRCard';
 
 const VNPay_ERROR_CODES = {
   '01': 'Giao dịch chưa hoàn tất',
@@ -116,18 +117,13 @@ export default function VNPayResultPage() {
                     </div>
                   )}
                 </div>
-                <Separator />
-              </>
-            )}
 
-            {!booking && bookingId && (
-              <>
                 <Separator />
-                <div className="text-sm">
-                  <p className="text-muted-foreground">Mã đặt vé</p>
-                  <p className="font-mono font-bold text-primary text-lg">#{bookingId}</p>
-                </div>
-                <Separator />
+
+                {/* QR Code động từ qrCodeValue của backend (VD: BK001-A1) */}
+                {booking.tickets?.length > 0 && (
+                  <BookingQRCard tickets={booking.tickets} size={180} />
+                )}
               </>
             )}
 

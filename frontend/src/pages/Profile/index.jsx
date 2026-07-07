@@ -27,9 +27,18 @@ export default function ProfilePage() {
     dateOfBirth: user?.dateOfBirth || '',
     address: user?.address || ''
   });
+
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwData, setPwData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
   if (!isAuthenticated || !user) {
     return <Navigate to='/login' replace />;
   }
+
   const handleSave = async () => {
     try {
       setLoading(true);
@@ -42,9 +51,46 @@ export default function ProfilePage() {
         toast.error(res.error?.message || "Cập nhật thất bại.");
       }
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Lỗi hệ thống khi cập nhật.");
+      toast.error(err.error?.message || err.message || "Lỗi hệ thống khi cập nhật.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    const { currentPassword, newPassword, confirmPassword } = pwData;
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("Vui lòng nhập đầy đủ các trường mật khẩu.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Mật khẩu mới và xác nhận mật khẩu không khớp.");
+      return;
+    }
+    // Validate password pattern: ít nhất 8 ký tự, 1 chữ hoa, 1 số, 1 ký tự đặc biệt
+    const regex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':,./<>?]).{8,}$/;
+    if (!regex.test(newPassword)) {
+      toast.error("Mật khẩu mới phải từ 8 ký tự trở lên, bao gồm chữ hoa, số và ít nhất một ký tự đặc biệt.");
+      return;
+    }
+
+    try {
+      setPwLoading(true);
+      const res = await authApi.changePassword({ currentPassword, newPassword });
+      if (res.success) {
+        toast.success("Thay đổi mật khẩu thành công!");
+        setPwData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+      } else {
+        toast.error(res.error?.message || "Đổi mật khẩu thất bại.");
+      }
+    } catch (err) {
+      toast.error(err.error?.message || err.message || "Lỗi hệ thống khi đổi mật khẩu.");
+    } finally {
+      setPwLoading(false);
     }
   };
   return (
@@ -165,22 +211,45 @@ export default function ProfilePage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="cur-pw">Mật khẩu hiện tại</Label>
-              <Input id="cur-pw" type="password" placeholder="••••••••" />
+              <Input 
+                id="cur-pw" 
+                type="password" 
+                placeholder="••••••••" 
+                value={pwData.currentPassword}
+                onChange={(e) => setPwData({ ...pwData, currentPassword: e.target.value })}
+              />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="new-pw">Mật khẩu mới</Label>
-                <Input id="new-pw" type="password" placeholder="Tối thiểu 6 ký tự" />
+                <Input 
+                  id="new-pw" 
+                  type="password" 
+                  placeholder="Tối thiểu 8 ký tự (hoa, số, đ.biệt)" 
+                  value={pwData.newPassword}
+                  onChange={(e) => setPwData({ ...pwData, newPassword: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm-pw">Xác nhận mật khẩu</Label>
-                <Input id="confirm-pw" type="password" placeholder="••••••••" />
+                <Input 
+                  id="confirm-pw" 
+                  type="password" 
+                  placeholder="••••••••" 
+                  value={pwData.confirmPassword}
+                  onChange={(e) => setPwData({ ...pwData, confirmPassword: e.target.value })}
+                />
               </div>
             </div>
             <Separator className="bg-border" />
-            <Button variant="outline" className="gap-2">
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={handlePasswordChange}
+              disabled={pwLoading}
+            >
               <Lock className="w-4 h-4" />
-              Cập nhật mật khẩu
+              {pwLoading ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
             </Button>
           </CardContent>
         </Card>

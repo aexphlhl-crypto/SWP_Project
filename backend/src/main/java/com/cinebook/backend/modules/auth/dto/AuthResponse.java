@@ -23,5 +23,6 @@ public class AuthResponse {
         private String phone;
         private LocalDate dateOfBirth;
         private String address;
+        private Long cinemaId;
     }
 }

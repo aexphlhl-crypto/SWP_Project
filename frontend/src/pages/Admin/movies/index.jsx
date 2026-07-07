@@ -11,13 +11,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Film, Plus, Search, MoreHorizontal, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Film, Plus, Search, MoreHorizontal, Pencil, Trash2, Loader2, Upload } from 'lucide-react';
 
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import movieApi from '@/api/movieApi';
 import uploadApi from '@/api/uploadApi';
 import genreApi from '@/api/genreApi';
+import actorApi from '@/api/actorApi';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
 import { useClientPagination } from '@/hooks/use-client-pagination';
@@ -29,6 +30,7 @@ export default function AdminMoviesPage() {
   const role = user?.role || 'admin';
   const [movies, setMovies] = useState([]);
   const [allGenres, setAllGenres] = useState([]);
+  const [allActors, setAllActors] = useState([]);
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -43,7 +45,7 @@ export default function AdminMoviesPage() {
   
   // Form State
   const [formData, setFormData] = useState({
-    title: '', originalTitle: '', synopsis: '', director: '', castList: '', releaseDate: new Date().toISOString().split('T')[0], language: 'Vietnamese', trailerUrl: '', poster: '', duration: '', status: 'now_showing', ageRating: 'PG-13', rating: 0, genreIds: []
+    title: '', originalTitle: '', synopsis: '', director: '', castList: '', releaseDate: new Date().toISOString().split('T')[0], language: 'Vietnamese', trailerUrl: '', poster: '', duration: '', status: 'now_showing', ageRating: 'PG-13', rating: 0, genreIds: [], actorIds: []
   });
 
   const fetchMovies = async () => {
@@ -81,18 +83,30 @@ export default function AdminMoviesPage() {
     }
   };
 
+  const fetchActors = async () => {
+    try {
+      const res = await actorApi.getAll();
+      if (res.success && res.data) {
+        setAllActors(res.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     fetchMovies();
     fetchGenres();
+    fetchActors();
   }, []);
 
   const filtered = movies.filter(m => m.title.toLowerCase().includes(search.toLowerCase()) || (m.originalTitle ?? '').toLowerCase().includes(search.toLowerCase()));
 
-  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered, 10);
+  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
 
   const openAdd = () => {
     setEditingMovie(null);
-    setFormData({ title: '', originalTitle: '', synopsis: '', director: '', castList: '', releaseDate: new Date().toISOString().split('T')[0], language: 'Vietnamese', trailerUrl: '', poster: '', duration: '', status: 'now_showing', ageRating: 'PG-13', rating: 0, genreIds: [] });
+    setFormData({ title: '', originalTitle: '', synopsis: '', director: '', castList: '', releaseDate: new Date().toISOString().split('T')[0], language: 'Vietnamese', trailerUrl: '', poster: '', duration: '', status: 'now_showing', ageRating: 'PG-13', rating: 0, genreIds: [], actorIds: [] });
     setIsDialogOpen(true);
   };
 
@@ -113,7 +127,8 @@ export default function AdminMoviesPage() {
               movie.status === 'ComingSoon' || movie.status === 'coming_soon' ? 'coming_soon' : 'hidden', 
       ageRating: movie.ageRating || 'PG-13', 
       rating: Number(movie.avgRating ?? movie.rating ?? 0),
-      genreIds: movie.genres ? movie.genres.map(g => g.genreId) : []
+      genreIds: movie.genres ? movie.genres.map(g => g.genreId) : [],
+      actorIds: movie.actors ? movie.actors.map(a => a.actorId) : []
     });
     setIsDialogOpen(true);
   };
@@ -171,7 +186,8 @@ export default function AdminMoviesPage() {
       status: formData.status === 'now_showing' ? 'NowShowing' : 
               formData.status === 'coming_soon' ? 'ComingSoon' : 'Hidden',
       ageRating: formData.ageRating || 'PG-13',
-      genreIds: formData.genreIds
+      genreIds: formData.genreIds,
+      actorIds: formData.actorIds
     };
 
     try {
@@ -365,65 +381,107 @@ export default function AdminMoviesPage() {
 
         {/* Add/Edit Modal */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-[#18181b] border-zinc-800 text-white scrollbar-thin">
             <DialogHeader>
-              <DialogTitle>{editingMovie ? 'Chỉnh sửa phim' : 'Thêm phim mới'}</DialogTitle>
+              <DialogTitle className="text-xl font-bold text-white">{editingMovie ? 'Chỉnh sửa phim' : 'Thêm phim mới'}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label>Tên phim</Label>
-                <Input value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
+                <Label className="text-zinc-300">Tên phim</Label>
+                <Input value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="bg-zinc-900 border-zinc-800 text-white" />
               </div>
               <div className="grid gap-2">
-                <Label>Tên gốc (Tiếng Anh)</Label>
-                <Input value={formData.originalTitle} onChange={e => setFormData({ ...formData, originalTitle: e.target.value })} />
+                <Label className="text-zinc-300">Tên gốc (Tiếng Anh)</Label>
+                <Input value={formData.originalTitle} onChange={e => setFormData({ ...formData, originalTitle: e.target.value })} className="bg-zinc-900 border-zinc-800 text-white" />
               </div>
               <div className="grid gap-2">
-                <Label>Nội dung (Synopsis)</Label>
-                <Textarea value={formData.synopsis} onChange={e => setFormData({ ...formData, synopsis: e.target.value })} rows={3} />
+                <Label className="text-zinc-300">Nội dung (Synopsis)</Label>
+                <Textarea value={formData.synopsis} onChange={e => setFormData({ ...formData, synopsis: e.target.value })} rows={3} className="bg-zinc-900 border-zinc-800 text-white" />
               </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label>Đạo diễn</Label>
-                    <Input value={formData.director} onChange={e => setFormData({ ...formData, director: e.target.value })} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Diễn viên</Label>
-                    <Input value={formData.castList} onChange={e => setFormData({ ...formData, castList: e.target.value })} />
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label className="text-zinc-300">Đạo diễn</Label>
+                  <Input value={formData.director} onChange={e => setFormData({ ...formData, director: e.target.value })} className="bg-zinc-900 border-zinc-800 text-white" />
                 </div>
                 <div className="grid gap-2">
-                  <Label>Thể loại</Label>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal h-auto min-h-10 break-all whitespace-normal">
-                        {formData.genreIds.length > 0 
-                          ? formData.genreIds.map(id => allGenres.find(g => g.genreId === id)?.name).filter(Boolean).join(', ')
-                          : "Chọn thể loại..."}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-[375px] max-h-[300px] overflow-y-auto" align="start">
-                      {allGenres.map(genre => (
-                        <DropdownMenuCheckboxItem
-                          key={genre.genreId}
-                          checked={formData.genreIds.includes(genre.genreId)}
-                          onCheckedChange={(checked) => {
-                            setFormData(prev => {
-                              if (checked) {
-                                return { ...prev, genreIds: [...prev.genreIds, genre.genreId] };
-                              } else {
-                                return { ...prev, genreIds: prev.genreIds.filter(id => id !== genre.genreId) };
-                              }
-                            });
-                          }}
-                          onSelect={(e) => e.preventDefault()}
-                        >
-                          {genre.name}
-                        </DropdownMenuCheckboxItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Label className="text-zinc-300">Mô tả Diễn viên (Chuỗi)</Label>
+                  <Input value={formData.castList} onChange={e => setFormData({ ...formData, castList: e.target.value })} className="bg-zinc-900 border-zinc-800 text-white" />
                 </div>
+              </div>
+              <div className="grid gap-2">
+                <Label className="text-zinc-300">Thể loại</Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal h-auto min-h-10 break-all whitespace-normal border-zinc-800 bg-zinc-900 text-white hover:bg-zinc-800">
+                      {formData.genreIds.length > 0 
+                        ? formData.genreIds.map(id => allGenres.find(g => g.genreId === id)?.name).filter(Boolean).join(', ')
+                        : "Chọn thể loại..."}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-[375px] max-h-[300px] overflow-y-auto bg-zinc-950 border-zinc-800 text-white" align="start">
+                    {allGenres.map(genre => (
+                      <DropdownMenuCheckboxItem
+                         key={genre.genreId}
+                         checked={formData.genreIds.includes(genre.genreId)}
+                         onCheckedChange={(checked) => {
+                           setFormData(prev => {
+                             if (checked) {
+                               return { ...prev, genreIds: [...prev.genreIds, genre.genreId] };
+                             } else {
+                               return { ...prev, genreIds: prev.genreIds.filter(id => id !== genre.genreId) };
+                             }
+                           });
+                         }}
+                         onSelect={(e) => e.preventDefault()}
+                         className="hover:bg-zinc-800 cursor-pointer"
+                      >
+                        {genre.name}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <div className="grid gap-2">
+                <Label className="text-zinc-300">Chọn Diễn viên chính</Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal h-auto min-h-10 break-all whitespace-normal border-zinc-800 bg-zinc-900 text-white hover:bg-zinc-800">
+                      {formData.actorIds.length > 0 
+                        ? formData.actorIds.map(id => allActors.find(a => a.actorId === id)?.name).filter(Boolean).join(', ')
+                        : "Chọn diễn viên..."}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-[375px] max-h-[300px] overflow-y-auto bg-zinc-950 border-zinc-800 text-white" align="start">
+                    {allActors.map(actor => (
+                      <DropdownMenuCheckboxItem
+                        key={actor.actorId}
+                        checked={formData.actorIds.includes(actor.actorId)}
+                        onCheckedChange={(checked) => {
+                          setFormData(prev => {
+                            if (checked) {
+                              return { ...prev, actorIds: [...prev.actorIds, actor.actorId] };
+                            } else {
+                              return { ...prev, actorIds: prev.actorIds.filter(id => id !== actor.actorId) };
+                            }
+                          });
+                        }}
+                        onSelect={(e) => e.preventDefault()}
+                        className="hover:bg-zinc-800 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={actor.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(actor.name)}&background=random&color=fff&size=64&bold=true`}
+                            alt={actor.name}
+                            className="h-6 w-6 rounded-full object-cover border border-zinc-700"
+                          />
+                          <span>{actor.name}</span>
+                        </div>
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label>Ngày khởi chiếu</Label>
