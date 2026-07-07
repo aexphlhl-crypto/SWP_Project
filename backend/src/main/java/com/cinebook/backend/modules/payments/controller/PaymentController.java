@@ -35,6 +35,7 @@ public class PaymentController {
     private final com.cinebook.backend.modules.promos.service.PromoService promoService;
     private final com.cinebook.backend.modules.bookings.service.BookingService bookingService;
     private final com.cinebook.backend.modules.auth.EmailService emailService;
+    private final com.cinebook.backend.modules.config.service.SystemConfigService systemConfigService;
 
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
@@ -46,12 +47,13 @@ public class PaymentController {
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
         if (booking.getStatus() != BookingStatus.Pending) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("Booking is not in pending state", "INVALID_STATE"));
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Booking is not in pending state", "INVALID_STATE"));
         }
 
         String ipAddr = getClientIp(request);
         String paymentUrl = vnPayService.createPaymentUrl(booking, ipAddr);
-        
+
         // Extract txn ref to save in payment
         String[] urlParts = paymentUrl.split("\\?");
         String vnpTxnRef = "";
@@ -108,8 +110,12 @@ public class PaymentController {
 
                     // Send Email Confirmation
                     try {
-                        com.cinebook.backend.modules.bookings.dto.MyBookingDto bookingDto = bookingService.getBookingById(booking.getId());
-                        emailService.sendBookingConfirmation(booking.getCustomer().getEmail(), bookingDto);
+                        String emailNotif = systemConfigService.getConfigValue("email_notif");
+                        if (!"false".equalsIgnoreCase(emailNotif)) {
+                            com.cinebook.backend.modules.bookings.dto.MyBookingDto bookingDto = bookingService
+                                    .getBookingById(booking.getId());
+                            emailService.sendBookingConfirmation(booking.getCustomer().getEmail(), bookingDto);
+                        }
                     } catch (Exception e) {
                         System.err.println("Error sending booking email: " + e.getMessage());
                     }
@@ -124,9 +130,11 @@ public class PaymentController {
             }
 
             if ("00".equals(vnpResponseCode)) {
-                response.sendRedirect(frontendUrl + "/payment/result?status=success&bookingId=" + bookingIdStr + "&txnRef=" + vnpTxnRef);
+                response.sendRedirect(frontendUrl + "/payment/result?status=success&bookingId=" + bookingIdStr
+                        + "&txnRef=" + vnpTxnRef);
             } else {
-                response.sendRedirect(frontendUrl + "/payment/result?status=failed&code=" + vnpResponseCode + "&bookingId=" + bookingIdStr);
+                response.sendRedirect(frontendUrl + "/payment/result?status=failed&code=" + vnpResponseCode
+                        + "&bookingId=" + bookingIdStr);
             }
         } catch (Exception e) {
             response.sendRedirect(frontendUrl + "/payment/result?status=error&code=SERVER_ERROR");
