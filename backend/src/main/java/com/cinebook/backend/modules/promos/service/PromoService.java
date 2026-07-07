@@ -1,5 +1,6 @@
 package com.cinebook.backend.modules.promos.service;
 
+import com.cinebook.backend.common.exception.AppException;
 import com.cinebook.backend.modules.promos.entity.PromoCode;
 import com.cinebook.backend.modules.promos.entity.PromoStatus;
 import com.cinebook.backend.modules.promos.repository.PromoCodeRepository;
@@ -16,28 +17,29 @@ public class PromoService {
 
     public PromoCode validatePromo(String code, Long userId, Integer orderValue) {
         PromoCode promo = promoCodeRepository.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("Promo not found"));
+                .orElseThrow(() -> AppException.notFound("Promo code not found."));
 
         if (promo.getStatus() != PromoStatus.Active) {
-            throw new RuntimeException("Promo is inactive");
+            throw AppException.badRequest("Promo code is inactive.");
         }
 
         LocalDateTime now = LocalDateTime.now();
         if (now.isBefore(promo.getValidFrom()) || now.isAfter(promo.getValidUntil())) {
-            throw new RuntimeException("Promo is expired or not yet valid");
+            throw AppException.badRequest("Promo code has expired or is not yet valid.");
         }
 
         if (promo.getMinOrderValue() != null && orderValue < promo.getMinOrderValue()) {
-            throw new RuntimeException("Order value does not meet minimum requirement");
+            throw AppException.badRequest(
+                    "Order total does not meet the minimum required amount of " + promo.getMinOrderValue() + " VND.");
         }
 
         if (promo.getUsageLimit() != null && promo.getUsedCount() >= promo.getUsageLimit()) {
-            throw new RuntimeException("Promo usage limit exceeded");
+            throw AppException.badRequest("Promo code usage limit has been reached.");
         }
 
         long userUsageCount = promoUsageRepository.countByPromoIdAndUserId(promo.getId(), userId);
         if (userUsageCount > 0) {
-            throw new RuntimeException("User has already used this promo");
+            throw AppException.badRequest("You have already used this promo code.");
         }
 
         return promo;
@@ -46,28 +48,29 @@ public class PromoService {
     @org.springframework.transaction.annotation.Transactional
     public PromoCode validateAndReservePromo(String code, Long userId, Long bookingId, Integer orderValue) {
         PromoCode promo = promoCodeRepository.findByCodeForUpdate(code)
-                .orElseThrow(() -> new RuntimeException("Promo not found"));
+                .orElseThrow(() -> AppException.notFound("Promo code not found."));
 
         if (promo.getStatus() != PromoStatus.Active) {
-            throw new RuntimeException("Promo is inactive");
+            throw AppException.badRequest("Promo code is inactive.");
         }
 
         LocalDateTime now = LocalDateTime.now();
         if (now.isBefore(promo.getValidFrom()) || now.isAfter(promo.getValidUntil())) {
-            throw new RuntimeException("Promo is expired or not yet valid");
+            throw AppException.badRequest("Promo code has expired or is not yet valid.");
         }
 
         if (promo.getMinOrderValue() != null && orderValue < promo.getMinOrderValue()) {
-            throw new RuntimeException("Order value does not meet minimum requirement");
+            throw AppException.badRequest(
+                    "Order total does not meet the minimum required amount of " + promo.getMinOrderValue() + " VND.");
         }
 
         if (promo.getUsageLimit() != null && promo.getUsedCount() >= promo.getUsageLimit()) {
-            throw new RuntimeException("Promo usage limit exceeded");
+            throw AppException.badRequest("Promo code usage limit has been reached.");
         }
 
         long userUsageCount = promoUsageRepository.countByPromoIdAndUserId(promo.getId(), userId);
         if (userUsageCount > 0) {
-            throw new RuntimeException("User has already used this promo");
+            throw AppException.badRequest("You have already used this promo code.");
         }
 
         // Reserve the promo
@@ -85,7 +88,8 @@ public class PromoService {
 
     @org.springframework.transaction.annotation.Transactional
     public void releasePromoUsage(Long promoId, Long bookingId) {
-        java.util.Optional<com.cinebook.backend.modules.promos.entity.PromoUsage> usageOpt = promoUsageRepository.findByBookingId(bookingId);
+        java.util.Optional<com.cinebook.backend.modules.promos.entity.PromoUsage> usageOpt = promoUsageRepository
+                .findByBookingId(bookingId);
         if (usageOpt.isPresent()) {
             promoUsageRepository.deleteByBookingId(bookingId);
             promoCodeRepository.findById(promoId).ifPresent(promo -> {
@@ -97,7 +101,8 @@ public class PromoService {
         }
     }
 
-    public org.springframework.data.domain.Page<PromoCode> getAllPromos(org.springframework.data.domain.Pageable pageable) {
+    public org.springframework.data.domain.Page<PromoCode> getAllPromos(
+            org.springframework.data.domain.Pageable pageable) {
         return promoCodeRepository.findAll(pageable);
     }
 
@@ -107,7 +112,7 @@ public class PromoService {
 
     public PromoCode updatePromo(Long id, PromoCode promoDetails) {
         PromoCode promo = promoCodeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Promo not found"));
+                .orElseThrow(() -> AppException.notFound("Promo code not found."));
 
         promo.setCode(promoDetails.getCode());
         promo.setDiscountType(promoDetails.getDiscountType());
@@ -124,15 +129,17 @@ public class PromoService {
 
     public void deletePromo(Long id) {
         PromoCode promo = promoCodeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Promo not found"));
-        // Or set status to inactive
+                .orElseThrow(() -> AppException.notFound("Promo code not found."));
+        if (promo.getStatus() == PromoStatus.Active) {
+            throw AppException.badRequest("Cannot delete an active promo code. Please deactivate it first.");
+        }
         promoCodeRepository.delete(promo);
     }
 
     public void recordUsage(Long promoId, Long userId, Long bookingId) {
         PromoCode promo = promoCodeRepository.findById(promoId)
-                .orElseThrow(() -> new RuntimeException("Promo not found"));
-        
+                .orElseThrow(() -> AppException.notFound("Promo code not found."));
+
         promo.setUsedCount(promo.getUsedCount() + 1);
         promoCodeRepository.save(promo);
 
@@ -144,7 +151,8 @@ public class PromoService {
     }
 
     public void expireOldPromos() {
-        java.util.List<PromoCode> expiredPromos = promoCodeRepository.findByStatusAndValidUntilBefore(PromoStatus.Active, LocalDateTime.now());
+        java.util.List<PromoCode> expiredPromos = promoCodeRepository
+                .findByStatusAndValidUntilBefore(PromoStatus.Active, LocalDateTime.now());
         for (PromoCode promo : expiredPromos) {
             promo.setStatus(PromoStatus.Inactive);
             promoCodeRepository.save(promo);
