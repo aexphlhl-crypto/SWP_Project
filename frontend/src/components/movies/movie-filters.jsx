@@ -14,23 +14,26 @@ export function MovieFilters({
   onStatusChange,
   onGenreChange,
   onCinemaChange,
-  onClearFilters
+  onClearFilters,
+  hideStatusFilter = false
 }) {
   const hasActiveFilters = status !== 'all' || genre !== 'all' || cinema !== 'all';
   const FilterContent = () => <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-muted-foreground">Trạng thái</label>
-        <Select value={status} onValueChange={value => onStatusChange(value)}>
-          <SelectTrigger className="w-full lg:w-[180px]">
-            <SelectValue placeholder="Tất cả trạng thái" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tất cả</SelectItem>
-            <SelectItem value="now_showing">Đang chiếu</SelectItem>
-            <SelectItem value="coming_soon">Sắp chiếu</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {!hideStatusFilter && (
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-muted-foreground">Trạng thái</label>
+          <Select value={status} onValueChange={value => onStatusChange(value)}>
+            <SelectTrigger className="w-full lg:w-[180px]">
+              <SelectValue placeholder="Tất cả trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="now_showing">Đang chiếu</SelectItem>
+              <SelectItem value="coming_soon">Sắp chiếu</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-muted-foreground">Thể loại</label>
@@ -101,7 +104,7 @@ export function MovieFilters({
 
       {/* Active Filter Badges */}
       {hasActiveFilters && <div className="flex flex-wrap gap-2">
-          {status !== 'all' && <Badge variant="secondary" className="gap-1">
+          {!hideStatusFilter && status !== 'all' && <Badge variant="secondary" className="gap-1">
               {status === 'now_showing' ? 'Đang chiếu' : 'Sắp chiếu'}
               <button onClick={() => onStatusChange('all')} className="ml-1 hover:text-primary">
                 <X className="size-3" />

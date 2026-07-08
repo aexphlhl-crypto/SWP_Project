@@ -54,15 +54,13 @@ public class ShowtimeService {
 
     @Transactional(readOnly = true)
     public Page<ShowtimeDto> getAllShowtimes(Long movieId, Long cinemaId, java.time.LocalDate date, Pageable pageable) {
-        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder
-                .getContext().getAuthentication();
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated()) {
             boolean isScheduleManager = auth.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_ScheduleManager"));
             if (isScheduleManager) {
                 String email = auth.getName();
-                com.cinebook.backend.modules.users.User user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                        .orElse(null);
+                com.cinebook.backend.modules.users.User user = userRepository.findByEmailAndDeletedAtIsNull(email).orElse(null);
                 if (user != null && user.getCinema() != null) {
                     cinemaId = user.getCinema().getCinemaId();
                 } else {
@@ -77,14 +75,13 @@ public class ShowtimeService {
             startDate = date.atStartOfDay();
             endDate = startDate.plusDays(1);
         }
-        return showtimeRepository.findFilteredShowtimes(movieId, cinemaId, startDate, endDate, pageable)
-                .map(this::mapToDto);
+        return showtimeRepository.findFilteredShowtimes(movieId, cinemaId, startDate, endDate, pageable).map(this::mapToDto);
     }
 
     @Transactional(readOnly = true)
     public ShowtimeDto getShowtimeById(Long id) {
         return showtimeRepository.findById(id).map(this::mapToDto)
-                .orElseThrow(() -> AppException.notFound("Showtime not found."));
+            .orElseThrow(() -> AppException.notFound("Showtime not found."));
     }
 
     private ShowtimeDto mapToDto(Showtime s) {
@@ -113,7 +110,7 @@ public class ShowtimeService {
                 .orElseThrow(() -> AppException.notFound("Showtime not found."));
 
         List<Seat> allSeats = seatRepository.findByRoomRoomId(showtime.getRoom().getRoomId());
-
+        
         List<BookingSeat> bookedSeats = bookingSeatRepository.findBookedSeatsByShowtime(showtimeId);
         Set<Long> bookedSeatIds = bookedSeats.stream()
                 .map(bs -> bs.getSeat().getSeatId())
@@ -166,8 +163,7 @@ public class ShowtimeService {
         }
 
         // Check if held by someone else
-        java.util.Optional<SeatHold> existingHold = seatHoldRepository.findActiveHoldBySeat(showtimeId, seatId,
-                LocalDateTime.now());
+        java.util.Optional<SeatHold> existingHold = seatHoldRepository.findActiveHoldBySeat(showtimeId, seatId, LocalDateTime.now());
         if (existingHold.isPresent() && !existingHold.get().getUser().getUserId().equals(user.getUserId())) {
             throw AppException.badRequest("This seat is currently held by another customer.");
         }
@@ -211,8 +207,7 @@ public class ShowtimeService {
         BigDecimal dayMultiplier = BigDecimal.ONE;
         DayOfWeek dayOfWeek = showtime.getStartTime().getDayOfWeek();
         if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-            dayMultiplier = BigDecimal.ONE
-                    .add(systemConfigService.getWeekendSurchargePercent().divide(BigDecimal.valueOf(100)));
+            dayMultiplier = BigDecimal.ONE.add(systemConfigService.getWeekendSurchargePercent().divide(BigDecimal.valueOf(100)));
         }
 
         // Time Multiplier
@@ -223,7 +218,7 @@ public class ShowtimeService {
                 LocalTime eveningTime = LocalTime.parse(eveningTimeStr);
                 String eveningEndTimeStr = systemConfigService.getEveningSurchargeEndTime();
                 LocalTime eveningEndTime = LocalTime.parse(eveningEndTimeStr != null ? eveningEndTimeStr : "23:59");
-
+                
                 LocalTime showtimeTime = showtime.getStartTime().toLocalTime();
                 boolean isSurchargeActive = false;
                 if (eveningEndTime.isAfter(eveningTime)) {
@@ -233,12 +228,10 @@ public class ShowtimeService {
                 }
 
                 if (isSurchargeActive) {
-                    timeMultiplier = BigDecimal.ONE
-                            .add(systemConfigService.getEveningSurchargePercent().divide(BigDecimal.valueOf(100)));
+                    timeMultiplier = BigDecimal.ONE.add(systemConfigService.getEveningSurchargePercent().divide(BigDecimal.valueOf(100)));
                 }
             }
-        } catch (Exception e) {
-            /* use default timeMultiplier = 1 */ }
+        } catch (Exception e) { /* use default timeMultiplier = 1 */ }
 
         BigDecimal finalPrice = basePrice.multiply(dayMultiplier).multiply(timeMultiplier);
         return finalPrice.intValue();
@@ -246,7 +239,7 @@ public class ShowtimeService {
 
     private Integer calculateTicketPrice(Showtime showtime, Seat seat) {
         Integer baseTicketPrice = calculateBaseTicketPrice(showtime);
-
+        
         // Seat Multiplier
         BigDecimal seatMultiplier = BigDecimal.ONE;
         if ("VIP".equalsIgnoreCase(seat.getSeatType().name())) {
@@ -261,7 +254,7 @@ public class ShowtimeService {
     @Transactional
     public ShowtimeDto createShowtime(ShowtimeRequest request) {
         validateCinemaAccess(request.getCinemaId());
-
+        
         Movie movie = movieRepository.findById(request.getMovieId())
                 .orElseThrow(() -> AppException.notFound("Movie not found."));
         if (movie.getStatus() != null && "Hidden".equalsIgnoreCase(movie.getStatus())) {
@@ -308,7 +301,7 @@ public class ShowtimeService {
                 .orElseThrow(() -> AppException.notFound("Showtime not found."));
 
         validateCinemaAccess(showtime.getCinema().getCinemaId());
-
+        
         int bookedCount = bookingSeatRepository.findBookedSeatsByShowtime(id).size();
         if (bookedCount > 0) {
             throw AppException.badRequest("Cannot edit a showtime that already has sold tickets.");
@@ -318,8 +311,7 @@ public class ShowtimeService {
         if (request.getMovieId() != null) {
             targetMovie = movieRepository.findById(request.getMovieId())
                     .orElseThrow(() -> AppException.notFound("Movie not found."));
-            if (targetMovie.getStatus() != null && "Hidden".equalsIgnoreCase(targetMovie.getStatus())
-                    && !targetMovie.getMovieId().equals(showtime.getMovie().getMovieId())) {
+            if (targetMovie.getStatus() != null && "Hidden".equalsIgnoreCase(targetMovie.getStatus()) && !targetMovie.getMovieId().equals(showtime.getMovie().getMovieId())) {
                 throw AppException.badRequest("Cannot update showtime to a hidden movie.");
             }
             showtime.setMovie(targetMovie);
@@ -334,8 +326,7 @@ public class ShowtimeService {
         if (request.getRoomId() != null) {
             targetRoom = roomRepository.findById(request.getRoomId())
                     .orElseThrow(() -> AppException.notFound("Room not found."));
-            if (targetRoom.getStatus() != null && !"Active".equalsIgnoreCase(targetRoom.getStatus())
-                    && !targetRoom.getRoomId().equals(showtime.getRoom().getRoomId())) {
+            if (targetRoom.getStatus() != null && !"Active".equalsIgnoreCase(targetRoom.getStatus()) && !targetRoom.getRoomId().equals(showtime.getRoom().getRoomId())) {
                 throw AppException.badRequest("Cannot update showtime to a room under maintenance.");
             }
             showtime.setRoom(targetRoom);
@@ -354,10 +345,11 @@ public class ShowtimeService {
         LocalDateTime targetEndTimeWithBuffer = targetEndTime.plusMinutes(20);
 
         boolean conflict = showtimeRepository.existsConflictingShowtimeForUpdate(
-                targetRoom.getRoomId(),
-                id,
-                targetStartTime,
-                targetEndTimeWithBuffer);
+                targetRoom.getRoomId(), 
+                id, 
+                targetStartTime, 
+                targetEndTimeWithBuffer
+        );
         if (conflict) {
             throw AppException.badRequest("Conflict Detected — Minimum cleanup gap of 20 minutes violated.");
         }
@@ -365,7 +357,7 @@ public class ShowtimeService {
         if (request.getStatus() != null) {
             showtime.setStatus(request.getStatus());
         }
-
+        
         return mapToDto(showtimeRepository.save(showtime));
     }
 
