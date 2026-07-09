@@ -211,7 +211,7 @@ export default function MovieDetailPage() {
   const trailerEmbedUrl = getYouTubeEmbedUrl(movie?.trailer)
   const [trailerOpen, setTrailerOpen] = useState(false)
   const [reviews, setReviews] = useState([]);
-  
+
   const [hasWatched, setHasWatched] = useState(false);
   const [bookingId, setBookingId] = useState(null);
   const [myRating, setMyRating] = useState(0);
@@ -237,14 +237,14 @@ export default function MovieDetailPage() {
           try {
             const res = await bookingApi.getMyTickets();
             if (res.success && res.data) {
-              const watchedTicket = res.data.find(t => 
-                String(t.movieId) === String(movie.movieId || movie.id) && 
+              const watchedTicket = res.data.find(t =>
+                String(t.movieId) === String(movie.movieId || movie.id) &&
                 (t.status === 'Paid' || t.status === 'Completed' || t.status === 'paid' || t.status === 'completed')
               );
               if (watchedTicket) {
                 setHasWatched(true);
-                const rawBookingId = typeof watchedTicket.id === 'string' && watchedTicket.id.startsWith('BK') 
-                  ? parseInt(watchedTicket.id.replace('BK', ''), 10) 
+                const rawBookingId = typeof watchedTicket.id === 'string' && watchedTicket.id.startsWith('BK')
+                  ? parseInt(watchedTicket.id.replace('BK', ''), 10)
                   : watchedTicket.id;
                 setBookingId(Number(rawBookingId));
               }
@@ -338,8 +338,8 @@ export default function MovieDetailPage() {
   }, [availableCinemas, selectedCinemaId]);
 
   const filteredShowtimesForCinemaAndDate = useMemo(() => {
-    return activeShowtimes.filter(s => 
-      s.date === selectedDate && 
+    return activeShowtimes.filter(s =>
+      s.date === selectedDate &&
       (!selectedCinemaId || String(s.cinemaId) === String(selectedCinemaId))
     );
   }, [activeShowtimes, selectedDate, selectedCinemaId]);
@@ -457,8 +457,8 @@ export default function MovieDetailPage() {
 
         <div className="container relative z-10 max-w-[1400px] mx-auto px-4 pt-28 pb-16">
           {/* Back Button */}
-          <Link 
-            to="/movies" 
+          <Link
+            to="/movies"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 font-semibold transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
@@ -590,122 +590,122 @@ export default function MovieDetailPage() {
       <section className="py-16 bg-muted/30 border-t border-border">
         <div className="container max-w-[600px] mx-auto px-4">
           <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-6">
-              <div className="flex items-center gap-2 border-b border-border pb-3">
-                <Ticket className="w-5 h-5 text-primary" />
-                <h3 className="text-lg font-black text-foreground tracking-tight">Mua vé xem phim</h3>
-              </div>
-              
-              {/* Step 1: Chọn Rạp */}
-              {availableCinemas.length > 0 ? (
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">1. Chọn rạp chiếu</label>
-                  <select
-                    value={selectedCinemaId}
-                    onChange={(e) => {
-                      setSelectedCinemaId(e.target.value);
-                      setSelectedShowtimeId('');
-                    }}
-                    className="w-full bg-muted border border-input hover:border-border focus:border-primary text-foreground rounded-xl px-3 py-2.5 h-11 text-sm focus:outline-none cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M7%209l3%203%203-3%22%20stroke%3D%22%23a1a1aa%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.75rem_center] bg-no-repeat"
-                  >
-                    {availableCinemas.map(c => (
-                      <option key={c.id} value={c.id} className="bg-popover text-foreground">{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-              ) : (
-                <div className="text-xs text-amber-500 bg-amber-500/10 rounded-lg p-3 border border-amber-500/20">
-                  Phim chưa được xếp lịch chiếu. Vui lòng quay lại sau!
-                </div>
-              )}
+            <div className="flex items-center gap-2 border-b border-border pb-3">
+              <Ticket className="w-5 h-5 text-primary" />
+              <h3 className="text-lg font-black text-foreground tracking-tight">Mua vé xem phim</h3>
+            </div>
 
-              {/* Step 2: Chọn Ngày */}
+            {/* Step 1: Chọn Rạp */}
+            {availableCinemas.length > 0 ? (
               <div className="space-y-2">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">2. Chọn ngày chiếu</label>
-                <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-hide -mx-2 px-2">
-                  {dates.map(date => {
-                    const isSelected = selectedDate === date.value;
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">1. Chọn rạp chiếu</label>
+                <select
+                  value={selectedCinemaId}
+                  onChange={(e) => {
+                    setSelectedCinemaId(e.target.value);
+                    setSelectedShowtimeId('');
+                  }}
+                  className="w-full bg-muted border border-input hover:border-border focus:border-primary text-foreground rounded-xl px-3 py-2.5 h-11 text-sm focus:outline-none cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M7%209l3%203%203-3%22%20stroke%3D%22%23a1a1aa%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.75rem_center] bg-no-repeat"
+                >
+                  {availableCinemas.map(c => (
+                    <option key={c.id} value={c.id} className="bg-popover text-foreground">{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div className="text-xs text-amber-500 bg-amber-500/10 rounded-lg p-3 border border-amber-500/20">
+                Phim chưa được xếp lịch chiếu. Vui lòng quay lại sau!
+              </div>
+            )}
+
+            {/* Step 2: Chọn Ngày */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">2. Chọn ngày chiếu</label>
+              <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-hide -mx-2 px-2">
+                {dates.map(date => {
+                  const isSelected = selectedDate === date.value;
+                  return (
+                    <button
+                      key={date.value}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDate(date.value);
+                        setSelectedShowtimeId('');
+                      }}
+                      className={`flex-shrink-0 flex flex-col items-center justify-center rounded-xl px-3.5 py-2 text-center transition-all ${isSelected ? 'bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 scale-105' : 'bg-muted hover:bg-muted/80 text-foreground'}`}
+                    >
+                      <span className="text-[9px] font-normal capitalize tracking-wider">{date.label}</span>
+                      <span className="text-xs font-bold mt-0.5">{date.date}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Step 3: Chọn Suất Chiếu */}
+            <div className="space-y-3">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between block">
+                <span>3. Chọn Suất Chiếu</span>
+                {selectedShowtime && (
+                  <Badge variant="outline" className="text-[10px] text-primary border-primary/20 bg-primary/5">
+                    {selectedShowtime.roomName}
+                  </Badge>
+                )}
+              </label>
+
+              {filteredShowtimesForCinemaAndDate.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2.5">
+                  {filteredShowtimesForCinemaAndDate.map(showtime => {
+                    const isSelected = selectedShowtimeId === showtime.id;
+                    const now = new Date();
+                    const [hours, minutes] = showtime.startTime.split(':');
+                    const [year, month, day] = showtime.date.split('-');
+                    const showtimeDate = new Date(year, month - 1, day, hours, minutes);
+                    const isPast = showtimeDate < now;
+
                     return (
                       <button
-                        key={date.value}
+                        key={showtime.id}
                         type="button"
-                        onClick={() => {
-                          setSelectedDate(date.value);
-                          setSelectedShowtimeId('');
-                        }}
-                        className={`flex-shrink-0 flex flex-col items-center justify-center rounded-xl px-3.5 py-2 text-center transition-all ${isSelected ? 'bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 scale-105' : 'bg-muted hover:bg-muted/80 text-foreground'}`}
+                        disabled={isPast || showtime.availableSeats === 0}
+                        onClick={() => setSelectedShowtimeId(showtime.id)}
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${isPast || showtime.availableSeats === 0 ? 'opacity-30 cursor-not-allowed border-border bg-black/10 dark:bg-black/40' : isSelected ? 'border-primary bg-primary/10 text-primary scale-105 shadow-sm font-black' : 'border-border bg-muted hover:bg-muted/80 text-foreground'}`}
                       >
-                        <span className="text-[9px] font-normal capitalize tracking-wider">{date.label}</span>
-                        <span className="text-xs font-bold mt-0.5">{date.date}</span>
+                        <span className="text-sm font-bold">{showtime.startTime}</span>
+                        <span className="text-[9px] text-muted-foreground/60 mt-1">{showtime.availableSeats} ghế trống</span>
                       </button>
                     );
                   })}
                 </div>
-              </div>
-
-              {/* Step 3: Chọn Suất Chiếu */}
-              <div className="space-y-3">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between block">
-                  <span>3. Chọn Suất Chiếu</span>
-                  {selectedShowtime && (
-                    <Badge variant="outline" className="text-[10px] text-primary border-primary/20 bg-primary/5">
-                      {selectedShowtime.roomName}
-                    </Badge>
-                  )}
-                </label>
-                
-                {filteredShowtimesForCinemaAndDate.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {filteredShowtimesForCinemaAndDate.map(showtime => {
-                      const isSelected = selectedShowtimeId === showtime.id;
-                      const now = new Date();
-                      const [hours, minutes] = showtime.startTime.split(':');
-                      const [year, month, day] = showtime.date.split('-');
-                      const showtimeDate = new Date(year, month - 1, day, hours, minutes);
-                      const isPast = showtimeDate < now;
-
-                      return (
-                        <button
-                          key={showtime.id}
-                          type="button"
-                          disabled={isPast || showtime.availableSeats === 0}
-                          onClick={() => setSelectedShowtimeId(showtime.id)}
-                          className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${isPast || showtime.availableSeats === 0 ? 'opacity-30 cursor-not-allowed border-border bg-black/10 dark:bg-black/40' : isSelected ? 'border-primary bg-primary/10 text-primary scale-105 shadow-sm font-black' : 'border-border bg-muted hover:bg-muted/80 text-foreground'}`}
-                        >
-                          <span className="text-sm font-bold">{showtime.startTime}</span>
-                          <span className="text-[9px] text-muted-foreground/60 mt-1">{showtime.availableSeats} ghế trống</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-xs text-muted-foreground text-center py-6 bg-muted rounded-xl border border-border">
-                    Không có suất chiếu vào ngày này
-                  </div>
-                )}
-              </div>
-
-              {/* Step 4: Giá Vé & Nút Mua Vé */}
-              <div className="border-t border-border pt-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Giá vé từ:</span>
-                  <span className="text-2xl font-black text-primary">
-                    {selectedShowtime 
-                      ? `${new Intl.NumberFormat('vi-VN').format(selectedShowtime.price)} đ` 
-                      : (filteredShowtimesForCinemaAndDate[0] 
-                         ? `${new Intl.NumberFormat('vi-VN').format(filteredShowtimesForCinemaAndDate[0].price)} đ` 
-                         : '--- đ')}
-                  </span>
+              ) : (
+                <div className="text-xs text-muted-foreground text-center py-6 bg-muted rounded-xl border border-border">
+                  Không có suất chiếu vào ngày này
                 </div>
-                
-                <Button
-                  disabled={!selectedShowtimeId}
-                  onClick={handleBookTickets}
-                  className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-extrabold h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                >
-                  <Ticket className="w-5 h-5 fill-current" />
-                  Đặt vé ngay
-                </Button>
+              )}
+            </div>
+
+            {/* Step 4: Giá Vé & Nút Mua Vé */}
+            <div className="border-t border-border pt-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Giá vé từ:</span>
+                <span className="text-2xl font-black text-primary">
+                  {selectedShowtime
+                    ? `${new Intl.NumberFormat('vi-VN').format(selectedShowtime.price)} đ`
+                    : (filteredShowtimesForCinemaAndDate[0]
+                      ? `${new Intl.NumberFormat('vi-VN').format(filteredShowtimesForCinemaAndDate[0].price)} đ`
+                      : '--- đ')}
+                </span>
               </div>
+
+              <Button
+                disabled={!selectedShowtimeId}
+                onClick={handleBookTickets}
+                className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-extrabold h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                <Ticket className="w-5 h-5 fill-current" />
+                Đặt vé ngay
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -736,7 +736,7 @@ export default function MovieDetailPage() {
               </div>
               <div className="text-xs text-muted-foreground">Dựa trên {ratingBreakdown.total} đánh giá</div>
             </div>
-            
+
             <div className="md:col-span-2 space-y-2.5">
               {[5, 4, 3, 2, 1].map(stars => (
                 <div key={stars} className="flex items-center gap-3 text-xs">
@@ -775,8 +775,8 @@ export default function MovieDetailPage() {
                   className="min-h-[100px] bg-muted border border-input focus:border-primary text-foreground rounded-xl"
                 />
                 <div className="flex justify-end">
-                  <Button 
-                    onClick={handleSubmitReview} 
+                  <Button
+                    onClick={handleSubmitReview}
                     disabled={isSubmitting}
                     className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold h-10 px-5 rounded-xl flex items-center gap-2"
                   >
