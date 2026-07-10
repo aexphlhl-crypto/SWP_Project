@@ -13,4 +13,5 @@ public class KpiResponse {
     private Integer totalRevenue;
     private Integer totalTickets;
     private Long newUsers;
+    private Long screenedMovies;
 }
