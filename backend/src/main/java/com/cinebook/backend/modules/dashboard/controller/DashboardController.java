@@ -48,8 +48,7 @@ public class DashboardController {
             byte[] excelContent = dashboardService.exportRevenueToExcel();
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"revenue_report.xlsx\"")
-                    .contentType(MediaType
-                            .parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                     .body(excelContent);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();

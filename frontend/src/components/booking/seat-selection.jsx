@@ -107,7 +107,7 @@ export function SeatSelection({
           price: s.price,
           holdExpiresAt: s.holdExpiresAt
         }));
-
+        
       if (myHeldSeats.length > 0) {
         setSelectedSeats(myHeldSeats);
       }
@@ -122,7 +122,7 @@ export function SeatSelection({
   const mappedLayout = useMemo(() => {
     if (!realSeats) return seatLayout;
     const newLayout = { ...seatLayout, rows: [] };
-
+    
     // Group realSeats by rowLabel
     const grouped = {};
     realSeats.forEach(s => {
@@ -144,7 +144,7 @@ export function SeatSelection({
       const seats = grouped[rowLabel].sort((a, b) => parseInt(a.label.replace(rowLabel, '')) - parseInt(b.label.replace(rowLabel, '')));
       newLayout.rows.push({ row: rowLabel, seats });
     });
-
+    
     return newLayout;
   }, [realSeats, seatLayout]);
 
@@ -160,7 +160,7 @@ export function SeatSelection({
     }
 
     const isSelected = selectedSeats.some(s => s.id === seat.id);
-
+    
     if (isSelected) {
       // Deselect
       setSelectedSeats(prev => prev.filter(s => s.id !== seat.id));
@@ -253,28 +253,28 @@ export function SeatSelection({
           <div className="min-w-[500px] max-w-3xl mx-auto">
             <div className="space-y-[18px]">
               {mappedLayout.rows.map(row => <div key={row.row} className="flex items-center gap-2">
-                {/* Row label */}
-                <div className="w-8 h-8 flex items-center justify-center text-sm font-bold text-muted-foreground">
-                  {row.row}
-                </div>
-
-                {/* Seats */}
-                <div className={cn('flex-1 flex justify-center', row.row === 'J' || row.row === 'K' ? 'gap-4' : 'gap-1.5')}>
-                  {row.seats.map((seat, index) => {
-                    // Add aisle gap for standard/vip rows
-                    const showAisle = seat.type !== 'couple' && (index === 2 || index === 7);
-                    return <div key={seat.id} className="flex items-center">
-                      <SeatButton seat={seat} isSelected={selectedSeats.some(s => s.id === seat.id)} onSelect={handleSeatSelect} disabled={selectedSeats.length >= dynamicMaxSeats && !selectedSeats.some(s => s.id === seat.id)} />
-                      {showAisle && <div className="w-6" />}
-                    </div>;
-                  })}
-                </div>
-
-                {/* Row label (right) */}
-                <div className="w-8 h-8 flex items-center justify-center text-sm font-bold text-muted-foreground">
-                  {row.row}
-                </div>
-              </div>)}
+                  {/* Row label */}
+                  <div className="w-8 h-8 flex items-center justify-center text-sm font-bold text-muted-foreground">
+                    {row.row}
+                  </div>
+                  
+                  {/* Seats */}
+                  <div className={cn('flex-1 flex justify-center', row.row === 'J' || row.row === 'K' ? 'gap-4' : 'gap-1.5')}>
+                    {row.seats.map((seat, index) => {
+                  // Add aisle gap for standard/vip rows
+                  const showAisle = seat.type !== 'couple' && (index === 2 || index === 7);
+                  return <div key={seat.id} className="flex items-center">
+                          <SeatButton seat={seat} isSelected={selectedSeats.some(s => s.id === seat.id)} onSelect={handleSeatSelect} disabled={selectedSeats.length >= dynamicMaxSeats && !selectedSeats.some(s => s.id === seat.id)} />
+                          {showAisle && <div className="w-6" />}
+                        </div>;
+                })}
+                  </div>
+                  
+                  {/* Row label (right) */}
+                  <div className="w-8 h-8 flex items-center justify-center text-sm font-bold text-muted-foreground">
+                    {row.row}
+                  </div>
+                </div>)}
             </div>
           </div>
         </div>
@@ -286,21 +286,21 @@ export function SeatSelection({
       {/* Booking Summary - Sticky on desktop */}
       {showSummary && (
         <div className="lg:sticky lg:top-4 lg:h-fit">
-          <BookingSummary
-            movieTitle={movieTitle}
-            moviePoster={moviePoster}
-            cinemaName={cinemaName}
-            roomName={roomName}
-            showDate={showDate}
-            showTime={showTime}
-            selectedSeats={selectedSeats}
-            maxSeats={dynamicMaxSeats}
-            holdTime={dynamicHoldTime}
+          <BookingSummary 
+            movieTitle={movieTitle} 
+            moviePoster={moviePoster} 
+            cinemaName={cinemaName} 
+            roomName={roomName} 
+            showDate={showDate} 
+            showTime={showTime} 
+            selectedSeats={selectedSeats} 
+            maxSeats={dynamicMaxSeats} 
+            holdTime={dynamicHoldTime} 
             expiresAt={selectedSeats.length > 0 ? selectedSeats.map(s => s.holdExpiresAt).filter(Boolean).sort()[0] : null}
-            onConfirm={handleConfirm}
-            onCancel={handleCancel}
-            onTimerExpire={handleTimerExpire}
-            isConfirming={isConfirming}
+            onConfirm={handleConfirm} 
+            onCancel={handleCancel} 
+            onTimerExpire={handleTimerExpire} 
+            isConfirming={isConfirming} 
           />
         </div>
       )}
