@@ -19,14 +19,14 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ClientPagination } from '@/components/ui/client-pagination';
 
-import {
-  Calendar,
-  MapPin,
-  Armchair,
-  Search,
-  Tag,
-  RefreshCw,
-  Ticket,
+import { 
+  Calendar, 
+  MapPin, 
+  Armchair, 
+  Search, 
+  Tag, 
+  RefreshCw, 
+  Ticket, 
   Plus,
   MessageCircle,
   X,
@@ -47,21 +47,21 @@ const MOCK_TICKET_LISTINGS = Array.from({ length: 20 }, (_, i) => {
   const originalPrice = index % 2 === 0 ? 120000 : 240000;
   // Asking price is lower than original (showing discount)
   const askingPrice = originalPrice === 240000 ? 180000 - (index * 2000) : 90000 - (index * 1000);
-
+  
   const sellerNames = [
-    "Daan V.", "Sophie M.", "Lucas B.", "Emma R.", "Mark T.",
+    "Daan V.", "Sophie M.", "Lucas B.", "Emma R.", "Mark T.", 
     "Nora K.", "Trung T.", "Minh A.", "Hoàng N.", "Bảo C."
   ];
   const seatsList = [
-    "F7, F8", "E11", "G14, G15", "H3", "J1, J2",
+    "F7, F8", "E11", "G14, G15", "H3", "J1, J2", 
     "F9", "D5, D6", "A1, A2", "C12", "E8, E9"
   ];
-
+  
   return {
     id: `mock-${index}`,
     bookingId: `BK20020${index}`,
     movieTitle: `Dummy Movie ${movieNum}`,
-    moviePoster: "",
+    moviePoster: "", 
     cinemaName: `CineBook Cinema ${cinemaNum}`,
     roomName: `Phòng 0${(index % 3) + 1} - IMAX`,
     showDate: `2026-06-${28 + (index % 3)}`,
@@ -74,8 +74,8 @@ const MOCK_TICKET_LISTINGS = Array.from({ length: 20 }, (_, i) => {
     sellerName: sellerNames[index % sellerNames.length],
     sellerPhone: `0912 345 6${index.toString().padStart(2, '0')}`,
     facebookUrl: `https://facebook.com/seller.profile.${index}`,
-    note: index % 2 === 0
-      ? `Nhượng lại cặp vé đẹp xem tối nay do gia đình bận việc đột xuất.`
+    note: index % 2 === 0 
+      ? `Nhượng lại cặp vé đẹp xem tối nay do gia đình bận việc đột xuất.` 
       : `Mình mua nhầm lịch chiếu nên pass lại lỗ cho bạn nào quan tâm.`,
     status: "active",
     createdAt: new Date(Date.now() - index * 3600000).toISOString()
@@ -259,15 +259,15 @@ export default function ResaleTicketPage() {
     let result = [...activeListings];
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(l =>
-        l.movieTitle?.toLowerCase().includes(q) ||
-        l.cinemaName?.toLowerCase().includes(q) ||
+      result = result.filter(l => 
+        l.movieTitle?.toLowerCase().includes(q) || 
+        l.cinemaName?.toLowerCase().includes(q) || 
         l.sellerName?.toLowerCase().includes(q)
       );
     }
     if (filterMovie !== 'all') result = result.filter(l => l.movieTitle === filterMovie);
     if (filterCinema !== 'all') result = result.filter(l => l.cinemaName === filterCinema);
-
+    
     result.sort((a, b) => {
       if (sortBy === 'price_asc') return a.resalePrice - b.resalePrice;
       if (sortBy === 'price_desc') return b.resalePrice - a.resalePrice;
@@ -290,13 +290,13 @@ export default function ResaleTicketPage() {
     <div className="min-h-screen bg-background text-foreground pb-20 mesh-glow relative">
       {/* Background patterns */}
       <div className="absolute inset-0 dot-pattern opacity-[0.35] dark:opacity-[0.12] pointer-events-none" />
-
+      
       {/* ─── Hero Header & Stats Block ─── */}
       <div className="relative overflow-hidden bg-card/45 backdrop-blur-md border-b border-border/60 py-16 mb-10">
         {/* Glowing visual effect */}
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[380px] h-[380px] bg-primary/10 rounded-full blur-[90px] pointer-events-none" />
         <div className="absolute -top-10 -right-10 w-[200px] h-[200px] bg-amber-500/5 rounded-full blur-[60px] pointer-events-none" />
-
+        
         <div className="relative container max-w-[1400px] mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-2">
@@ -304,7 +304,7 @@ export default function ResaleTicketPage() {
               <p className="text-sm text-muted-foreground max-w-xl">
                 Nền tảng trao đổi vé xem phim an toàn giữa các khán giả. Mua lại hoặc nhượng vé trống với giá cả thỏa thuận.
               </p>
-
+              
               {/* Badges */}
               <div className="flex flex-wrap gap-4 pt-3 text-xs font-semibold text-muted-foreground">
                 <span className="flex items-center gap-1.5"><Ticket className="w-3.5 h-3.5 text-primary" /> {totalItems} vé đang giao dịch</span>
@@ -312,10 +312,10 @@ export default function ResaleTicketPage() {
                 <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-primary" /> Chuyển vé tự động</span>
               </div>
             </div>
-
+            
             {/* List for sale CTA */}
-            <Button
-              onClick={openListModal}
+            <Button 
+              onClick={openListModal} 
               className="bg-primary hover:bg-primary/95 text-primary-foreground font-black h-11 px-6 rounded-xl flex items-center gap-2 shadow-lg shadow-primary/20 shrink-0 self-start md:self-auto"
             >
               <Plus className="w-4 h-4" /> Đăng bán vé của bạn
@@ -326,23 +326,23 @@ export default function ResaleTicketPage() {
 
       {/* ─── Main Content ─── */}
       <main className="container max-w-[1400px] mx-auto px-4 space-y-6">
-
+        
         {/* Filters Panel */}
         <Card className="bg-card border-border shadow-xl rounded-2xl overflow-hidden">
           <CardContent className="p-5 space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Tìm tên phim, rạp chiếu, người bán..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="pl-10 bg-muted border-input h-11 rounded-xl text-sm focus:border-primary/60"
+              <Input 
+                placeholder="Tìm tên phim, rạp chiếu, người bán..." 
+                value={searchQuery} 
+                onChange={e => setSearchQuery(e.target.value)} 
+                className="pl-10 bg-muted border-input h-11 rounded-xl text-sm focus:border-primary/60" 
               />
             </div>
-
+            
             <div className="flex flex-wrap gap-3 items-center">
               <SlidersHorizontal className="w-4 h-4 text-muted-foreground shrink-0" />
-
+              
               <Select value={filterMovie} onValueChange={setFilterMovie}>
                 <SelectTrigger className="w-full sm:w-[200px] h-10 bg-muted border-input rounded-xl text-xs">
                   <SelectValue placeholder="Chọn phim" />
@@ -404,11 +404,11 @@ export default function ResaleTicketPage() {
                 // Find matching movie still from DataContext to get beautiful still backdrop
                 const matchedMovie = movies.find(m => m.title?.toLowerCase() === listing.movieTitle?.toLowerCase());
                 const coverImage = matchedMovie?.backdrop || listing.moviePoster || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=600&q=80";
-
+                
                 // Calculate saving percentage
                 const originalPrice = listing.originalPrice || 0;
                 const resalePrice = listing.resalePrice || 0;
-                const discountPercent = originalPrice > 0
+                const discountPercent = originalPrice > 0 
                   ? Math.round(((originalPrice - resalePrice) / originalPrice) * 100)
                   : 0;
 
@@ -416,14 +416,14 @@ export default function ResaleTicketPage() {
                   <Card key={listing.id} className="bg-card/70 backdrop-blur-sm border-border rounded-2xl overflow-hidden hover:border-primary/40 transition-all duration-300 flex flex-col group hover:shadow-[0_20px_40px_-15px_rgba(255,184,0,0.08)] hover:-translate-y-1">
                     {/* Widescreen image with overlay badges */}
                     <div className="relative aspect-video w-full overflow-hidden bg-muted shrink-0 border-b border-border/40">
-                      <img
-                        src={coverImage}
-                        alt={listing.movieTitle}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      <img 
+                        src={coverImage} 
+                        alt={listing.movieTitle} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                       />
                       {/* Dark overlay gradient */}
                       <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-
+                      
                       {/* Save discount badge */}
                       {discountPercent > 0 && (
                         <div className="absolute bottom-3 right-3 bg-gradient-to-r from-primary to-amber-500 text-primary-foreground text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-md">
@@ -496,7 +496,7 @@ export default function ResaleTicketPage() {
                         </div>
 
                         {/* Contact Seller Button */}
-                        <Button
+                        <Button 
                           onClick={() => openContactModal(listing)}
                           className="w-full bg-gradient-to-r from-primary/10 to-amber-500/10 hover:from-primary/20 hover:to-amber-500/20 border border-primary/30 text-primary font-bold h-10 rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs shadow-sm active:scale-[0.98]"
                         >
@@ -515,10 +515,10 @@ export default function ResaleTicketPage() {
                 <div className="text-xs text-muted-foreground font-medium">
                   Hiển thị {startIndex + 1}-{endIndex} trên tổng số {totalItems} vé
                 </div>
-                <ClientPagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
+                <ClientPagination 
+                  currentPage={currentPage} 
+                  totalPages={totalPages} 
+                  onPageChange={handlePageChange} 
                 />
               </div>
             )}
@@ -533,9 +533,9 @@ export default function ResaleTicketPage() {
           <div className="bg-card border border-border rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200 my-8">
             <div className="flex justify-between items-center border-b border-border pb-3">
               <h2 className="text-lg font-black text-foreground uppercase tracking-wider">Đăng bán vé resale</h2>
-              <Button
-                variant="ghost"
-                size="icon"
+              <Button 
+                variant="ghost" 
+                size="icon" 
                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 onClick={() => setIsListModalOpen(false)}
               >
@@ -561,7 +561,7 @@ export default function ResaleTicketPage() {
                     {/* Booking Code Selection */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Chọn vé để bán lại *</label>
-                      <Select
+                      <Select 
                         onValueChange={(val) => {
                           const bk = userBookings.find(b => String(b.id) === val);
                           setSelectedBooking(bk);
@@ -597,7 +597,7 @@ export default function ResaleTicketPage() {
                       <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Giá muốn bán lại (VNĐ) *</label>
                       <div className="relative">
                         <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
-                        <Input
+                        <Input 
                           type="number"
                           placeholder="Ví dụ: 80000"
                           value={askingPrice}
@@ -611,7 +611,7 @@ export default function ResaleTicketPage() {
                     {/* Contact Phone */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Số điện thoại liên hệ *</label>
-                      <Input
+                      <Input 
                         placeholder="Nhập số điện thoại để người mua liên hệ"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
@@ -624,7 +624,7 @@ export default function ResaleTicketPage() {
                       <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Facebook cá nhân (URL) *</label>
                       <div className="relative">
                         <Facebook className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
-                        <Input
+                        <Input 
                           placeholder="Link Facebook để người mua nhắn tin nhanh"
                           value={facebookUrl}
                           onChange={(e) => setFacebookUrl(e.target.value)}
@@ -636,7 +636,7 @@ export default function ResaleTicketPage() {
                     {/* Note */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Lời nhắn gửi người mua (Lý do nhượng vé...)</label>
-                      <textarea
+                      <textarea 
                         placeholder="Ví dụ: Mình bận việc đột xuất không đi xem được nên nhượng lại rẻ cho bạn nào cần..."
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
@@ -646,16 +646,16 @@ export default function ResaleTicketPage() {
 
                     {/* CTA Action buttons */}
                     <div className="flex justify-end gap-3 pt-3">
-                      <Button
-                        type="button"
-                        variant="ghost"
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
                         onClick={() => setIsListModalOpen(false)}
                         className="rounded-xl h-11"
                       >
                         Hủy
                       </Button>
-                      <Button
-                        type="submit"
+                      <Button 
+                        type="submit" 
                         disabled={submittingListing}
                         className="bg-primary hover:bg-primary/95 text-primary-foreground font-black px-6 h-11 rounded-xl shadow-lg shadow-primary/25 disabled:opacity-40"
                       >
@@ -676,9 +676,9 @@ export default function ResaleTicketPage() {
           <div className="bg-card border border-border rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in duration-200">
             <div className="flex justify-between items-center border-b border-border pb-3">
               <h2 className="text-base font-black text-foreground uppercase tracking-wider">Thông tin liên hệ</h2>
-              <Button
-                variant="ghost"
-                size="icon"
+              <Button 
+                variant="ghost" 
+                size="icon" 
                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 onClick={() => setIsContactModalOpen(false)}
               >
@@ -709,10 +709,10 @@ export default function ResaleTicketPage() {
                     {selectedListingForContact.sellerPhone || 'Không có số điện thoại'}
                   </span>
                   {selectedListingForContact.sellerPhone && (
-                    <Button
+                    <Button 
                       onClick={handleCopyPhone}
-                      variant="ghost"
-                      size="icon"
+                      variant="ghost" 
+                      size="icon" 
                       className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg"
                     >
                       <Copy className="w-4 h-4" />
@@ -724,13 +724,13 @@ export default function ResaleTicketPage() {
               {selectedListingForContact.facebookUrl && (
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">Facebook cá nhân</label>
-                  <Button
+                  <Button 
                     asChild
                     className="w-full bg-[#1877f2] hover:bg-[#166fe5] text-white font-bold h-11 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/10"
                   >
-                    <a
-                      href={selectedListingForContact.facebookUrl}
-                      target="_blank"
+                    <a 
+                      href={selectedListingForContact.facebookUrl} 
+                      target="_blank" 
                       rel="noopener noreferrer"
                     >
                       <Facebook className="w-4 h-4 fill-white" /> Nhắn tin qua Facebook
