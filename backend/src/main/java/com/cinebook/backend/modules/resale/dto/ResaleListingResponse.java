@@ -26,6 +26,7 @@ public class ResaleListingResponse {
     private Boolean includesFnb;
     private String sellerName;
     private String sellerPhone;
+    private String facebookUrl;
     private String note;
     private String status;
     private String hiddenReason;
