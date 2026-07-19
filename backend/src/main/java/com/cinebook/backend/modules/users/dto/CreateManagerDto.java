@@ -14,9 +14,6 @@ public class CreateManagerDto {
     @Email
     private String email;
 
-    @NotBlank
-    private String password;
-
     private String phone;
 
     @NotNull(message = "Cinema ID is required")
