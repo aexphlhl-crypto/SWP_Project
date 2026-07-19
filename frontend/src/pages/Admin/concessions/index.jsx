@@ -43,7 +43,7 @@ export default function AdminConcessionsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   if (!user || (user.role !== 'admin' && user.role !== 'manager')) {
     navigate('/admin', { replace: true });
     return null;
@@ -52,7 +52,7 @@ export default function AdminConcessionsPage() {
   const [concessions, setConcessions] = useState([]);
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
-  
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -92,9 +92,9 @@ export default function AdminConcessionsPage() {
 
   const openEdit = item => {
     setEditingItem(item);
-    setForm({ 
-      ...item, 
-      price: item.price.toString() 
+    setForm({
+      ...item,
+      price: item.price.toString()
     });
     setFormErrors({});
     setErrorMsg('');
@@ -114,7 +114,7 @@ export default function AdminConcessionsPage() {
   const handleSave = async () => {
     if (!validate()) return;
     setErrorMsg('');
-    
+
     const payload = {
       name: form.name,
       description: form.description,
@@ -142,7 +142,7 @@ export default function AdminConcessionsPage() {
   const toggleStatus = async (id) => {
     const item = concessions.find(c => c.id === id);
     if (!item) return;
-    
+
     const newStatus = item.status === 'Active' ? 'Inactive' : 'Active';
     try {
       const payload = {
@@ -219,9 +219,9 @@ export default function AdminConcessionsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0">
               {['all', 'Drink', 'Popcorn', 'Combo'].map(t => (
-                <button 
-                  key={t} 
-                  onClick={() => setFilterType(t)} 
+                <button
+                  key={t}
+                  onClick={() => setFilterType(t)}
                   className={cn('px-3 py-1.5 rounded-full text-sm font-medium transition-colors', filterType === t ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground')}
                 >
                   {t === 'all' ? 'Tất cả' : TYPE_LABELS[t]}
@@ -272,9 +272,9 @@ export default function AdminConcessionsPage() {
                   </TableCell>
                   <TableCell className="font-mono text-sm">{item.price.toLocaleString('vi-VN')}₫</TableCell>
                   <TableCell>
-                    <button 
-                      onClick={() => toggleStatus(item.id)} 
-                      className={cn('flex items-center gap-1.5 text-sm font-medium transition-colors', item.status === 'Active' ? 'text-green-400 hover:text-green-300' : 'text-muted-foreground hover:text-foreground')} 
+                    <button
+                      onClick={() => toggleStatus(item.id)}
+                      className={cn('flex items-center gap-1.5 text-sm font-medium transition-colors', item.status === 'Active' ? 'text-green-400 hover:text-green-300' : 'text-muted-foreground hover:text-foreground')}
                       title={item.status === 'Active' ? 'Click để tạm dừng' : 'Click để kích hoạt'}
                     >
                       {item.status === 'Active' ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
@@ -310,10 +310,10 @@ export default function AdminConcessionsPage() {
             <div className="text-sm text-muted-foreground mb-4 sm:mb-0">
               Hiển thị {startIndex + 1}-{endIndex} trên tổng số {totalItems} mặt hàng
             </div>
-            <ClientPagination 
-              currentPage={currentPage} 
-              totalPages={totalPages} 
-              onPageChange={handlePageChange} 
+            <ClientPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
             />
           </div>
         )}
@@ -325,7 +325,7 @@ export default function AdminConcessionsPage() {
           <DialogHeader>
             <DialogTitle>{editingItem ? 'Chỉnh sửa mặt hàng' : 'Thêm mặt hàng mới'}</DialogTitle>
           </DialogHeader>
-          
+
           {errorMsg && (
             <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-md text-red-500 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -392,6 +392,5 @@ export default function AdminConcessionsPage() {
         </DialogContent>
       </Dialog>
     </div>
-    
   );
 }

@@ -38,50 +38,81 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .headers(headers -> headers
-                .contentSecurityPolicy(csp -> csp.policyDirectives("frame-ancestors 'none'"))
-                .addHeaderWriter((request, response) ->
-                    response.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
-                )
-            )
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/payments/vnpay-return").permitAll()   // VNPay IPN/Return (no JWT)
-                .requestMatchers("/api/payments/vnpay/callback").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/movies", "/api/movies/**", "/api/showtimes", "/api/showtimes/**", "/api/cinemas", "/api/cinemas/**", "/api/rooms", "/api/rooms/**", "/api/concessions", "/api/concessions/**", "/api/fnb", "/api/fnb/**", "/api/promos", "/api/promos/**", "/api/news", "/api/news/**", "/api/reviews", "/api/reviews/**", "/api/config", "/api/config/**", "/api/resale", "/api/resale/**", "/uploads/**", "/api/genres", "/api/genres/**").permitAll()
-                // Swagger UI
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html").permitAll()
-                
-                // SystemAdmin Only
-                .requestMatchers("/api/dashboard/**").hasAnyRole("SystemAdmin", "ScheduleManager")
-                .requestMatchers(HttpMethod.PUT, "/api/config/**").hasRole("SystemAdmin")
-                .requestMatchers(HttpMethod.PUT, "/api/resale/*/hide").hasRole("SystemAdmin")
-                
-                // Allow anyone authenticated to hold/release seats
-                .requestMatchers(HttpMethod.POST, "/api/showtimes/*/seats/*/hold").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/api/showtimes/*/seats/*/hold").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/api/showtimes/*/holds").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/api/showtimes/*/seats/hold/all").authenticated()
+                .csrf(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("frame-ancestors 'none'"))
+                        .addHeaderWriter((request, response) -> response.setHeader("Cross-Origin-Opener-Policy",
+                                "same-origin-allow-popups")))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/payments/vnpay-return").permitAll() // VNPay IPN/Return (no JWT)
+                        .requestMatchers("/api/payments/vnpay/callback").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/movies", "/api/movies/**", "/api/showtimes",
+                                "/api/showtimes/**", "/api/cinemas", "/api/cinemas/**", "/api/rooms", "/api/rooms/**",
+                                "/api/concessions", "/api/concessions/**", "/api/fnb", "/api/fnb/**", "/api/promos",
+                                "/api/promos/**", "/api/news", "/api/news/**", "/api/reviews", "/api/reviews/**",
+                                "/api/config", "/api/config/**", "/api/resale", "/api/resale/**", "/uploads/**",
+                                "/api/genres", "/api/genres/**", "/api/actors", "/api/actors/**")
+                        .permitAll()
+                        // Swagger UI
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html")
+                        .permitAll()
 
-                // SystemAdmin & ScheduleManager (Management)
-                .requestMatchers("/api/bookings/admin/**", "/api/admin/users/**").hasAnyRole("SystemAdmin", "ScheduleManager")
-                .requestMatchers(HttpMethod.POST, "/api/movies/**", "/api/cinemas/**", "/api/rooms/**", "/api/showtimes/**", "/api/fnb/**", "/api/news/**", "/api/promos/**").hasAnyRole("SystemAdmin", "ScheduleManager")
-                .requestMatchers(HttpMethod.PUT, "/api/movies/**", "/api/cinemas/**", "/api/rooms/**", "/api/showtimes/**", "/api/fnb/**", "/api/news/**", "/api/promos/**").hasAnyRole("SystemAdmin", "ScheduleManager")
-                .requestMatchers(HttpMethod.DELETE, "/api/movies/**", "/api/cinemas/**", "/api/rooms/**", "/api/showtimes/**", "/api/fnb/**", "/api/news/**", "/api/promos/**").hasAnyRole("SystemAdmin", "ScheduleManager")
-                
-                // Customer Only
-                .requestMatchers("/api/bookings/**").hasAnyRole("Customer", "SystemAdmin", "ScheduleManager")
-                .requestMatchers("/api/payments/create-url").hasAnyRole("Customer", "SystemAdmin")
-                .requestMatchers(HttpMethod.POST, "/api/reviews/**", "/api/resale", "/api/resale/**").hasRole("Customer")
-                
-                // All others require auth
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                        // SystemAdmin Only
+                        .requestMatchers("/api/dashboard/**").hasAnyRole("SystemAdmin", "ScheduleManager")
+                        .requestMatchers(HttpMethod.PUT, "/api/config/**").hasRole("SystemAdmin")
+                        .requestMatchers(HttpMethod.PUT, "/api/resale/*/hide").hasRole("SystemAdmin")
+                        .requestMatchers("/api/actors", "/api/actors/**").hasRole("SystemAdmin")
+
+                        // Allow anyone authenticated to hold/release seats
+                        .requestMatchers(HttpMethod.POST, "/api/showtimes/*/seats/*/hold").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/showtimes/*/seats/*/hold").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/showtimes/*/holds").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/showtimes/*/seats/hold/all").authenticated()
+
+                        // SystemAdmin & ScheduleManager (Management)
+                        .requestMatchers("/api/bookings/admin/**", "/api/admin/users/**")
+                        .hasAnyRole("SystemAdmin", "ScheduleManager")
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/movies", "/api/movies/**",
+                                "/api/cinemas", "/api/cinemas/**",
+                                "/api/rooms", "/api/rooms/**",
+                                "/api/showtimes", "/api/showtimes/**",
+                                "/api/fnb", "/api/fnb/**",
+                                "/api/news", "/api/news/**",
+                                "/api/promos", "/api/promos/**")
+                        .hasAnyRole("SystemAdmin", "ScheduleManager")
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/movies", "/api/movies/**",
+                                "/api/cinemas", "/api/cinemas/**",
+                                "/api/rooms", "/api/rooms/**",
+                                "/api/showtimes", "/api/showtimes/**",
+                                "/api/fnb", "/api/fnb/**",
+                                "/api/news", "/api/news/**",
+                                "/api/promos", "/api/promos/**")
+                        .hasAnyRole("SystemAdmin", "ScheduleManager")
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/api/movies", "/api/movies/**",
+                                "/api/cinemas", "/api/cinemas/**",
+                                "/api/rooms", "/api/rooms/**",
+                                "/api/showtimes", "/api/showtimes/**",
+                                "/api/fnb", "/api/fnb/**",
+                                "/api/news", "/api/news/**",
+                                "/api/promos", "/api/promos/**")
+                        .hasAnyRole("SystemAdmin", "ScheduleManager")
+
+                        // Customer Only
+                        .requestMatchers("/api/bookings/**").hasAnyRole("Customer", "SystemAdmin", "ScheduleManager")
+                        .requestMatchers("/api/payments/create-url").hasAnyRole("Customer", "SystemAdmin")
+                        .requestMatchers(HttpMethod.POST, "/api/reviews/**", "/api/resale", "/api/resale/**")
+                        .hasRole("Customer")
+
+                        // All others require auth
+                        .anyRequest().authenticated())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
