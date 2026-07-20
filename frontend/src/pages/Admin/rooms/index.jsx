@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LayoutGrid, Plus, MoreHorizontal, Eye, Loader2 } from 'lucide-react';
+import { LayoutGrid, Plus, MoreHorizontal, Eye, Loader2, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -29,6 +29,8 @@ export default function AdminRoomsPage() {
 
   // Modal State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const [formData, setFormData] = useState({
     cinemaId: '', name: '', rows: '10', columns: '10'
@@ -42,11 +44,11 @@ export default function AdminRoomsPage() {
         cinemaApi.getCinemas(),
         roomApi.getRooms() // This gets pageable rooms, we might need a large size or use content
       ]);
-      
+
       if (cinemaRes.success && cinemaRes.data && cinemaRes.data.content) {
         setCinemas(cinemaRes.data.content.map(c => ({ ...c, id: c.cinemaId })));
       }
-      
+
       if (roomRes.success && roomRes.data) {
         // Handle Spring Boot Page<T> format
         const content = roomRes.data.content || [];
@@ -70,7 +72,7 @@ export default function AdminRoomsPage() {
 
   const filtered = rooms.filter(r => selectedCinema === 'all' || r.cinemaId?.toString() === selectedCinema.toString());
   const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
-  
+
   const activeCount = filtered.filter(r => r.status === 'Active' || r.status === 'active').length;
 
   const openAdd = () => {
@@ -91,20 +93,44 @@ export default function AdminRoomsPage() {
     }
   };
 
+  const confirmDelete = (id) => {
+    setDeletingId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (deletingId) {
+      setIsSaving(true);
+      try {
+        const res = await roomApi.deleteRoom(deletingId);
+        if (res.success) {
+          toast.success("Xóa phòng chiếu thành công!");
+          fetchData();
+        }
+      } catch (error) {
+        toast.error(error.error?.message || error.message || "Không thể xóa phòng chiếu này");
+      } finally {
+        setIsDeleteDialogOpen(false);
+        setDeletingId(null);
+        setIsSaving(false);
+      }
+    }
+  };
+
   const handleSave = async () => {
     if (!formData.cinemaId) {
       toast.error("Vui lòng chọn rạp!");
       return;
     }
-    
+
     setIsSaving(true);
-      const payload = {
-        cinemaId: parseInt(formData.cinemaId),
-        name: formData.name,
-        rows: parseInt(formData.rows) || 10,
-        columns: parseInt(formData.columns) || 10,
-        baseNormalPrice: 0
-      };
+    const payload = {
+      cinemaId: parseInt(formData.cinemaId),
+      name: formData.name,
+      rows: parseInt(formData.rows) || 10,
+      columns: parseInt(formData.columns) || 10,
+      baseNormalPrice: 0
+    };
 
     try {
       const res = await roomApi.createRoom(payload);
@@ -185,68 +211,71 @@ export default function AdminRoomsPage() {
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
           ) : (
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border hover:bg-transparent">
-                <TableHead>Tên phòng</TableHead>
-                <TableHead>Rạp</TableHead>
-                <TableHead>Sức chứa</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead className="w-[100px] text-right">Thao tác</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentDataOnPage.map(room => (
-                <TableRow key={room.id} className="border-border">
-                  <TableCell className="font-medium">{room.name}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
-                    {room.cinemaName}
-                  </TableCell>
-                  <TableCell className="text-sm">{room.capacity || 0} ghế</TableCell>
-                  <TableCell>
-                    <Badge className={room.status === 'Active' || room.status === 'active' ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-500'}>
-                      {room.status === 'Active' || room.status === 'active' ? 'Hoạt động' : 'Bảo trì'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="w-8 h-8">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem className="gap-2" onClick={() => handleToggleStatus(room)}>
-                          <Eye className="w-4 h-4" /> {(room.status === 'Active' || room.status === 'active') ? 'Bảo trì / Ẩn phòng' : 'Mở lại phòng'}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="gap-2" onClick={() => navigate(`/admin/seats?cinemaId=${room.cinemaId}&roomId=${room.id}`)}>
-                          <LayoutGrid className="w-4 h-4" /> Xem sơ đồ ghế
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead>Tên phòng</TableHead>
+                  <TableHead>Rạp</TableHead>
+                  <TableHead>Sức chứa</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead className="w-[100px] text-right">Thao tác</TableHead>
                 </TableRow>
-              ))}
-              {filtered.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Không tìm thấy phòng chiếu nào
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
+              </TableHeader>
+              <TableBody>
+                {currentDataOnPage.map(room => (
+                  <TableRow key={room.id} className="border-border">
+                    <TableCell className="font-medium">{room.name}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                      {room.cinemaName}
+                    </TableCell>
+                    <TableCell className="text-sm">{room.capacity || 0} ghế</TableCell>
+                    <TableCell>
+                      <Badge className={room.status === 'Active' || room.status === 'active' ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-500'}>
+                        {room.status === 'Active' || room.status === 'active' ? 'Hoạt động' : 'Bảo trì'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="w-8 h-8">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem className="gap-2" onClick={() => handleToggleStatus(room)}>
+                            <Eye className="w-4 h-4" /> {(room.status === 'Active' || room.status === 'active') ? 'Bảo trì / Ẩn phòng' : 'Mở lại phòng'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="gap-2" onClick={() => navigate(`/admin/seats?cinemaId=${room.cinemaId}&roomId=${room.id}`)}>
+                            <LayoutGrid className="w-4 h-4" /> Xem sơ đồ ghế
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => confirmDelete(room.id)}>
+                            <Trash2 className="w-4 h-4" /> Xóa phòng chiếu
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filtered.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      Không tìm thấy phòng chiếu nào
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
             </Table>
           )}
-          
+
           {!isLoading && filtered.length > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-t border-border">
               <div className="text-sm text-muted-foreground mb-4 sm:mb-0">
                 Hiển thị {startIndex + 1}-{endIndex} trên tổng số {totalItems} phòng chiếu
               </div>
-              <ClientPagination 
-                currentPage={currentPage} 
-                totalPages={totalPages} 
-                onPageChange={handlePageChange} 
+              <ClientPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
               />
             </div>
           )}
@@ -271,12 +300,12 @@ export default function AdminRoomsPage() {
                 </SelectContent>
               </Select>
             </div>
-              <div className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label>Tên phòng</Label>
-                  <Input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="VD: Phòng 1" />
-                </div>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label>Tên phòng</Label>
+                <Input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="VD: Phòng 1" />
               </div>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Số hàng ghế (Rows)</Label>
@@ -293,6 +322,25 @@ export default function AdminRoomsPage() {
             <Button onClick={handleSave} disabled={isSaving}>
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Lưu phòng chiếu
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirm Modal */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Xóa phòng chiếu này?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground py-4">
+            Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa phòng chiếu này khỏi hệ thống không?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isSaving}>Hủy</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={isSaving}>
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Xóa
             </Button>
           </DialogFooter>
         </DialogContent>

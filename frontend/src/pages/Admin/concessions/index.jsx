@@ -392,6 +392,5 @@ export default function AdminConcessionsPage() {
         </DialogContent>
       </Dialog>
     </div>
-    
   );
 }

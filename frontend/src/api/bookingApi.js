@@ -4,7 +4,7 @@ const bookingApi = {
     getAllBookingsAdmin: (params) => {
         return axiosClient.get('/bookings/admin', { params });
     },
-
+    
     updateBookingStatusAdmin: (id, status) => {
         return axiosClient.put(`/bookings/admin/${id}/status`, null, {
             params: { status }
@@ -18,11 +18,11 @@ const bookingApi = {
     createBooking: (data) => {
         return axiosClient.post('/bookings', data);
     },
-
+    
     calculateBooking: (data) => {
         return axiosClient.post('/bookings/calculate', data);
     },
-
+    
     holdSeats: (data) => {
         return axiosClient.post('/bookings/hold-seats', data);
     },
