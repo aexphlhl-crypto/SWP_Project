@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LayoutGrid, Plus, MoreHorizontal, Eye, Loader2 } from 'lucide-react';
+import { LayoutGrid, Plus, MoreHorizontal, Eye, Loader2, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -29,6 +29,8 @@ export default function AdminRoomsPage() {
 
   // Modal State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const [formData, setFormData] = useState({
     cinemaId: '', name: '', rows: '10', columns: '10'
@@ -69,7 +71,7 @@ export default function AdminRoomsPage() {
   }, []);
 
   const filtered = rooms.filter(r => selectedCinema === 'all' || r.cinemaId?.toString() === selectedCinema.toString());
-  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered, 10);
+  const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
   
   const activeCount = filtered.filter(r => r.status === 'Active' || r.status === 'active').length;
 
@@ -88,6 +90,30 @@ export default function AdminRoomsPage() {
       }
     } catch (error) {
       toast.error(error.message || "Đã có lỗi xảy ra");
+    }
+  };
+
+  const confirmDelete = (id) => {
+    setDeletingId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (deletingId) {
+      setIsSaving(true);
+      try {
+        const res = await roomApi.deleteRoom(deletingId);
+        if (res.success) {
+          toast.success("Xóa phòng chiếu thành công!");
+          fetchData();
+        }
+      } catch (error) {
+        toast.error(error.error?.message || error.message || "Không thể xóa phòng chiếu này");
+      } finally {
+        setIsDeleteDialogOpen(false);
+        setDeletingId(null);
+        setIsSaving(false);
+      }
     }
   };
 
@@ -222,6 +248,9 @@ export default function AdminRoomsPage() {
                         <DropdownMenuItem className="gap-2" onClick={() => navigate(`/admin/seats?cinemaId=${room.cinemaId}&roomId=${room.id}`)}>
                           <LayoutGrid className="w-4 h-4" /> Xem sơ đồ ghế
                         </DropdownMenuItem>
+                        <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => confirmDelete(room.id)}>
+                          <Trash2 className="w-4 h-4" /> Xóa phòng chiếu
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -293,6 +322,25 @@ export default function AdminRoomsPage() {
             <Button onClick={handleSave} disabled={isSaving}>
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Lưu phòng chiếu
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirm Modal */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Xóa phòng chiếu này?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground py-4">
+            Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa phòng chiếu này khỏi hệ thống không?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isSaving}>Hủy</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={isSaving}>
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Xóa
             </Button>
           </DialogFooter>
         </DialogContent>

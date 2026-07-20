@@ -19,7 +19,8 @@ export function BookingSummary({
   onConfirm,
   onCancel,
   onTimerExpire,
-  isConfirming = false
+  isConfirming = false,
+  expiresAt = null
 }) {
   const totalPrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
   const seatsByType = {
@@ -49,6 +50,7 @@ export function BookingSummary({
           initialMinutes={holdTime} 
           onExpire={onTimerExpire} 
           isStarted={selectedSeats.length > 0}
+          expiresAt={expiresAt}
         />
       </div>
 

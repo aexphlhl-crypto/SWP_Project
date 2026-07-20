@@ -41,9 +41,9 @@ import AdminCustomers from './pages/Admin/customers/index.jsx'
 import AdminManagers from './pages/Admin/managers/index.jsx'
 import AdminMovies from './pages/Admin/movies/index.jsx'
 import AdminGenres from './pages/Admin/genres/index.jsx'
+import AdminActors from './pages/Admin/actors/index.jsx'
 import AdminPromotions from './pages/Admin/promotions/index.jsx'
 import AdminResale from './pages/Admin/resale/index.jsx'
-import AdminResaleReport from './pages/Admin/resale/report/index.jsx'
 import AdminRooms from './pages/Admin/rooms/index.jsx'
 import AdminSeats from './pages/Admin/seats/index.jsx'
 import AdminSettings from './pages/Admin/settings/index.jsx'
@@ -53,6 +53,8 @@ import AdminReviews from './pages/Admin/reviews/index.jsx'
 import { MainLayout } from '@/components/layout'
 import { AdminLayout } from '@/components/layout/admin-layout'
 import { ProtectedRoute } from '@/components/auth/protected-route'
+
+import { ThemeProvider } from '@/components/theme-provider'
 
 const MainLayoutWrapper = () => {
   const location = useLocation();
@@ -74,61 +76,63 @@ export default function App() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID_HERE';
   return (
     <GoogleOAuthProvider clientId={clientId}>
-      <DataProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <Routes>
-          <Route element={<MainLayoutWrapper />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/news" element={<NewsPage />} />
-            <Route path="/news/:id" element={<NewsDetail />} />
-            <Route path="/movies" element={<MoviesPage />} />
-            <Route path="/movies/now-showing" element={<NowShowingPage />} />
-            <Route path="/movies/coming-soon" element={<ComingSoonPage />} />
-            <Route path="/movies/:id" element={<MovieDetailPage />} />
-            <Route path="/booking/success" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><BookingSuccess /></ProtectedRoute>} />
-            <Route path="/booking" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><BookingFlow /></ProtectedRoute>} />
-            <Route path="/booking/:movieId" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><BookingFlow /></ProtectedRoute>} />
-            <Route path="/payment" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><PaymentPage /></ProtectedRoute>} />
-            <Route path="/payment/result" element={<VNPayResultPage />} />
-            <Route path="/my-tickets" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><MyTicketsPage /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><ProfilePage /></ProtectedRoute>} />
-            <Route path="/cinemas" element={<CinemasPage />} />
-            <Route path="/promotions" element={<PromotionsPage />} />
-            <Route path="/resale" element={<ResalePage />} />
-            <Route path="/resale/:id" element={<ResaleDetail />} />
-            <Route path="/my-resale" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><MyResalePage /></ProtectedRoute>} />
-            <Route path="/my-resale/create" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><CreateResalePage /></ProtectedRoute>} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          </Route>
-          
-          <Route path="/admin" element={<AdminLayoutWrapper />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="news" element={<ProtectedRoute allowedRoles={['admin']}><AdminNews /></ProtectedRoute>} />
-            <Route path="analytics" element={<ProtectedRoute allowedRoles={['admin']}><AdminAnalytics /></ProtectedRoute>} />
-            <Route path="bookings" element={<AdminBookings />} />
-            <Route path="cinemas" element={<AdminCinemas />} />
-            <Route path="concessions" element={<AdminConcessions />} />
-            <Route path="users" element={<ProtectedRoute allowedRoles={['admin']}><AdminCustomers /></ProtectedRoute>} />
-            <Route path="managers" element={<ProtectedRoute allowedRoles={['admin']}><AdminManagers /></ProtectedRoute>} />
-            <Route path="genres" element={<AdminGenres />} />
-            <Route path="movies" element={<AdminMovies />} />
-            <Route path="promotions" element={<AdminPromotions />} />
-            <Route path="resale" element={<ProtectedRoute allowedRoles={['admin']}><AdminResale /></ProtectedRoute>} />
-            <Route path="resale/report" element={<ProtectedRoute allowedRoles={['admin']}><AdminResaleReport /></ProtectedRoute>} />
-            <Route path="rooms" element={<AdminRooms />} />
-            <Route path="seats" element={<AdminSeats />} />
-            <Route path="settings" element={<ProtectedRoute allowedRoles={['admin']}><AdminSettings /></ProtectedRoute>} />
-            <Route path="showtimes" element={<AdminShowtimes />} />
-            <Route path="reviews" element={<ProtectedRoute allowedRoles={['admin']}><AdminReviews /></ProtectedRoute>} />
-          </Route>
-        </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-      </DataProvider>
-      <Toaster position="top-right" richColors />
+      <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
+        <DataProvider>
+          <AuthProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route element={<MainLayoutWrapper />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/news" element={<NewsPage />} />
+                  <Route path="/news/:id" element={<NewsDetail />} />
+                  <Route path="/movies" element={<MoviesPage />} />
+                  <Route path="/movies/now-showing" element={<NowShowingPage />} />
+                  <Route path="/movies/coming-soon" element={<ComingSoonPage />} />
+                  <Route path="/movies/:id" element={<MovieDetailPage />} />
+                  <Route path="/booking/success" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><BookingSuccess /></ProtectedRoute>} />
+                  <Route path="/booking" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><BookingFlow /></ProtectedRoute>} />
+                  <Route path="/booking/:movieId" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><BookingFlow /></ProtectedRoute>} />
+                  <Route path="/payment" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><PaymentPage /></ProtectedRoute>} />
+                  <Route path="/payment/result" element={<VNPayResultPage />} />
+                  <Route path="/my-tickets" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><MyTicketsPage /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><ProfilePage /></ProtectedRoute>} />
+                  <Route path="/cinemas" element={<CinemasPage />} />
+                  <Route path="/promotions" element={<PromotionsPage />} />
+                  <Route path="/resale" element={<ResalePage />} />
+                  <Route path="/resale/:id" element={<ResaleDetail />} />
+                  <Route path="/my-resale" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><MyResalePage /></ProtectedRoute>} />
+                  <Route path="/my-resale/create" element={<ProtectedRoute allowedRoles={['user', 'admin', 'manager']}><CreateResalePage /></ProtectedRoute>} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                </Route>
+                
+                <Route path="/admin" element={<AdminLayoutWrapper />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="news" element={<ProtectedRoute allowedRoles={['admin']}><AdminNews /></ProtectedRoute>} />
+                  <Route path="analytics" element={<ProtectedRoute allowedRoles={['admin']}><AdminAnalytics /></ProtectedRoute>} />
+                  <Route path="bookings" element={<AdminBookings />} />
+                  <Route path="cinemas" element={<AdminCinemas />} />
+                  <Route path="concessions" element={<AdminConcessions />} />
+                  <Route path="users" element={<ProtectedRoute allowedRoles={['admin']}><AdminCustomers /></ProtectedRoute>} />
+                  <Route path="managers" element={<ProtectedRoute allowedRoles={['admin']}><AdminManagers /></ProtectedRoute>} />
+                  <Route path="genres" element={<AdminGenres />} />
+                  <Route path="actors" element={<ProtectedRoute allowedRoles={['admin']}><AdminActors /></ProtectedRoute>} />
+                  <Route path="movies" element={<AdminMovies />} />
+                  <Route path="promotions" element={<AdminPromotions />} />
+                  <Route path="resale" element={<ProtectedRoute allowedRoles={['admin']}><AdminResale /></ProtectedRoute>} />
+                  <Route path="rooms" element={<AdminRooms />} />
+                  <Route path="seats" element={<AdminSeats />} />
+                  <Route path="settings" element={<ProtectedRoute allowedRoles={['admin']}><AdminSettings /></ProtectedRoute>} />
+                  <Route path="showtimes" element={<AdminShowtimes />} />
+                  <Route path="reviews" element={<ProtectedRoute allowedRoles={['admin']}><AdminReviews /></ProtectedRoute>} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
+        </DataProvider>
+        <Toaster position="top-right" richColors />
+      </ThemeProvider>
     </GoogleOAuthProvider>
   )
 }

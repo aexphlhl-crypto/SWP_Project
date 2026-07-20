@@ -21,8 +21,10 @@ public class RoomController {
     private final RoomService roomService;
 
     @GetMapping
-    public ApiResponse<Page<RoomDto>> getAllRooms(Pageable pageable) {
-        return ApiResponse.ok(roomService.getAllRooms(pageable));
+    public ApiResponse<Page<RoomDto>> getAllRooms(
+            @RequestParam(required = false) Long cinemaId,
+            Pageable pageable) {
+        return ApiResponse.ok(roomService.getAllRooms(cinemaId, pageable));
     }
 
     @GetMapping("/{id}")
@@ -52,6 +54,13 @@ public class RoomController {
     public ApiResponse<List<SeatConfigDto>> configureSeats(@PathVariable Long id,
                                                             @RequestBody List<SeatConfigDto> seatConfigs) {
         return ApiResponse.ok(roomService.configureSeats(id, seatConfigs));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SystemAdmin', 'ScheduleManager')")
+    public ApiResponse<String> deleteRoom(@PathVariable Long id) {
+        roomService.deleteRoom(id);
+        return ApiResponse.ok("Room deleted successfully");
     }
 }
 

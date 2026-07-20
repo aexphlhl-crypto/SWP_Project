@@ -86,7 +86,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String verifyOtp(VerifyOtpRequest request) {
+    public AuthResponse verifyOtp(VerifyOtpRequest request) {
         PendingUser pendingUser = pendingUserRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> AppException.badRequest("No pending registration found for this email."));
 
@@ -118,7 +118,7 @@ public class AuthService {
         userRepository.save(user);
         pendingUserRepository.delete(pendingUser);
 
-        return "Email verified successfully. You can now login.";
+        return buildAuthResponse(user);
     }
 
     @Transactional
@@ -194,8 +194,8 @@ public class AuthService {
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
-                .orElseThrow(() -> AppException.notFound("Email không tồn tại trong hệ thống."));
-        
+                .orElseThrow(() -> AppException.notFound("No account found with this email address."));
+
         String otp = generateOtp();
         saveOtp(user, otp, OtpType.PasswordReset, 5);
         
@@ -206,23 +206,23 @@ public class AuthService {
     @Transactional
     public String verifyForgotPasswordOtp(VerifyForgotOtpRequest request) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
-                .orElseThrow(() -> AppException.notFound("Email không tồn tại trong hệ thống."));
+                .orElseThrow(() -> AppException.notFound("No account found with this email address."));
 
         OtpToken otpToken = otpTokenRepository.findTopByUserAndTokenTypeAndIsUsedFalseOrderByCreatedAtDesc(user, OtpType.PasswordReset)
-                .orElseThrow(() -> AppException.badRequest("Mã xác nhận không tồn tại hoặc đã được sử dụng."));
+                .orElseThrow(() -> AppException.badRequest("OTP not found or already used. Please request a new one."));
 
         if (otpToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw AppException.badRequest("Mã xác nhận đã hết hạn.");
+            throw AppException.badRequest("OTP has expired. Please request a new one.");
         }
 
         if (otpToken.getRetryCount() >= MAX_OTP_RETRIES) {
-            throw AppException.badRequest("Vượt quá số lần thử mã xác nhận tối đa.");
+            throw AppException.badRequest("Too many OTP attempts. Please request a new one.");
         }
 
         if (!passwordEncoder.matches(request.getOtpCode(), otpToken.getTokenValue())) {
             otpToken.setRetryCount(otpToken.getRetryCount() + 1);
             otpTokenRepository.save(otpToken);
-            throw AppException.badRequest("Mã xác nhận không chính xác. Còn lại " + (MAX_OTP_RETRIES - otpToken.getRetryCount()) + " lần thử.");
+            throw AppException.badRequest("Incorrect OTP. " + (MAX_OTP_RETRIES - otpToken.getRetryCount()) + " attempts remaining.");
         }
 
         // MANDATORY SECURITY ACTION: Immediately delete/invalidate the OTP from the database
@@ -238,18 +238,18 @@ public class AuthService {
         try {
             claims = jwtUtil.parseToken(request.getToken());
         } catch (Exception e) {
-            throw AppException.badRequest("Mã khôi phục không hợp lệ hoặc đã hết hạn.");
+            throw AppException.badRequest("Reset token is invalid or has expired.");
         }
 
         String email = claims.getSubject();
         String purpose = claims.get("purpose", String.class);
 
         if (email == null || !email.equalsIgnoreCase(request.getEmail()) || !"RESET_PASSWORD".equals(purpose)) {
-            throw AppException.badRequest("Mã khôi phục không hợp lệ.");
+            throw AppException.badRequest("Reset token is invalid.");
         }
 
         User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
-                .orElseThrow(() -> AppException.notFound("Email không tồn tại trong hệ thống."));
+                .orElseThrow(() -> AppException.notFound("No account found with this email address."));
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
@@ -259,8 +259,8 @@ public class AuthService {
     }
 
     @Transactional
-    public void changePassword(Long userId, ChangePasswordRequest request) {
-        User user = userRepository.findById(userId)
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseThrow(() -> AppException.notFound("User not found."));
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
@@ -295,6 +295,7 @@ public class AuthService {
                 .phone(user.getPhone())
                 .dateOfBirth(user.getDateOfBirth())
                 .address(user.getAddress())
+                .cinemaId(user.getCinema() != null ? user.getCinema().getCinemaId() : null)
                 .build();
     }
 
@@ -310,6 +311,7 @@ public class AuthService {
                 .phone(user.getPhone())
                 .dateOfBirth(user.getDateOfBirth())
                 .address(user.getAddress())
+                .cinemaId(user.getCinema() != null ? user.getCinema().getCinemaId() : null)
                 .build();
     }
 
@@ -389,6 +391,7 @@ public class AuthService {
                         .phone(user.getPhone())
                         .dateOfBirth(user.getDateOfBirth())
                         .address(user.getAddress())
+                        .cinemaId(user.getCinema() != null ? user.getCinema().getCinemaId() : null)
                         .build())
                 .build();
     }
