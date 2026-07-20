@@ -8,53 +8,53 @@ const ACTOR_AVATARS = {
   'Steve Carell': 'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=100&h=100&fit=crop&q=80',
   'Pierre Coffin': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80',
   'Alan Arkin': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80',
-
+  
   // Spider-Man
   'Tom Holland': 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop&q=80',
   'Zendaya': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80',
   'Benedict Cumberbatch': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80',
-
+  
   // The Dark Knight
   'Christian Bale': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&q=80',
   'Heath Ledger': 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&q=80',
   'Gary Oldman': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&q=80',
-
+  
   // Inside Out 2
   'Amy Poehler': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80',
   'Maya Hawke': 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&q=80',
-
+  
   // Avatar
   'Sam Worthington': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&q=80',
   'Zoe Saldana': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80',
   'Sigourney Weaver': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80',
-
+  
   // Dune 2
   'Timothée Chalamet': 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop&q=80',
   'Rebecca Ferguson': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80',
-
+  
   // Deadpool & Wolverine
   'Ryan Reynolds': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80',
   'Hugh Jackman': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&q=80',
-
+  
   // Oppenheimer
   'Cillian Murphy': 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop&q=80',
   'Emily Blunt': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80',
   'Matt Damon': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&q=80',
-
+  
   // Godzilla x Kong
   'Rebecca Hall': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&q=80',
-
+  
   // Garfield
   'Chris Pratt': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80',
-
+  
   // Furiosa
   'Anya Taylor-Joy': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80',
   'Chris Hemsworth': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&q=80',
-
+  
   // Bad Boys
   'Will Smith': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80',
   'Martin Lawrence': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&q=80',
-
+  
   // Lật Mặt 7
   'Thanh Hiền': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&q=80',
   'Trương Minh Cường': 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&q=80',
@@ -74,16 +74,16 @@ const mapMovieFromApi = (m) => ({
   description: m.synopsis,
   cast: m.actors && m.actors.length > 0
     ? m.actors.map(a => ({
-      id: a.actorId.toString(),
-      name: a.name,
-      role: 'Diễn viên',
-      avatar: a.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(a.name)}&background=random&color=fff&size=128&bold=true`
-    }))
+        id: a.actorId.toString(),
+        name: a.name,
+        role: 'Diễn viên',
+        avatar: a.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(a.name)}&background=random&color=fff&size=128&bold=true`
+      }))
     : (m.castList ? m.castList.split(',').map((c, i) => {
-      const name = c.trim();
-      const avatar = ACTOR_AVATARS[name] || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128&bold=true`;
-      return { id: i.toString(), name, role: 'Diễn viên', avatar };
-    }) : [])
+        const name = c.trim();
+        const avatar = ACTOR_AVATARS[name] || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128&bold=true`;
+        return { id: i.toString(), name, role: 'Diễn viên', avatar };
+      }) : [])
 });
 
 export function DataProvider({ children }) {
@@ -297,7 +297,7 @@ export function DataProvider({ children }) {
         const nEnd = parseTime(newShowtime.endTime);
         const sStart = parseTime(s.startTime);
         const sEnd = parseTime(s.endTime);
-
+        
         // Có giao nhau về thời gian không (cộng thêm 15p dọn dẹp)
         return (nStart < sEnd + 15) && (nEnd + 15 > sStart);
       }
@@ -334,7 +334,7 @@ export function DataProvider({ children }) {
       ...bookingData
     };
     setBookings(prev => [newBooking, ...prev]);
-
+    
     // Giảm availableSeats của suất chiếu đó
     setShowtimes(prev => prev.map(s => s.id === bookingData.showtime.id ? { ...s, availableSeats: Math.max(0, s.availableSeats - bookingData.seats.length) } : s));
 

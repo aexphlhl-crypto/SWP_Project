@@ -59,23 +59,22 @@ public class ResaleListingService {
 
         Showtime listingShowtime = booking.getShowtime();
         if (listingShowtime.getStartTime().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw AppException
-                    .badRequest("Ticket listing is not allowed less than 2 hours before the showtime starts.");
+            throw AppException.badRequest("Ticket listing is not allowed less than 2 hours before the showtime starts.");
         }
 
         // Prevent duplicate seats or FNB
         java.util.List<TicketExchangeListing> existingListings = resaleListingRepository.findByBookingIdAndStatusIn(
-                request.getBookingId(),
-                java.util.Arrays.asList(ListingStatus.Active, ListingStatus.Hidden));
-
+            request.getBookingId(), 
+            java.util.Arrays.asList(ListingStatus.Active, ListingStatus.Hidden)
+        );
+        
         if (request.getIncludesFnb() != null && request.getIncludesFnb()) {
-            boolean fnbAlreadyListed = existingListings.stream()
-                    .anyMatch(l -> l.getIncludesFnb() != null && l.getIncludesFnb());
+            boolean fnbAlreadyListed = existingListings.stream().anyMatch(l -> l.getIncludesFnb() != null && l.getIncludesFnb());
             if (fnbAlreadyListed) {
                 throw AppException.badRequest("FNB is already included in another active listing.");
             }
         }
-
+        
         if (request.getSeats() != null && !request.getSeats().isEmpty()) {
             java.util.List<String> requestedSeats = java.util.Arrays.asList(request.getSeats().split("\\s*,\\s*"));
             for (TicketExchangeListing l : existingListings) {
@@ -127,8 +126,7 @@ public class ResaleListingService {
     }
 
     @Transactional
-    public ResaleListingResponse updateListing(Long id,
-            com.cinebook.backend.modules.resale.dto.ResaleListingUpdateRequest request) {
+    public ResaleListingResponse updateListing(Long id, com.cinebook.backend.modules.resale.dto.ResaleListingUpdateRequest request) {
         TicketExchangeListing listing = resaleListingRepository.findById(id)
                 .orElseThrow(() -> AppException.notFound("Listing not found"));
 
@@ -153,7 +151,7 @@ public class ResaleListingService {
     private ResaleListingResponse mapToResponse(TicketExchangeListing listing) {
         Booking booking = bookingRepository.findById(listing.getBookingId()).orElse(null);
         User seller = userRepository.findById(listing.getSellerId()).orElse(null);
-
+        
         String movieTitle = "";
         String moviePoster = "";
         String cinemaName = "";
@@ -191,8 +189,7 @@ public class ResaleListingService {
                     for (BookingSeat bs : bookingSeats) {
                         Seat seat = bs.getSeat();
                         if (seat != null) {
-                            if (seatBuilder.length() > 0)
-                                seatBuilder.append(", ");
+                            if (seatBuilder.length() > 0) seatBuilder.append(", ");
                             seatBuilder.append(seat.getSeatLabel());
                         }
                     }
@@ -230,8 +227,7 @@ public class ResaleListingService {
                 .resalePrice(listing.getAskingPrice())
                 .includesFnb(listing.getIncludesFnb() != null ? listing.getIncludesFnb() : false)
                 .sellerName(seller != null ? seller.getFullName() : "Unknown")
-                .sellerPhone(
-                        listing.getPhone() != null ? listing.getPhone() : (seller != null ? seller.getPhone() : ""))
+                .sellerPhone(listing.getPhone() != null ? listing.getPhone() : (seller != null ? seller.getPhone() : ""))
                 .note(listing.getNote())
                 .facebookUrl(listing.getFacebookUrl())
                 .status(listing.getStatus().name().toLowerCase())
