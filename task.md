@@ -1,0 +1,7 @@
+- [x] Update backend showtime conflict buffer to 20 minutes in `ShowtimeService.java`
+- [x] Redesign Admin showtimes index page `index.jsx` visual layout
+  - [x] Add header stats bar (Average Seat Fill Rate, Top Occupied Movie, Active Holds)
+  - [x] Implement Room grid columns and time rows timeline (10:00 to 22:00 / 24:00) in Calendar tab
+  - [x] Style scheduled showtimes as custom cards matching Figma (with progress bars, movie poster thumbnails, seat occupancy text)
+  - [x] Implement frontend conflict detection to draw red overlay alert if spacing is < 20 minutes between consecutive room showtimes
+- [ ] Verify execution and compilation of changes

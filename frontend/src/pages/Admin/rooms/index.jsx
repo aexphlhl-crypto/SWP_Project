@@ -72,7 +72,7 @@ export default function AdminRoomsPage() {
 
   const filtered = rooms.filter(r => selectedCinema === 'all' || r.cinemaId?.toString() === selectedCinema.toString());
   const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
-
+  
   const activeCount = filtered.filter(r => r.status === 'Active' || r.status === 'active').length;
 
   const openAdd = () => {
@@ -211,14 +211,49 @@ export default function AdminRoomsPage() {
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border hover:bg-transparent">
-                  <TableHead>Tên phòng</TableHead>
-                  <TableHead>Rạp</TableHead>
-                  <TableHead>Sức chứa</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead className="w-[100px] text-right">Thao tác</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead>Tên phòng</TableHead>
+                <TableHead>Rạp</TableHead>
+                <TableHead>Sức chứa</TableHead>
+                <TableHead>Trạng thái</TableHead>
+                <TableHead className="w-[100px] text-right">Thao tác</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {currentDataOnPage.map(room => (
+                <TableRow key={room.id} className="border-border">
+                  <TableCell className="font-medium">{room.name}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                    {room.cinemaName}
+                  </TableCell>
+                  <TableCell className="text-sm">{room.capacity || 0} ghế</TableCell>
+                  <TableCell>
+                    <Badge className={room.status === 'Active' || room.status === 'active' ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-500'}>
+                      {room.status === 'Active' || room.status === 'active' ? 'Hoạt động' : 'Bảo trì'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="w-8 h-8">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem className="gap-2" onClick={() => handleToggleStatus(room)}>
+                          <Eye className="w-4 h-4" /> {(room.status === 'Active' || room.status === 'active') ? 'Bảo trì / Ẩn phòng' : 'Mở lại phòng'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="gap-2" onClick={() => navigate(`/admin/seats?cinemaId=${room.cinemaId}&roomId=${room.id}`)}>
+                          <LayoutGrid className="w-4 h-4" /> Xem sơ đồ ghế
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => confirmDelete(room.id)}>
+                          <Trash2 className="w-4 h-4" /> Xóa phòng chiếu
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
                 </TableRow>
               </TableHeader>
               <TableBody>

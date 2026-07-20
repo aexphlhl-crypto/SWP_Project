@@ -174,12 +174,11 @@ public class UserService {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$";
         SecureRandom random = new SecureRandom();
         StringBuilder sb = new StringBuilder();
-        sb.append(chars.charAt(random.nextInt(26))); // uppercase
-        sb.append(chars.charAt(26 + random.nextInt(26))); // lowercase
-        sb.append(chars.charAt(52 + random.nextInt(10))); // digit
-        sb.append(chars.charAt(62 + random.nextInt(4))); // special
-        for (int i = 4; i < 12; i++)
-            sb.append(chars.charAt(random.nextInt(chars.length())));
+        sb.append(chars.charAt(random.nextInt(26)));                   // uppercase
+        sb.append(chars.charAt(26 + random.nextInt(26)));              // lowercase
+        sb.append(chars.charAt(52 + random.nextInt(10)));              // digit
+        sb.append(chars.charAt(62 + random.nextInt(4)));               // special
+        for (int i = 4; i < 12; i++) sb.append(chars.charAt(random.nextInt(chars.length())));
         return sb.toString();
     }
 

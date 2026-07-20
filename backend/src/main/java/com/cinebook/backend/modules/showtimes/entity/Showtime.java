@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Showtime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +39,7 @@ public class Showtime {
 
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
+
 
     @Column(name = "status", nullable = false)
     @Builder.Default

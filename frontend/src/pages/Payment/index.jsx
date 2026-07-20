@@ -73,7 +73,7 @@ function PaymentContent() {
   const [promoError, setPromoError] = useState('');
   const [processing, setProcessing] = useState(false);
   const { user } = useAuth();
-
+  
   const [calcResults, setCalcResults] = useState(null);
   const [isLoadingCalc, setIsLoadingCalc] = useState(false);
 
@@ -128,7 +128,7 @@ function PaymentContent() {
   const discount = calcResults ? calcResults.discountAmount : 0;
   const calculatedVatAmount = calcResults ? calcResults.vatAmount : Math.round(subtotal * (vatPercent / 100));
   const finalTotal = calcResults ? calcResults.totalAmount : (subtotal + calculatedVatAmount);
-
+  
   const displaySeatTotal = calcResults ? calcResults.ticketTotal : (subtotal - concessionTotal);
   const displayConcessionTotal = calcResults ? calcResults.fnbTotal : concessionTotal;
   const displayVatPercent = calcResults ? Math.round(calcResults.vatRate * 100) : vatPercent;
@@ -215,9 +215,9 @@ function PaymentContent() {
       <header className="border-b border-border bg-card/85 backdrop-blur-md sticky top-0 z-50">
         <div className="container max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
+            <Button 
+              variant="ghost" 
+              size="icon" 
               className="text-muted-foreground hover:text-foreground"
               onClick={() => router(-1)}
             >
@@ -253,10 +253,10 @@ function PaymentContent() {
       {/* ── Main content area ── */}
       <main className="container max-w-[1400px] mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-
+          
           {/* Left Column (2/3 width): Order Details & Payment Method */}
           <div className="lg:col-span-2 space-y-8">
-
+            
             {/* Header info */}
             <div>
               <h1 className="text-2xl font-black text-foreground tracking-tight">Thanh Toán Đơn Hàng</h1>
@@ -271,17 +271,17 @@ function PaymentContent() {
               </div>
 
               <div className="flex gap-4 items-start">
-                <img
-                  src={movie?.poster}
-                  alt={movie?.title}
-                  className="w-16 rounded-xl object-cover aspect-[2/3] border border-border shadow-md shrink-0"
+                <img 
+                  src={movie?.poster} 
+                  alt={movie?.title} 
+                  className="w-16 rounded-xl object-cover aspect-[2/3] border border-border shadow-md shrink-0" 
                 />
                 <div className="flex-1 min-w-0 space-y-1">
                   <h4 className="font-bold text-foreground text-base leading-tight truncate">{movie?.title}</h4>
                   <p className="text-xs text-muted-foreground flex items-center gap-2"><Building2 className="w-3.5 h-3.5 text-primary" /> {cinema}</p>
                   <p className="text-xs text-muted-foreground flex items-center gap-2"><CreditCard className="w-3.5 h-3.5 text-primary" /> {room}</p>
                   <p className="text-xs text-muted-foreground flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-primary" /> {displayDate} - {time}</p>
-
+                  
                   {/* Selected Seats Badges */}
                   <div className="flex flex-wrap items-center gap-1.5 pt-2">
                     <span className="text-[10px] text-muted-foreground/60 font-semibold uppercase tracking-wider">Ghế:</span>
@@ -320,7 +320,7 @@ function PaymentContent() {
             {/* Discount / Promo Code Card */}
             <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-4">
               <h3 className="text-sm font-bold text-foreground uppercase tracking-wider border-b border-border pb-3">Khuyến mãi / Ưu đãi</h3>
-
+              
               <div className="space-y-3">
                 {promoApplied ? (
                   <div className="flex items-center justify-between rounded-xl bg-green-500/5 border border-green-500/25 px-4 py-2.5">
@@ -328,9 +328,9 @@ function PaymentContent() {
                       <Tag className="w-4 h-4 text-green-500" />
                       <span className="text-sm text-green-500 font-mono font-bold">{promoCode}</span>
                     </div>
-                    <button
+                    <button 
                       type="button"
-                      className="text-xs text-muted-foreground hover:text-foreground underline font-medium"
+                      className="text-xs text-muted-foreground hover:text-foreground underline font-medium" 
                       onClick={() => {
                         setPromoApplied(false);
                         setPromoCode('');
@@ -345,14 +345,14 @@ function PaymentContent() {
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
-                      <Input
-                        placeholder="Nhập mã khuyến mãi (ví dụ: CINE50)"
-                        value={promoCode}
+                      <Input 
+                        placeholder="Nhập mã khuyến mãi (ví dụ: CINE50)" 
+                        value={promoCode} 
                         onChange={e => {
                           setPromoCode(e.target.value.toUpperCase());
                           setPromoError('');
-                        }}
-                        className="pl-10 h-10 text-sm bg-muted border-input rounded-xl focus:border-primary/60"
+                        }} 
+                        className="pl-10 h-10 text-sm bg-muted border-input rounded-xl focus:border-primary/60" 
                       />
                     </div>
                     <Button onClick={handleApplyPromo} className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold h-10 px-5 rounded-xl">
@@ -372,7 +372,7 @@ function PaymentContent() {
             {/* Payment Method Card (VNPay only) */}
             <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-4">
               <h3 className="text-sm font-bold text-foreground uppercase tracking-wider border-b border-border pb-3">Phương thức thanh toán</h3>
-
+              
               <div className="space-y-4">
                 <div className="w-full flex items-center justify-between p-4 rounded-xl border border-primary/25 bg-primary/5 transition-all text-left relative">
                   <div className="flex items-center gap-3.5">
@@ -398,9 +398,9 @@ function PaymentContent() {
                     <p className="font-bold text-blue-500">Môi trường thử nghiệm (Sandbox):</p>
                     <p className="text-muted-foreground/80 leading-relaxed text-[11px]">Trang thanh toán thử nghiệm của VNPay sẽ tự động mở ra. Bạn có thể sử dụng thông tin thẻ ATM NCB test để kiểm tra:</p>
                     <p className="text-primary font-mono text-[11px] mt-1 bg-muted p-2 rounded border border-border leading-relaxed">
-                      Số thẻ: 9704198526191432119 <br />
-                      Tên chủ thẻ: NGUYEN VAN A <br />
-                      Ngày phát hành: 07/15 <br />
+                      Số thẻ: 9704198526191432119 <br/>
+                      Tên chủ thẻ: NGUYEN VAN A <br/>
+                      Ngày phát hành: 07/15 <br/>
                       Mã OTP: 123456
                     </p>
                   </div>
@@ -414,7 +414,7 @@ function PaymentContent() {
           <div className="lg:col-span-1">
             <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-5 sticky top-24">
               <h3 className="text-sm font-bold text-foreground uppercase tracking-wider border-b border-border pb-3">Chi tiết thanh toán</h3>
-
+              
               {/* Cost detailed item list */}
               <div className="space-y-3.5 text-xs text-muted-foreground relative">
                 {isLoadingCalc && (
@@ -422,7 +422,7 @@ function PaymentContent() {
                     <Loader2 className="w-5 h-5 animate-spin text-primary" />
                   </div>
                 )}
-
+                
                 <div className="flex justify-between">
                   <span className="text-muted-foreground/60">Tiền vé ({seats.length} ghế)</span>
                   <span className="font-bold text-foreground">{new Intl.NumberFormat('vi-VN').format(displaySeatTotal)}₫</span>
@@ -472,7 +472,7 @@ function PaymentContent() {
                     </>
                   )}
                 </Button>
-
+                
                 <p className="text-[10px] text-center text-muted-foreground/60 font-medium flex items-center justify-center gap-1.5 pt-3">
                   <span>🛡️</span> Giao dịch được mã hóa và bảo mật bởi VNPay SSL
                 </p>

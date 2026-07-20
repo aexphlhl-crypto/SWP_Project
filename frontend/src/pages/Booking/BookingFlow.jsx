@@ -75,7 +75,7 @@ function BookingContent() {
       }
     };
   }, [showtimeId]);
-
+  
   useEffect(() => {
     setIsLoadingConcessions(true);
     fnbApi.getAllProducts({ size: 100 })
@@ -203,12 +203,12 @@ function BookingContent() {
         await bookingApi.cancelBooking(pendingBookingId);
         sessionStorage.removeItem('pendingBookingId');
       }
-
+      
       toast({
         title: 'Đã hủy giao dịch',
         description: 'Các ghế bạn chọn đã được nhả.',
       });
-
+      
       setPendingSeats([]);
       setOrderItems([]);
       setConcessionOpen(false);
@@ -285,9 +285,9 @@ function BookingContent() {
       <header className="border-b border-border bg-card/85 backdrop-blur-md sticky top-0 z-50">
         <div className="container max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
+            <Button 
+              variant="ghost" 
+              size="icon" 
               className="text-muted-foreground hover:text-foreground"
               onClick={async () => {
                 if (step === 2) {
@@ -310,7 +310,7 @@ function BookingContent() {
             </Button>
             <span className="font-extrabold text-foreground text-lg tracking-tight">Đặt Vé Trực Tuyến</span>
           </div>
-
+ 
           {/* Stepper progress indicator */}
           <div className="hidden md:flex items-center gap-6 text-sm">
             <div className="flex items-center gap-2">
@@ -328,7 +328,7 @@ function BookingContent() {
               <span className={cn("font-bold", concessionOpen ? "text-primary" : "text-muted-foreground/60")}>Thanh Toán</span>
             </div>
           </div>
-
+ 
           <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground/80">
             <span>VI | EN</span>
           </div>
@@ -348,18 +348,18 @@ function BookingContent() {
       {/* ── Main content area ── */}
       <main className="container max-w-[1400px] mx-auto px-4 py-8">
         {step === 1 && (
-          <BookingWizardStep1
-            movies={movies}
-            cinemas={cinemas}
-            initialMovieId={movieIdParam}
+          <BookingWizardStep1 
+            movies={movies} 
+            cinemas={cinemas} 
+            initialMovieId={movieIdParam} 
             initialDate={date}
-            onNext={handleNextFromStep1}
+            onNext={handleNextFromStep1} 
           />
         )}
 
         {step === 2 && movie && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-
+            
             {/* Left Column (2/3 width): Seat Selection Grid */}
             <div className="lg:col-span-2 bg-card border border-border rounded-2xl p-6 shadow-2xl relative">
               <div className="mb-6">
@@ -371,18 +371,18 @@ function BookingContent() {
 
 
 
-              <SeatSelection
-                showtimeId={showtimeId}
-                movieId={movie.id}
-                movieTitle={movie.title}
-                moviePoster={movie.poster}
-                cinemaName={cinema?.name}
-                roomName={room}
-                showDate={date}
-                showTime={time}
-                pricing={dynamicPricing}
-                onConfirm={handleConfirmSeats}
-                onCancel={handleCancelTransaction}
+              <SeatSelection 
+                showtimeId={showtimeId} 
+                movieId={movie.id} 
+                movieTitle={movie.title} 
+                moviePoster={movie.poster} 
+                cinemaName={cinema?.name} 
+                roomName={room} 
+                showDate={date} 
+                showTime={time} 
+                pricing={dynamicPricing} 
+                onConfirm={handleConfirmSeats} 
+                onCancel={handleCancelTransaction} 
                 maxSeats={8}
                 showSummary={false} /* Hide internal summary, handled by BookingFlow */
                 selectedSeats={pendingSeats}
@@ -392,7 +392,7 @@ function BookingContent() {
 
             {/* Right Column (1/3 width): Concessions & Bill Summary side-by-side */}
             <div className="lg:col-span-1 space-y-8">
-
+              
               {/* Concessions Widget (Snacks / Combo Selector) */}
               <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-4">
                 <div className="flex items-center justify-between border-b border-border pb-3">
@@ -449,7 +449,7 @@ function BookingContent() {
               {/* Order Summary Widget */}
               <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-4">
                 <h3 className="text-sm font-bold text-foreground uppercase tracking-wider border-b border-border pb-3">Chi tiết hóa đơn</h3>
-
+                
                 {/* Seats Selected list */}
                 <div className="flex items-center justify-between text-xs py-1">
                   <span className="text-muted-foreground font-semibold">Ghế chọn:</span>
@@ -465,7 +465,7 @@ function BookingContent() {
                     <span className="text-muted-foreground/60 italic">Chưa chọn ghế</span>
                   )}
                 </div>
-
+ 
                 {/* Sub items cost break-down */}
                 <div className="space-y-2.5 pt-2 border-t border-border text-xs text-muted-foreground">
                   <div className="flex justify-between">
@@ -489,7 +489,7 @@ function BookingContent() {
                     </div>
                   )}
                 </div>
-
+ 
                 {/* Subtotal + Tax VAT 10% */}
                 <div className="border-t border-border pt-3.5 space-y-2 text-xs">
                   <div className="flex justify-between text-muted-foreground">
@@ -507,7 +507,7 @@ function BookingContent() {
                     </span>
                   </div>
                 </div>
-
+ 
                 {/* Confirm transaction CTA */}
                 <div className="pt-2">
                   <Button
@@ -517,7 +517,7 @@ function BookingContent() {
                   >
                     Tiến hành Thanh toán
                   </Button>
-
+                  
                   <button
                     type="button"
                     onClick={handleCancelTransaction}

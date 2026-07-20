@@ -19,16 +19,18 @@ function PromoCard({ promo, expired = false }) {
   }
 
   return (
-    <div className={`relative flex overflow-hidden rounded-xl border transition-colors ${expired
+    <div className={`relative flex overflow-hidden rounded-xl border transition-colors ${
+      expired
         ? 'border-border/40 bg-card/40 opacity-60'
         : 'border-border/60 bg-card hover:border-primary/40'
-      }`}>
+    }`}>
       {/* Left accent bar */}
       {!expired && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-xl" />}
 
       {/* Discount block */}
-      <div className={`flex flex-col items-center justify-center px-5 py-4 shrink-0 border-r ${expired ? 'border-border/30 w-24' : 'border-border/40 w-28 bg-primary/5'
-        }`}>
+      <div className={`flex flex-col items-center justify-center px-5 py-4 shrink-0 border-r ${
+        expired ? 'border-border/30 w-24' : 'border-border/40 w-28 bg-primary/5'
+      }`}>
         <span className={`text-2xl font-black leading-none ${expired ? 'line-through text-muted-foreground' : 'text-primary'}`}>
           {discountLabel}
         </span>

@@ -112,8 +112,7 @@ public class PaymentController {
                     try {
                         String emailNotif = systemConfigService.getConfigValue("email_notif");
                         if (!"false".equalsIgnoreCase(emailNotif)) {
-                            com.cinebook.backend.modules.bookings.dto.MyBookingDto bookingDto = bookingService
-                                    .getBookingById(booking.getId());
+                            com.cinebook.backend.modules.bookings.dto.MyBookingDto bookingDto = bookingService.getBookingById(booking.getId());
                             emailService.sendBookingConfirmation(booking.getCustomer().getEmail(), bookingDto);
                         }
                     } catch (Exception e) {

@@ -20,5 +20,6 @@ public class ShowtimeDto {
     private String status;
     private Integer totalSeats; // Room capacity
     private Integer availableSeats; // Available seats count
+    private Integer price;
 }
 

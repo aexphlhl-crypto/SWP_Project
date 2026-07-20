@@ -63,3 +63,11 @@ public class RoomController {
         return ApiResponse.ok("Room deleted successfully");
     }
 }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SystemAdmin', 'ScheduleManager')")
+    public ApiResponse<String> deleteRoom(@PathVariable Long id) {
+        roomService.deleteRoom(id);
+        return ApiResponse.ok("Room deleted successfully");
+    }
+}

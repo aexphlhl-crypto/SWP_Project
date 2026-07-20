@@ -211,8 +211,7 @@ public class AuthService {
         User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
                 .orElseThrow(() -> AppException.notFound("No account found with this email address."));
 
-        OtpToken otpToken = otpTokenRepository
-                .findTopByUserAndTokenTypeAndIsUsedFalseOrderByCreatedAtDesc(user, OtpType.PasswordReset)
+        OtpToken otpToken = otpTokenRepository.findTopByUserAndTokenTypeAndIsUsedFalseOrderByCreatedAtDesc(user, OtpType.PasswordReset)
                 .orElseThrow(() -> AppException.badRequest("OTP not found or already used. Please request a new one."));
 
         if (otpToken.getExpiresAt().isBefore(LocalDateTime.now())) {
@@ -226,8 +225,7 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getOtpCode(), otpToken.getTokenValue())) {
             otpToken.setRetryCount(otpToken.getRetryCount() + 1);
             otpTokenRepository.save(otpToken);
-            throw AppException.badRequest(
-                    "Incorrect OTP. " + (MAX_OTP_RETRIES - otpToken.getRetryCount()) + " attempts remaining.");
+            throw AppException.badRequest("Incorrect OTP. " + (MAX_OTP_RETRIES - otpToken.getRetryCount()) + " attempts remaining.");
         }
 
         // MANDATORY SECURITY ACTION: Immediately delete/invalidate the OTP from the

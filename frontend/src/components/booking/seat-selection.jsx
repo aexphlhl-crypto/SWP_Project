@@ -286,21 +286,21 @@ export function SeatSelection({
       {/* Booking Summary - Sticky on desktop */}
       {showSummary && (
         <div className="lg:sticky lg:top-4 lg:h-fit">
-          <BookingSummary
-            movieTitle={movieTitle}
-            moviePoster={moviePoster}
-            cinemaName={cinemaName}
-            roomName={roomName}
-            showDate={showDate}
-            showTime={showTime}
-            selectedSeats={selectedSeats}
-            maxSeats={dynamicMaxSeats}
-            holdTime={dynamicHoldTime}
+          <BookingSummary 
+            movieTitle={movieTitle} 
+            moviePoster={moviePoster} 
+            cinemaName={cinemaName} 
+            roomName={roomName} 
+            showDate={showDate} 
+            showTime={showTime} 
+            selectedSeats={selectedSeats} 
+            maxSeats={dynamicMaxSeats} 
+            holdTime={dynamicHoldTime} 
             expiresAt={selectedSeats.length > 0 ? selectedSeats.map(s => s.holdExpiresAt).filter(Boolean).sort()[0] : null}
-            onConfirm={handleConfirm}
-            onCancel={handleCancel}
-            onTimerExpire={handleTimerExpire}
-            isConfirming={isConfirming}
+            onConfirm={handleConfirm} 
+            onCancel={handleCancel} 
+            onTimerExpire={handleTimerExpire} 
+            isConfirming={isConfirming} 
           />
         </div>
       )}
