@@ -167,7 +167,7 @@ export default function AdminAnalyticsPage() {
           { title: 'Doanh thu năm', value: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(res.data.totalRevenue || 0), change: '+0%', positive: true, icon: DollarSign },
           { title: 'Tổng vé bán', value: (res.data.totalTickets || 0).toLocaleString('vi-VN'), change: '+0%', positive: true, icon: Ticket },
           { title: 'Khách hàng mới', value: (res.data.newUsers || 0).toLocaleString('vi-VN'), change: '+0%', positive: true, icon: Users },
-          { title: 'Phim đã chiếu', value: '48', change: '+6', positive: true, icon: Film }
+          { title: 'Phim đã chiếu', value: (res.data.screenedMovies || 0).toString(), change: '+0', positive: true, icon: Film }
         ]);
       }
     }).catch(console.error);

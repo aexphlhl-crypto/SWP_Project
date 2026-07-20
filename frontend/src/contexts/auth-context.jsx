@@ -35,13 +35,13 @@ export function AuthProvider({ children }) {
     setAuthState(prev => ({ ...prev, isLoading: true }))
     try {
       const response = await authApi.login({ email, password });
-
+      
       if (response.success && response.data) {
         const { accessToken, refreshToken, user: userData } = response.data;
-
+        
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
-
+        
         // Map role to match frontend mock users if needed, or use directly
         // The backend returns SystemAdmin, ScheduleManager, etc.
         // Frontend ProtectedRoute expects 'admin', 'manager', 'user'
@@ -52,7 +52,7 @@ export function AuthProvider({ children }) {
         // Map fullName to name for frontend components
         const finalUser = { ...userData, id: userData.userId, role: uiRole, name: userData.fullName || "User" };
         localStorage.setItem('user', JSON.stringify(finalUser));
-
+        
         setAuthState({ user: finalUser, isAuthenticated: true, isLoading: false })
       } else {
         setAuthState(prev => ({ ...prev, isLoading: false }))
@@ -80,9 +80,9 @@ export function AuthProvider({ children }) {
     try {
       const response = await authApi.register({ email, password, fullName: name, phone });
       if (response.success) {
-        setAuthState(prev => ({ ...prev, isLoading: false }))
+         setAuthState(prev => ({ ...prev, isLoading: false }))
       } else {
-        throw new Error(response.error?.message || "Đăng ký thất bại");
+         throw new Error(response.error?.message || "Đăng ký thất bại");
       }
     } catch (error) {
       setAuthState(prev => ({ ...prev, isLoading: false }))
@@ -96,10 +96,10 @@ export function AuthProvider({ children }) {
       const response = await authApi.verifyOtp({ email, otp });
       if (response.success && response.data) {
         const { accessToken, refreshToken, user: userData } = response.data;
-
+        
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
-
+        
         let uiRole = 'user';
         if (userData.role === 'SystemAdmin') uiRole = 'admin';
         else if (userData.role === 'ScheduleManager') uiRole = 'manager';
@@ -107,7 +107,7 @@ export function AuthProvider({ children }) {
         // Map fullName to name for frontend components
         const finalUser = { ...userData, id: userData.userId, role: uiRole, name: userData.fullName || "User" };
         localStorage.setItem('user', JSON.stringify(finalUser));
-
+        
         setAuthState({ user: finalUser, isAuthenticated: true, isLoading: false })
       } else {
         setAuthState(prev => ({ ...prev, isLoading: false }))
@@ -134,13 +134,13 @@ export function AuthProvider({ children }) {
     setAuthState(prev => ({ ...prev, isLoading: true }))
     try {
       const response = await authApi.googleLogin({ idToken: credential });
-
+      
       if (response.success && response.data) {
         const { accessToken, refreshToken, user: userData } = response.data;
-
+        
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
-
+        
         let uiRole = 'user';
         if (userData.role === 'SystemAdmin') uiRole = 'admin';
         else if (userData.role === 'ScheduleManager') uiRole = 'manager';
@@ -148,7 +148,7 @@ export function AuthProvider({ children }) {
         // Map fullName to name for frontend components
         const finalUser = { ...userData, id: userData.userId, role: uiRole, name: userData.fullName || "User" };
         localStorage.setItem('user', JSON.stringify(finalUser));
-
+        
         setAuthState({ user: finalUser, isAuthenticated: true, isLoading: false })
       } else {
         setAuthState(prev => ({ ...prev, isLoading: false }))

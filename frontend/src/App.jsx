@@ -106,7 +106,7 @@ export default function App() {
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 </Route>
-
+                
                 <Route path="/admin" element={<AdminLayoutWrapper />}>
                   <Route index element={<AdminDashboard />} />
                   <Route path="news" element={<ProtectedRoute allowedRoles={['admin']}><AdminNews /></ProtectedRoute>} />
