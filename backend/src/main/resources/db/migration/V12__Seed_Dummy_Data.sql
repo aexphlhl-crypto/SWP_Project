@@ -54,26 +54,26 @@ INSERT IGNORE INTO Movies (movie_id, title, synopsis, duration_min, release_date
 
 -- FnBProducts
 INSERT IGNORE INTO FnBProducts (product_id, name, description, category, price, status) VALUES
-(4001, 'Dummy Drink 1', 'Delicious drink', 'Drink', 35000, 'Available'),
-(4002, 'Dummy Popcorn 2', 'Delicious popcorn', 'Popcorn', 40000, 'Available'),
-(4003, 'Dummy Combo 3', 'Delicious combo', 'Combo', 45000, 'Available'),
-(4004, 'Dummy Drink 4', 'Delicious drink', 'Drink', 50000, 'Available'),
-(4005, 'Dummy Popcorn 5', 'Delicious popcorn', 'Popcorn', 55000, 'Available'),
-(4006, 'Dummy Combo 6', 'Delicious combo', 'Combo', 60000, 'Available'),
-(4007, 'Dummy Drink 7', 'Delicious drink', 'Drink', 65000, 'Available'),
-(4008, 'Dummy Popcorn 8', 'Delicious popcorn', 'Popcorn', 70000, 'Available'),
-(4009, 'Dummy Combo 9', 'Delicious combo', 'Combo', 75000, 'Available'),
-(4010, 'Dummy Drink 10', 'Delicious drink', 'Drink', 80000, 'Available'),
-(4011, 'Dummy Popcorn 11', 'Delicious popcorn', 'Popcorn', 85000, 'Available'),
-(4012, 'Dummy Combo 12', 'Delicious combo', 'Combo', 90000, 'Available'),
-(4013, 'Dummy Drink 13', 'Delicious drink', 'Drink', 95000, 'Available'),
-(4014, 'Dummy Popcorn 14', 'Delicious popcorn', 'Popcorn', 100000, 'Available'),
-(4015, 'Dummy Combo 15', 'Delicious combo', 'Combo', 105000, 'Available'),
-(4016, 'Dummy Drink 16', 'Delicious drink', 'Drink', 110000, 'Available'),
-(4017, 'Dummy Popcorn 17', 'Delicious popcorn', 'Popcorn', 115000, 'Available'),
-(4018, 'Dummy Combo 18', 'Delicious combo', 'Combo', 120000, 'Available'),
-(4019, 'Dummy Drink 19', 'Delicious drink', 'Drink', 125000, 'Available'),
-(4020, 'Dummy Popcorn 20', 'Delicious popcorn', 'Popcorn', 130000, 'Available');
+(4001, 'Dummy Drink 1', 'Delicious drink', 'Drink', 35000, 'Active'),
+(4002, 'Dummy Popcorn 2', 'Delicious popcorn', 'Popcorn', 40000, 'Active'),
+(4003, 'Dummy Combo 3', 'Delicious combo', 'Combo', 45000, 'Active'),
+(4004, 'Dummy Drink 4', 'Delicious drink', 'Drink', 50000, 'Active'),
+(4005, 'Dummy Popcorn 5', 'Delicious popcorn', 'Popcorn', 55000, 'Active'),
+(4006, 'Dummy Combo 6', 'Delicious combo', 'Combo', 60000, 'Active'),
+(4007, 'Dummy Drink 7', 'Delicious drink', 'Drink', 65000, 'Active'),
+(4008, 'Dummy Popcorn 8', 'Delicious popcorn', 'Popcorn', 70000, 'Active'),
+(4009, 'Dummy Combo 9', 'Delicious combo', 'Combo', 75000, 'Active'),
+(4010, 'Dummy Drink 10', 'Delicious drink', 'Drink', 80000, 'Active'),
+(4011, 'Dummy Popcorn 11', 'Delicious popcorn', 'Popcorn', 85000, 'Active'),
+(4012, 'Dummy Combo 12', 'Delicious combo', 'Combo', 90000, 'Active'),
+(4013, 'Dummy Drink 13', 'Delicious drink', 'Drink', 95000, 'Active'),
+(4014, 'Dummy Popcorn 14', 'Delicious popcorn', 'Popcorn', 100000, 'Active'),
+(4015, 'Dummy Combo 15', 'Delicious combo', 'Combo', 105000, 'Active'),
+(4016, 'Dummy Drink 16', 'Delicious drink', 'Drink', 110000, 'Active'),
+(4017, 'Dummy Popcorn 17', 'Delicious popcorn', 'Popcorn', 115000, 'Active'),
+(4018, 'Dummy Combo 18', 'Delicious combo', 'Combo', 120000, 'Active'),
+(4019, 'Dummy Drink 19', 'Delicious drink', 'Drink', 125000, 'Active'),
+(4020, 'Dummy Popcorn 20', 'Delicious popcorn', 'Popcorn', 130000, 'Active');
 
 -- PromoCodes
 INSERT IGNORE INTO PromoCodes (promo_id, code, discount_type, discount_value, max_discount_vnd, min_order_value, usage_limit, used_count, valid_from, valid_until, status) VALUES
