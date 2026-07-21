@@ -29,7 +29,13 @@ import CreateResalePage from './pages/my-resale/CreateResale.jsx'
 import LoginPage from './pages/login/index.jsx'
 import RegisterPage from './pages/register/index.jsx'
 import ForgotPasswordPage from './pages/forgot-password/index.jsx'
-
+import AboutPage from './pages/info/About.jsx'
+import CareersPage from './pages/info/Careers.jsx'
+import ContactPage from './pages/info/Contact.jsx'
+import BookingGuidePage from './pages/info/BookingGuide.jsx'
+import FAQPage from './pages/info/FAQ.jsx'
+import PrivacyPage from './pages/info/Privacy.jsx'
+import TermsPage from './pages/info/Terms.jsx'
 // Admin Pages
 import AdminDashboard from './pages/Admin/index.jsx'
 import AdminNews from './pages/Admin/news/index.jsx'
@@ -105,6 +111,13 @@ export default function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/careers" element={<CareersPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/help/booking" element={<BookingGuidePage />} />
+                  <Route path="/faq" element={<FAQPage />} />
+                  <Route path="/privacy" element={<PrivacyPage />} />
+                  <Route path="/terms" element={<TermsPage />} />
                 </Route>
                 
                 <Route path="/admin" element={<AdminLayoutWrapper />}>
