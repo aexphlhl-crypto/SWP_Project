@@ -88,20 +88,20 @@ public class AuthService {
     @Transactional
     public AuthResponse verifyOtp(VerifyOtpRequest request) {
         PendingUser pendingUser = pendingUserRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> AppException.badRequest("No pending registration found for this email."));
+                .orElseThrow(() -> AppException.badRequest("Không tìm thấy yêu cầu đăng ký nào đang chờ xử lý cho email này."));
 
         if (pendingUser.getOtpExpiresAt().isBefore(LocalDateTime.now())) {
-            throw AppException.badRequest("OTP has expired. Please register again.");
+            throw AppException.badRequest("Mã OTP đã hết hạn. Vui lòng đăng ký lại.");
         }
         if (pendingUser.getOtpRetryCount() >= MAX_OTP_RETRIES) {
-            throw AppException.badRequest("Too many OTP attempts. Please register again.");
+            throw AppException.badRequest("Đã quá số lần thử OTP. Vui lòng đăng ký lại.");
         }
 
         if (!passwordEncoder.matches(request.getOtp(), pendingUser.getOtpCode())) {
             pendingUser.setOtpRetryCount(pendingUser.getOtpRetryCount() + 1);
             pendingUserRepository.save(pendingUser);
             throw AppException.badRequest(
-                    "Incorrect OTP. " + (MAX_OTP_RETRIES - pendingUser.getOtpRetryCount()) + " attempts remaining.");
+                    "Mã OTP không chính xác. Còn lại " + (MAX_OTP_RETRIES - pendingUser.getOtpRetryCount()) + " lần thử.");
         }
 
         // OTP Valid -> Move to User
@@ -125,20 +125,20 @@ public class AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
-                .orElseThrow(() -> AppException.unauthorized("Incorrect email or password. Please check again."));
+                .orElseThrow(() -> AppException.unauthorized("Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại."));
 
         // Check account lock
         if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
             throw AppException.unauthorized(
-                    "Account is temporarily locked due to multiple failed attempts. Please try again later.");
+                    "Tài khoản tạm thời bị khóa do sai quá nhiều lần. Vui lòng thử lại sau.");
         }
 
         // Check account status
         if (user.getStatus() == UserStatus.Inactive) {
-            throw AppException.unauthorized("Email not verified. Please verify your email first.");
+            throw AppException.unauthorized("Email chưa được xác thực. Vui lòng xác thực email của bạn trước.");
         }
         if (user.getStatus() == UserStatus.Locked) {
-            throw AppException.unauthorized("Account is locked. Please contact support.");
+            throw AppException.unauthorized("Tài khoản đã bị khóa. Vui lòng liên hệ bộ phận hỗ trợ.");
         }
 
         // Verify password
@@ -148,7 +148,7 @@ public class AuthService {
             if (attempts >= MAX_FAILED_ATTEMPTS) {
                 user.setLockedUntil(LocalDateTime.now().plusMinutes(LOCK_DURATION_MINUTES));
                 userRepository.save(user);
-                throw AppException.unauthorized("Account locked for 30 minutes due to 5 failed login attempts.");
+                throw AppException.unauthorized("Tài khoản bị khóa 30 phút do nhập sai mật khẩu 5 lần.");
             }
             userRepository.save(user);
             throw AppException.unauthorized("Incorrect email or password. Please check again.");
@@ -167,12 +167,12 @@ public class AuthService {
     public AuthResponse refreshToken(String rawRefreshToken) {
         String tokenHash = hashToken(rawRefreshToken);
         RefreshToken refreshToken = refreshTokenRepository.findByTokenHashAndIsRevokedFalse(tokenHash)
-                .orElseThrow(() -> AppException.unauthorized("Invalid or expired refresh token."));
+                .orElseThrow(() -> AppException.unauthorized("Token không hợp lệ hoặc đã hết hạn."));
 
         if (refreshToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             refreshToken.setRevoked(true);
             refreshTokenRepository.save(refreshToken);
-            throw AppException.unauthorized("Refresh token expired. Please login again.");
+            throw AppException.unauthorized("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
         }
 
         // Rotate: revoke old, issue new
@@ -197,7 +197,7 @@ public class AuthService {
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
-                .orElseThrow(() -> AppException.notFound("No account found with this email address."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy tài khoản nào với địa chỉ email này."));
 
         String otp = generateOtp();
         saveOtp(user, otp, OtpType.PasswordReset, 5);
@@ -211,23 +211,21 @@ public class AuthService {
         User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
                 .orElseThrow(() -> AppException.notFound("No account found with this email address."));
 
-        OtpToken otpToken = otpTokenRepository
-                .findTopByUserAndTokenTypeAndIsUsedFalseOrderByCreatedAtDesc(user, OtpType.PasswordReset)
-                .orElseThrow(() -> AppException.badRequest("OTP not found or already used. Please request a new one."));
+        OtpToken otpToken = otpTokenRepository.findTopByUserAndTokenTypeAndIsUsedFalseOrderByCreatedAtDesc(user, OtpType.PasswordReset)
+                .orElseThrow(() -> AppException.badRequest("Mã OTP không tồn tại hoặc đã được sử dụng. Vui lòng yêu cầu mã mới."));
 
         if (otpToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw AppException.badRequest("OTP has expired. Please request a new one.");
+            throw AppException.badRequest("Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.");
         }
 
         if (otpToken.getRetryCount() >= MAX_OTP_RETRIES) {
-            throw AppException.badRequest("Too many OTP attempts. Please request a new one.");
+            throw AppException.badRequest("Đã quá số lần thử OTP. Vui lòng yêu cầu mã mới.");
         }
 
         if (!passwordEncoder.matches(request.getOtpCode(), otpToken.getTokenValue())) {
             otpToken.setRetryCount(otpToken.getRetryCount() + 1);
             otpTokenRepository.save(otpToken);
-            throw AppException.badRequest(
-                    "Incorrect OTP. " + (MAX_OTP_RETRIES - otpToken.getRetryCount()) + " attempts remaining.");
+            throw AppException.badRequest("Mã OTP không chính xác. Còn lại " + (MAX_OTP_RETRIES - otpToken.getRetryCount()) + " lần thử.");
         }
 
         // MANDATORY SECURITY ACTION: Immediately delete/invalidate the OTP from the
@@ -244,14 +242,14 @@ public class AuthService {
         try {
             claims = jwtUtil.parseToken(request.getToken());
         } catch (Exception e) {
-            throw AppException.badRequest("Reset token is invalid or has expired.");
+            throw AppException.badRequest("Mã đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
         }
 
         String email = claims.getSubject();
         String purpose = claims.get("purpose", String.class);
 
         if (email == null || !email.equalsIgnoreCase(request.getEmail()) || !"RESET_PASSWORD".equals(purpose)) {
-            throw AppException.badRequest("Reset token is invalid.");
+            throw AppException.badRequest("Mã đặt lại mật khẩu không hợp lệ.");
         }
 
         User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
@@ -267,13 +265,13 @@ public class AuthService {
     @Transactional
     public void changePassword(String email, ChangePasswordRequest request) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                .orElseThrow(() -> AppException.notFound("User not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy người dùng."));
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
-            throw AppException.badRequest("Current password is incorrect.");
+            throw AppException.badRequest("Mật khẩu hiện tại không chính xác.");
         }
         if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
-            throw AppException.badRequest("New password must not be the same as the current password.");
+            throw AppException.badRequest("Mật khẩu mới không được trùng với mật khẩu hiện tại.");
         }
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
@@ -333,7 +331,7 @@ public class AuthService {
 
             GoogleIdToken googleIdToken = verifier.verify(idToken);
             if (googleIdToken == null) {
-                throw AppException.badRequest("Invalid Google ID token.");
+                throw AppException.badRequest("Token xác thực Google không hợp lệ.");
             }
 
             GoogleIdToken.Payload payload = googleIdToken.getPayload();

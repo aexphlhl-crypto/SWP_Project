@@ -72,7 +72,7 @@ export default function AdminRoomsPage() {
 
   const filtered = rooms.filter(r => selectedCinema === 'all' || r.cinemaId?.toString() === selectedCinema.toString());
   const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filtered);
-
+  
   const activeCount = filtered.filter(r => r.status === 'Active' || r.status === 'active').length;
 
   const openAdd = () => {
@@ -211,16 +211,16 @@ export default function AdminRoomsPage() {
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border hover:bg-transparent">
-                  <TableHead>Tên phòng</TableHead>
-                  <TableHead>Rạp</TableHead>
-                  <TableHead>Sức chứa</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead className="w-[100px] text-right">Thao tác</TableHead>
-                </TableRow>
-              </TableHeader>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead>Tên phòng</TableHead>
+                <TableHead>Rạp</TableHead>
+                <TableHead>Sức chứa</TableHead>
+                <TableHead>Trạng thái</TableHead>
+                <TableHead className="w-[100px] text-right">Thao tác</TableHead>
+              </TableRow>
+            </TableHeader>
               <TableBody>
                 {currentDataOnPage.map(room => (
                   <TableRow key={room.id} className="border-border">

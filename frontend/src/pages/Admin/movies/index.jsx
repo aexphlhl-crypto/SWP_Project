@@ -381,44 +381,44 @@ export default function AdminMoviesPage() {
 
         {/* Add/Edit Modal */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-[#18181b] border-zinc-800 text-white scrollbar-thin">
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-card border-border text-foreground scrollbar-thin">
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold text-white">{editingMovie ? 'Chỉnh sửa phim' : 'Thêm phim mới'}</DialogTitle>
+              <DialogTitle className="text-xl font-bold text-foreground">{editingMovie ? 'Chỉnh sửa phim' : 'Thêm phim mới'}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label className="text-zinc-300">Tên phim</Label>
-                <Input value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="bg-zinc-900 border-zinc-800 text-white" />
+                <Label className="text-muted-foreground">Tên phim</Label>
+                <Input value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="bg-background border-border text-foreground" />
               </div>
               <div className="grid gap-2">
-                <Label className="text-zinc-300">Tên gốc (Tiếng Anh)</Label>
-                <Input value={formData.originalTitle} onChange={e => setFormData({ ...formData, originalTitle: e.target.value })} className="bg-zinc-900 border-zinc-800 text-white" />
+                <Label className="text-muted-foreground">Tên gốc (Tiếng Anh)</Label>
+                <Input value={formData.originalTitle} onChange={e => setFormData({ ...formData, originalTitle: e.target.value })} className="bg-background border-border text-foreground" />
               </div>
               <div className="grid gap-2">
-                <Label className="text-zinc-300">Nội dung (Synopsis)</Label>
-                <Textarea value={formData.synopsis} onChange={e => setFormData({ ...formData, synopsis: e.target.value })} rows={3} className="bg-zinc-900 border-zinc-800 text-white" />
+                <Label className="text-muted-foreground">Nội dung (Synopsis)</Label>
+                <Textarea value={formData.synopsis} onChange={e => setFormData({ ...formData, synopsis: e.target.value })} rows={3} className="bg-background border-border text-foreground" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label className="text-zinc-300">Đạo diễn</Label>
-                  <Input value={formData.director} onChange={e => setFormData({ ...formData, director: e.target.value })} className="bg-zinc-900 border-zinc-800 text-white" />
+                  <Label className="text-muted-foreground">Đạo diễn</Label>
+                  <Input value={formData.director} onChange={e => setFormData({ ...formData, director: e.target.value })} className="bg-background border-border text-foreground" />
                 </div>
                 <div className="grid gap-2">
-                  <Label className="text-zinc-300">Mô tả Diễn viên (Chuỗi)</Label>
-                  <Input value={formData.castList} onChange={e => setFormData({ ...formData, castList: e.target.value })} className="bg-zinc-900 border-zinc-800 text-white" />
+                  <Label className="text-muted-foreground">Mô tả Diễn viên (Chuỗi)</Label>
+                  <Input value={formData.castList} onChange={e => setFormData({ ...formData, castList: e.target.value })} className="bg-background border-border text-foreground" />
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label className="text-zinc-300">Thể loại</Label>
+                <Label className="text-muted-foreground">Thể loại</Label>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal h-auto min-h-10 break-all whitespace-normal border-zinc-800 bg-zinc-900 text-white hover:bg-zinc-800">
+                    <Button variant="outline" className="w-full justify-start text-left font-normal h-auto min-h-10 break-all whitespace-normal border-border bg-background text-foreground hover:bg-accent">
                       {formData.genreIds.length > 0 
                         ? formData.genreIds.map(id => allGenres.find(g => g.genreId === id)?.name).filter(Boolean).join(', ')
                         : "Chọn thể loại..."}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-[375px] max-h-[300px] overflow-y-auto bg-zinc-950 border-zinc-800 text-white" align="start">
+                  <DropdownMenuContent className="w-[375px] max-h-[300px] overflow-y-auto bg-popover border-border text-foreground" align="start">
                     {allGenres.map(genre => (
                       <DropdownMenuCheckboxItem
                          key={genre.genreId}
@@ -433,7 +433,7 @@ export default function AdminMoviesPage() {
                            });
                          }}
                          onSelect={(e) => e.preventDefault()}
-                         className="hover:bg-zinc-800 cursor-pointer"
+                         className="hover:bg-accent cursor-pointer"
                       >
                         {genre.name}
                       </DropdownMenuCheckboxItem>
@@ -443,16 +443,16 @@ export default function AdminMoviesPage() {
               </div>
 
               <div className="grid gap-2">
-                <Label className="text-zinc-300">Chọn Diễn viên chính</Label>
+                <Label className="text-muted-foreground">Chọn Diễn viên chính</Label>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal h-auto min-h-10 break-all whitespace-normal border-zinc-800 bg-zinc-900 text-white hover:bg-zinc-800">
+                    <Button variant="outline" className="w-full justify-start text-left font-normal h-auto min-h-10 break-all whitespace-normal border-border bg-background text-foreground hover:bg-accent">
                       {formData.actorIds.length > 0 
                         ? formData.actorIds.map(id => allActors.find(a => a.actorId === id)?.name).filter(Boolean).join(', ')
                         : "Chọn diễn viên..."}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-[375px] max-h-[300px] overflow-y-auto bg-zinc-950 border-zinc-800 text-white" align="start">
+                  <DropdownMenuContent className="w-[375px] max-h-[300px] overflow-y-auto bg-popover border-border text-foreground" align="start">
                     {allActors.map(actor => (
                       <DropdownMenuCheckboxItem
                         key={actor.actorId}
@@ -467,13 +467,13 @@ export default function AdminMoviesPage() {
                           });
                         }}
                         onSelect={(e) => e.preventDefault()}
-                        className="hover:bg-zinc-800 cursor-pointer"
+                        className="hover:bg-accent cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
                           <img
                             src={actor.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(actor.name)}&background=random&color=fff&size=64&bold=true`}
                             alt={actor.name}
-                            className="h-6 w-6 rounded-full object-cover border border-zinc-700"
+                            className="h-6 w-6 rounded-full object-cover border border-border"
                           />
                           <span>{actor.name}</span>
                         </div>

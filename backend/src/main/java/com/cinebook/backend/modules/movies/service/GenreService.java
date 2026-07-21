@@ -23,7 +23,7 @@ public class GenreService {
 
     public GenreDTO getGenreById(Integer id) {
         Genre genre = genreRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("Genre not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy thể loại."));
         return mapToDTO(genre);
     }
 

@@ -94,69 +94,13 @@ export default function AdminSettingsPage() {
     }
   };
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 w-[80%] mx-auto">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Cài đặt hệ thống</h1>
         <p className="text-muted-foreground mt-1">Quản lý cấu hình và tùy chọn của ứng dụng</p>
       </div>
 
-      {/* General */}
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Globe className="w-5 h-5 text-primary" />
-            <CardTitle>Thông tin chung</CardTitle>
-          </div>
-          <CardDescription>Thông tin cơ bản của hệ thống rạp chiếu</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="cinema-name">Tên hệ thống rạp</Label>
-              <Input id="cinema-name" value={cinemaName} onChange={e => setCinemaName(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="hotline">Số điện thoại hotline</Label>
-              <Input id="hotline" value={hotline} onChange={e => setHotline(e.target.value)} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="address">Địa chỉ trụ sở chính</Label>
-            <Input id="address" value={address} onChange={e => setAddress(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Mô tả</Label>
-            <Textarea id="description" rows={3} value={description} onChange={e => setDescription(e.target.value)} />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="currency">Đơn vị tiền tệ</Label>
-              <Select value={currency} onValueChange={setCurrency}>
-                <SelectTrigger id="currency">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="VND">VND — Việt Nam Đồng</SelectItem>
-                  <SelectItem value="USD">USD — US Dollar</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="language">Ngôn ngữ mặc định</Label>
-              <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger id="language">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="vi">Tiếng Việt</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Ticket settings */}
       <Card className="bg-card border-border">
@@ -173,18 +117,15 @@ export default function AdminSettingsPage() {
               <Label htmlFor="base-price">Giá cơ bản (₫)</Label>
               <Input id="base-price" type="number" value={basePrice} onChange={e => setBasePrice(e.target.value)} />
             </div>
-            <div className="space-y-4">
-              <div className="grid gap-2">
-                <Label>Hệ số Ghế VIP (So với vé thường)</Label>
-                <Input type="number" step="0.1" value={seatVipMultiplier} onChange={e => setSeatVipMultiplier(e.target.value)} />
-              </div>
-              <div className="grid gap-2">
-                <Label>Hệ số Ghế Đôi (So với vé thường)</Label>
-                <Input type="number" step="0.1" value={seatCoupleMultiplier} onChange={e => setSeatCoupleMultiplier(e.target.value)} />
-              </div>
+            <div className="grid gap-2">
+              <Label>Hệ số Ghế VIP (So với vé thường)</Label>
+              <Input type="number" step="0.1" value={seatVipMultiplier} onChange={e => setSeatVipMultiplier(e.target.value)} />
+            </div>
+            <div className="grid gap-2">
+              <Label>Hệ số Ghế Đôi (So với vé thường)</Label>
+              <Input type="number" step="0.1" value={seatCoupleMultiplier} onChange={e => setSeatCoupleMultiplier(e.target.value)} />
             </div>
           </div>
-          <Separator className="bg-border" />
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="hold-time">Thời gian giữ ghế (phút)</Label>
@@ -260,26 +201,6 @@ export default function AdminSettingsPage() {
       </Card>
 
 
-      {/* Security */}
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-primary" />
-            <CardTitle>Bảo mật & Bảo trì</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between rounded-lg border border-border p-3">
-            <div>
-              <p className="text-sm font-medium">Chế độ bảo trì</p>
-              <p className="text-xs text-muted-foreground">
-                Tạm dừng hệ thống — khách hàng sẽ thấy trang thông báo bảo trì
-              </p>
-            </div>
-            <Switch checked={maintenanceMode} onCheckedChange={setMaintenanceMode} className="data-[state=checked]:bg-destructive" />
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Save button */}
       <div className="flex justify-end">

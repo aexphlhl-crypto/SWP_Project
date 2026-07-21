@@ -37,32 +37,51 @@ export default function AdminSeatsPage() {
 
   const recalculateSeatLabels = (seatsArray) => {
     const grouped = {};
+    let maxCol = 1;
     seatsArray.forEach(s => {
       if (!grouped[s.rowLabel]) grouped[s.rowLabel] = [];
       grouped[s.rowLabel].push(s);
+      if (s.colNumber > maxCol) maxCol = s.colNumber;
     });
 
-    Object.values(grouped).forEach(rowSeats => {
-      rowSeats.sort((a, b) => a.colNumber - b.colNumber);
-      let logicalNum = 1;
-      for (let i = 0; i < rowSeats.length; i++) {
-        const seat = rowSeats[i];
-        
-        if (i > 0 && rowSeats[i - 1].seatType === 'Couple' && seat.seatType === 'Hidden') {
-          seat.seatLabel = `${seat.rowLabel}-Absorbed-${seat.colNumber}`;
-          continue;
-        }
+    const newSeatsArray = [];
 
-        if (seat.seatType !== 'Hidden') {
+    Object.keys(grouped).sort().forEach(rowLabel => {
+      const rowSeats = grouped[rowLabel];
+      const colMap = {};
+      rowSeats.forEach(s => { colMap[s.colNumber] = s; });
+      
+      const fullRow = [];
+      for (let c = 1; c <= maxCol; c++) {
+        if (colMap[c]) {
+          fullRow.push({...colMap[c]});
+        } else {
+          fullRow.push({
+            rowLabel,
+            colNumber: c,
+            seatLabel: `${rowLabel}_A${c}`,
+            seatType: 'Hidden'
+          });
+        }
+      }
+
+      let logicalNum = 1;
+      for (let i = 0; i < fullRow.length; i++) {
+        const seat = fullRow[i];
+        
+        if (i > 0 && fullRow[i - 1].seatType === 'Couple' && seat.seatType === 'Hidden') {
+          seat.seatLabel = `${seat.rowLabel}_X${seat.colNumber}`;
+        } else if (seat.seatType !== 'Hidden') {
           seat.seatLabel = `${seat.rowLabel}${logicalNum}`;
           logicalNum++;
         } else {
-          seat.seatLabel = `${seat.rowLabel}-Aisle-${seat.colNumber}`;
+          seat.seatLabel = `${seat.rowLabel}_A${seat.colNumber}`;
         }
+        newSeatsArray.push(seat);
       }
     });
 
-    return [...seatsArray];
+    return newSeatsArray;
   };
 
   useEffect(() => {
@@ -166,7 +185,7 @@ export default function AdminSeatsPage() {
       toast.error("Vui lòng chọn phòng chiếu");
       return;
     }
-    const payload = seats.filter(s => s.seatType !== 'Hidden').map(s => ({
+    const payload = seats.map(s => ({
       rowLabel: s.rowLabel,
       colNumber: s.colNumber,
       seatLabel: s.seatLabel,

@@ -259,15 +259,12 @@ export function SeatSelection({
                 </div>
 
                 {/* Seats */}
-                <div className={cn('flex-1 flex justify-center', row.row === 'J' || row.row === 'K' ? 'gap-4' : 'gap-1.5')}>
-                  {row.seats.map((seat, index) => {
-                    // Add aisle gap for standard/vip rows
-                    const showAisle = seat.type !== 'couple' && (index === 2 || index === 7);
-                    return <div key={seat.id} className="flex items-center">
+                <div className={cn('flex-1 flex justify-center gap-1.5')}>
+                  {row.seats.map((seat) => (
+                    <div key={seat.id} className="flex items-center">
                       <SeatButton seat={seat} isSelected={selectedSeats.some(s => s.id === seat.id)} onSelect={handleSeatSelect} disabled={selectedSeats.length >= dynamicMaxSeats && !selectedSeats.some(s => s.id === seat.id)} />
-                      {showAisle && <div className="w-6" />}
-                    </div>;
-                  })}
+                    </div>
+                  ))}
                 </div>
 
                 {/* Row label (right) */}
@@ -286,21 +283,21 @@ export function SeatSelection({
       {/* Booking Summary - Sticky on desktop */}
       {showSummary && (
         <div className="lg:sticky lg:top-4 lg:h-fit">
-          <BookingSummary
-            movieTitle={movieTitle}
-            moviePoster={moviePoster}
-            cinemaName={cinemaName}
-            roomName={roomName}
-            showDate={showDate}
-            showTime={showTime}
-            selectedSeats={selectedSeats}
-            maxSeats={dynamicMaxSeats}
-            holdTime={dynamicHoldTime}
+          <BookingSummary 
+            movieTitle={movieTitle} 
+            moviePoster={moviePoster} 
+            cinemaName={cinemaName} 
+            roomName={roomName} 
+            showDate={showDate} 
+            showTime={showTime} 
+            selectedSeats={selectedSeats} 
+            maxSeats={dynamicMaxSeats} 
+            holdTime={dynamicHoldTime} 
             expiresAt={selectedSeats.length > 0 ? selectedSeats.map(s => s.holdExpiresAt).filter(Boolean).sort()[0] : null}
-            onConfirm={handleConfirm}
-            onCancel={handleCancel}
-            onTimerExpire={handleTimerExpire}
-            isConfirming={isConfirming}
+            onConfirm={handleConfirm} 
+            onCancel={handleCancel} 
+            onTimerExpire={handleTimerExpire} 
+            isConfirming={isConfirming} 
           />
         </div>
       )}

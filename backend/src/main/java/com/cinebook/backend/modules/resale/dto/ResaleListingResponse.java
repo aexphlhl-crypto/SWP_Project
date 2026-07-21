@@ -24,6 +24,7 @@ public class ResaleListingResponse {
     private Integer originalPrice;
     private Integer resalePrice;
     private Boolean includesFnb;
+    private java.util.List<com.cinebook.backend.modules.bookings.dto.FnBItemDto> fnbItems;
     private String sellerName;
     private String sellerPhone;
     private String facebookUrl;

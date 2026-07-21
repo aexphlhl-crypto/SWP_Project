@@ -17,28 +17,28 @@ public class PromoService {
 
     public PromoCode validatePromo(String code, Long userId, Integer orderValue) {
         PromoCode promo = promoCodeRepository.findByCode(code)
-                .orElseThrow(() -> AppException.notFound("Promo code not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy mã khuyến mãi."));
 
         if (promo.getStatus() != PromoStatus.Active) {
-            throw AppException.badRequest("Promo code is inactive.");
+            throw AppException.badRequest("Mã khuyến mãi đang không hoạt động.");
         }
 
         LocalDateTime now = LocalDateTime.now();
         if (now.isBefore(promo.getValidFrom()) || now.isAfter(promo.getValidUntil())) {
-            throw AppException.badRequest("Promo code has expired or is not yet valid.");
+            throw AppException.badRequest("Mã khuyến mãi đã hết hạn hoặc chưa có hiệu lực.");
         }
 
         if (promo.getMinOrderValue() != null && orderValue < promo.getMinOrderValue()) {
-            throw AppException.badRequest("Order total does not meet the minimum required amount of " + promo.getMinOrderValue() + " VND.");
+            throw AppException.badRequest("Giá trị đơn hàng không đạt mức tối thiểu " + promo.getMinOrderValue() + " VNĐ để áp dụng mã.");
         }
 
         if (promo.getUsageLimit() != null && promo.getUsedCount() >= promo.getUsageLimit()) {
-            throw AppException.badRequest("Promo code usage limit has been reached.");
+            throw AppException.badRequest("Mã khuyến mãi đã hết lượt sử dụng.");
         }
 
         long userUsageCount = promoUsageRepository.countByPromoIdAndUserId(promo.getId(), userId);
         if (userUsageCount > 0) {
-            throw AppException.badRequest("You have already used this promo code.");
+            throw AppException.badRequest("Bạn đã sử dụng mã khuyến mãi này rồi.");
         }
 
         return promo;
@@ -127,7 +127,7 @@ public class PromoService {
         PromoCode promo = promoCodeRepository.findById(id)
                 .orElseThrow(() -> AppException.notFound("Promo code not found."));
         if (promo.getStatus() == PromoStatus.Active) {
-            throw AppException.badRequest("Cannot delete an active promo code. Please deactivate it first.");
+            throw AppException.badRequest("Không thể xóa mã khuyến mãi đang hoạt động. Vui lòng vô hiệu hóa trước.");
         }
         promoCodeRepository.delete(promo);
     }

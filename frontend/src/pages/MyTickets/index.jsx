@@ -267,8 +267,8 @@ export default function MyTicketsPage() {
                             </p>
                             {ticket.fnbItems.map(fnb => (
                               <div key={fnb.productId} className="flex justify-between text-xs text-muted-foreground pl-4">
-                                <span>{fnb.name} ×{fnb.quantity}</span>
-                                <span>{(fnb.price * fnb.quantity).toLocaleString('vi-VN')}₫</span>
+                                <span>{fnb.productName} ×{fnb.quantity}</span>
+                                <span>{(fnb.unitPrice * fnb.quantity).toLocaleString('vi-VN')}₫</span>
                               </div>
                             ))}
                           </div>
@@ -284,20 +284,17 @@ export default function MyTicketsPage() {
                                   <QrCode className="w-3 h-3" /> Xem vé
                                 </Button>
                                 {/* UC-45: Only show resell if not checked-in and showtime not started */}
-                                {!ticket.checkedIn && (() => {
-                                  // Hide resell button if showtime has passed
-                                  let hasStarted = false;
+                                {(() => {
+                                  // Calculate if it's eligible time (> 2 hours before showtime)
+                                  let isEligibleTime = false;
                                   if (ticket.showDate && ticket.showTime) {
                                     const [year, month, day] = ticket.showDate.split('-');
                                     const [hours, minutes] = ticket.showTime.split(':');
                                     const showDateTime = new Date(year, parseInt(month, 10) - 1, day, hours, minutes, 0);
-                                    if (new Date() >= showDateTime) {
-                                      hasStarted = true;
-                                    }
+                                    const twoHoursFromNow = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
+                                    isEligibleTime = showDateTime > twoHoursFromNow;
                                   }
                                   
-                                  if (hasStarted) return null;
-
                                   const ticketIdNum = parseInt(String(ticket.id).replace('BK', ''), 10);
                                   const activeListingsForTicket = myListings.filter(l => 
                                     parseInt(String(l.bookingId).replace('BK', ''), 10) === ticketIdNum && 
@@ -305,6 +302,7 @@ export default function MyTicketsPage() {
                                     l.status?.toLowerCase() !== 'cancelled'
                                   );
 
+                                  let allListed = false;
                                   if (activeListingsForTicket.length > 0) {
                                     // Check if EVERYTHING is listed
                                     const totalSeats = ticket.seatNumber ? ticket.seatNumber.split(',').map(s => s.trim()) : [];
@@ -325,14 +323,27 @@ export default function MyTicketsPage() {
                                     const allSeatsListed = totalSeats.every(s => listedSeats.includes(s));
                                     const allFnbListed = hasFnb ? fnbListed : true;
                                     
-                                    if (allSeatsListed && allFnbListed) {
-                                      return (
-                                        <Button size="sm" variant="outline" className="h-7 gap-1 text-xs border-muted text-muted-foreground bg-muted/50 cursor-not-allowed" disabled title="Vé này đã được đăng bán toàn bộ">
-                                          <RefreshCw className="w-3 h-3" /> Đã đăng bán hết
-                                        </Button>
-                                      );
-                                    }
+                                    allListed = allSeatsListed && allFnbListed;
                                   }
+
+                                  if (allListed) {
+                                    return (
+                                      <Button size="sm" variant="outline" className="h-7 gap-1 text-xs border-muted text-muted-foreground bg-muted/50 cursor-not-allowed" disabled title="Vé này đã được đăng bán toàn bộ">
+                                        <RefreshCw className="w-3 h-3" /> Đã đăng bán hết
+                                      </Button>
+                                    );
+                                  }
+
+                                  const isEligibleForResale = !ticket.checkedIn && isEligibleTime;
+
+                                  if (!isEligibleForResale) {
+                                    return (
+                                      <Button size="sm" variant="outline" className="h-7 gap-1 text-xs border-muted text-muted-foreground bg-muted/50 cursor-not-allowed opacity-60" disabled title="Vé đã check-in hoặc còn dưới 2 tiếng trước giờ chiếu">
+                                        <RefreshCw className="w-3 h-3" /> Đăng bán lại
+                                      </Button>
+                                    );
+                                  }
+
                                   return (
                                     <Button size="sm" variant="outline" className="h-7 gap-1 text-xs border-amber-500/50 text-amber-400 hover:bg-amber-500/10" asChild>
                                       <Link to={`/my-resale/create?bookingId=${ticket.id}`}>
@@ -452,7 +463,7 @@ export default function MyTicketsPage() {
                       </p>
                       {selectedTicket.fnbItems.map(fnb => (
                         <div key={fnb.productId} className="flex justify-between text-sm mb-1">
-                          <span>{fnb.name} <span className="text-muted-foreground text-xs ml-1">×{fnb.quantity}</span></span>
+                          <span>{fnb.productName} <span className="text-muted-foreground text-xs ml-1">×{fnb.quantity}</span></span>
                         </div>
                       ))}
                     </div>
@@ -520,8 +531,8 @@ export default function MyTicketsPage() {
                     <span className="text-gray-500 text-sm block mb-2">Đồ ăn & Thức uống</span>
                     {selectedTicket.fnbItems.map(fnb => (
                       <div key={fnb.productId} className="flex justify-between items-center mb-1">
-                        <span className="text-sm">{fnb.name} ×{fnb.quantity}</span>
-                        <span className="text-sm">{(fnb.price * fnb.quantity).toLocaleString('vi-VN')} VNĐ</span>
+                        <span className="text-sm">{fnb.productName} ×{fnb.quantity}</span>
+                        <span className="text-sm">{(fnb.unitPrice * fnb.quantity).toLocaleString('vi-VN')} VNĐ</span>
                       </div>
                     ))}
                   </div>

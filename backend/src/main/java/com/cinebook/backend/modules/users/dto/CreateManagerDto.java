@@ -16,6 +16,6 @@ public class CreateManagerDto {
 
     private String phone;
 
-    @NotNull(message = "Cinema ID is required")
+    @NotNull(message = "ID rạp chiếu phim là bắt buộc")
     private Long cinemaId;
 }

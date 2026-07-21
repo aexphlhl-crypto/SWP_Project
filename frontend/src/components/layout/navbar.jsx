@@ -78,10 +78,9 @@ export function Navbar() {
                 key={item.href}
                 to={item.href}
                 className={({ isActive }) =>
-                  `px-3.5 py-2 text-sm font-semibold transition-colors rounded-md ${
-                    isActive
-                      ? 'text-primary bg-primary/10'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  `px-3.5 py-2 text-sm font-semibold transition-colors rounded-md ${isActive
+                    ? 'text-primary bg-primary/10'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   }`
                 }
               >
@@ -115,14 +114,6 @@ export function Navbar() {
             >
               <Search className="w-4 h-4" />
             </Button>
-
-            {/* Language Switcher Mockup */}
-            <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-muted-foreground mr-1">
-              <span className="cursor-pointer hover:text-primary text-primary transition-colors">VI</span>
-              <span className="text-muted-foreground/30">|</span>
-              <span className="cursor-pointer hover:text-primary transition-colors">EN</span>
-            </div>
-
             {/* Theme Toggle Button */}
             <Button
               variant="ghost"
@@ -249,10 +240,9 @@ export function Navbar() {
                   key={item.href}
                   to={item.href}
                   className={({ isActive }) =>
-                    `px-3 py-2.5 text-sm font-medium rounded-md transition-colors ${
-                      isActive
-                        ? 'text-foreground bg-muted'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    `px-3 py-2.5 text-sm font-medium rounded-md transition-colors ${isActive
+                      ? 'text-foreground bg-muted'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                     }`
                   }
                   onClick={() => setIsMobileMenuOpen(false)}

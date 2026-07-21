@@ -44,7 +44,7 @@ public class PaymentController {
     @PreAuthorize("hasAnyRole('Customer', 'SystemAdmin', 'ScheduleManager')")
     public ResponseEntity<ApiResponse<String>> createUrl(@RequestParam Long bookingId, HttpServletRequest request) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
 
         if (booking.getStatus() != BookingStatus.Pending) {
             return ResponseEntity.badRequest()
@@ -112,8 +112,7 @@ public class PaymentController {
                     try {
                         String emailNotif = systemConfigService.getConfigValue("email_notif");
                         if (!"false".equalsIgnoreCase(emailNotif)) {
-                            com.cinebook.backend.modules.bookings.dto.MyBookingDto bookingDto = bookingService
-                                    .getBookingById(booking.getId());
+                            com.cinebook.backend.modules.bookings.dto.MyBookingDto bookingDto = bookingService.getBookingById(booking.getId());
                             emailService.sendBookingConfirmation(booking.getCustomer().getEmail(), bookingDto);
                         }
                     } catch (Exception e) {

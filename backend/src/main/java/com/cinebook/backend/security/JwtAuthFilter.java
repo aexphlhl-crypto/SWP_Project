@@ -33,8 +33,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if ("mock-dev-token".equals(token)) {
                 try {
                     UserDetails userDetails = userDetailsService.loadUserByUserId(1001L);
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails,
-                            null, userDetails.getAuthorities());
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 } catch (Exception e) {
@@ -44,8 +44,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 try {
                     Long userId = jwtUtil.getUserIdFromToken(token);
                     UserDetails userDetails = userDetailsService.loadUserByUserId(userId);
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails,
-                            null, userDetails.getAuthorities());
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 } catch (Exception e) {

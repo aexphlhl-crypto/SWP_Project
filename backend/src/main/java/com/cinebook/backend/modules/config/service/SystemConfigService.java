@@ -34,6 +34,8 @@ public class SystemConfigService {
         return val != null ? new BigDecimal(val) : BigDecimal.valueOf(2.00);
     }
 
+
+
     public int getSeatHoldMinutes() {
         String val = getConfigValue("seat_hold_minutes");
         return val != null ? Integer.parseInt(val) : 10;

@@ -149,7 +149,9 @@ export default function ResaleDetailPage({
               }, {
                 icon: RefreshCw,
                 label: 'Bắp nước',
-                value: listing.includesFnb ? 'Có kèm bắp nước' : 'Không'
+                value: listing.includesFnb && listing.fnbItems && listing.fnbItems.length > 0
+                       ? listing.fnbItems.map(f => `${f.productName} (x${f.quantity})`).join(', ')
+                       : listing.includesFnb ? 'Có kèm bắp nước' : 'Không'
               }, {
                 icon: Tag,
                 label: 'Loại ghế',
@@ -177,22 +179,12 @@ export default function ResaleDetailPage({
               </p>
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>Giá gốc:</span>
-                    <span className="line-through">
-                      {listing.originalPrice.toLocaleString('vi-VN')}₫
-                    </span>
-                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">Giá bán lại:</span>
                     <span className="text-2xl font-bold text-primary">
                       {listing.resalePrice.toLocaleString('vi-VN')}₫
                     </span>
                   </div>
-                  {listing.resalePrice < listing.originalPrice && <Badge className="bg-green-500/20 text-green-400 text-xs">
-                      Tiết kiệm{' '}
-                      {(listing.originalPrice - listing.resalePrice).toLocaleString('vi-VN')}₫
-                    </Badge>}
                 </div>
               </div>
             </div>

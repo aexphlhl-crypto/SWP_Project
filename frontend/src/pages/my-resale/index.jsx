@@ -213,21 +213,30 @@ export default function MyResaleListingsPage() {
                             <Armchair className="w-3 h-3" />
                             Ghế bán {listing.seatNumber}
                           </div>
-                          {listing.includesFnb && (
+                          {listing.includesFnb && listing.fnbItems && listing.fnbItems.length > 0 ? (
+                            <div className="col-span-2 flex flex-col gap-1 text-primary text-xs font-medium mt-1">
+                              <div className="flex items-center gap-1">
+                                <RefreshCw className="w-3 h-3" />
+                                Kèm bắp nước:
+                              </div>
+                              {listing.fnbItems.map(fnb => (
+                                <div key={fnb.productId} className="pl-4 text-muted-foreground font-normal">
+                                  • {fnb.productName} <span className="text-[10px] ml-0.5 opacity-80">×{fnb.quantity}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : listing.includesFnb ? (
                             <div className="flex items-center gap-1 text-primary">
                               <RefreshCw className="w-3 h-3" />
                               Kèm bắp nước
                             </div>
-                          )}
+                          ) : null}
                         </div>
 
                         <Separator className="bg-border" />
 
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-xs text-muted-foreground line-through">
-                              Gốc: {listing.originalPrice.toLocaleString('vi-VN')}₫
-                            </p>
                             <p className="font-bold text-primary">
                               {listing.resalePrice.toLocaleString('vi-VN')}₫
                             </p>
@@ -290,9 +299,6 @@ export default function MyResaleListingsPage() {
               setPriceError('');
             }} />
                 {priceError && <p className="text-xs text-destructive">{priceError}</p>}
-                <p className="text-xs text-muted-foreground">
-                  Giá gốc: {selectedListing.originalPrice.toLocaleString('vi-VN')}₫
-                </p>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-note">Ghi chú</Label>

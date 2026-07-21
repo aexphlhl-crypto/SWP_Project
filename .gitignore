@@ -32,3 +32,11 @@ build/
 ### VS Code ###
 .vscode/
 node_modules
+CineBook-develop/
+
+# Local custom ignores
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/src/test/java/**/*.class
+*.log
+.agents/

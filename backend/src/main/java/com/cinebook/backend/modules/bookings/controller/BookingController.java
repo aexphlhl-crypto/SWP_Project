@@ -19,14 +19,14 @@ public class BookingController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('Customer', 'SystemAdmin', 'ScheduleManager')")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> createBooking(
-            @Valid @RequestBody CreateBookingRequest request) {
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> createBooking(@Valid @RequestBody CreateBookingRequest request) {
         Booking booking = bookingService.createBooking(
                 request.getCustomerId(),
                 request.getShowtimeId(),
                 request.getSeatIds(),
                 request.getFnbItems(),
-                request.getPromoCode());
+                request.getPromoCode()
+        );
         java.util.Map<String, Object> data = new java.util.HashMap<>();
         data.put("id", booking.getId());
         data.put("bookingId", booking.getId());
@@ -35,14 +35,14 @@ public class BookingController {
 
     @PostMapping("/calculate")
     @PreAuthorize("hasAnyRole('Customer', 'SystemAdmin', 'ScheduleManager')")
-    public ResponseEntity<ApiResponse<com.cinebook.backend.modules.bookings.dto.BookingCalculationResponse>> calculateBooking(
-            @Valid @RequestBody CreateBookingRequest request) {
+    public ResponseEntity<ApiResponse<com.cinebook.backend.modules.bookings.dto.BookingCalculationResponse>> calculateBooking(@Valid @RequestBody CreateBookingRequest request) {
         com.cinebook.backend.modules.bookings.dto.BookingCalculationResponse response = bookingService.calculateBooking(
                 request.getCustomerId(),
                 request.getShowtimeId(),
                 request.getSeatIds(),
                 request.getFnbItems(),
-                request.getPromoCode());
+                request.getPromoCode()
+        );
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
@@ -57,8 +57,7 @@ public class BookingController {
 
     @GetMapping("/admin")
     @PreAuthorize("hasAnyRole('SystemAdmin', 'ScheduleManager')")
-    public ApiResponse<org.springframework.data.domain.Page<com.cinebook.backend.modules.bookings.dto.BookingAdminDto>> getAllBookingsAdmin(
-            org.springframework.data.domain.Pageable pageable) {
+    public ApiResponse<org.springframework.data.domain.Page<com.cinebook.backend.modules.bookings.dto.BookingAdminDto>> getAllBookingsAdmin(org.springframework.data.domain.Pageable pageable) {
         return ApiResponse.ok(bookingService.getAllBookingsAdmin(pageable));
     }
 
@@ -68,10 +67,8 @@ public class BookingController {
         try {
             byte[] excelContent = bookingService.exportBookingsToExcel();
             return ResponseEntity.ok()
-                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"bookings_report.xlsx\"")
-                    .contentType(org.springframework.http.MediaType
-                            .parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"bookings_report.xlsx\"")
+                    .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                     .body(excelContent);
         } catch (java.io.IOException e) {
             return ResponseEntity.internalServerError().build();

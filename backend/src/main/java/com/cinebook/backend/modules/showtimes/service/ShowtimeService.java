@@ -81,7 +81,7 @@ public class ShowtimeService {
     @Transactional(readOnly = true)
     public ShowtimeDto getShowtimeById(Long id) {
         return showtimeRepository.findById(id).map(this::mapToDto)
-            .orElseThrow(() -> AppException.notFound("Showtime not found."));
+            .orElseThrow(() -> AppException.notFound("Không tìm thấy suất chiếu."));
     }
 
     private ShowtimeDto mapToDto(Showtime s) {
@@ -152,20 +152,20 @@ public class ShowtimeService {
         Showtime showtime = showtimeRepository.findById(showtimeId)
                 .orElseThrow(() -> AppException.notFound("Showtime not found."));
         Seat seat = seatRepository.findById(seatId)
-                .orElseThrow(() -> AppException.notFound("Seat not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy ghế."));
         User user = userRepository.findByEmailAndDeletedAtIsNull(username)
-                .orElseThrow(() -> AppException.notFound("User not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy người dùng."));
 
         // Check if booked
         List<BookingSeat> bookedSeats = bookingSeatRepository.findBookedSeatsByShowtime(showtimeId);
         if (bookedSeats.stream().anyMatch(bs -> bs.getSeat().getSeatId().equals(seatId))) {
-            throw AppException.badRequest("This seat has already been booked by another customer.");
+            throw AppException.badRequest("Ghế này đã được khách hàng khác đặt.");
         }
 
         // Check if held by someone else
         java.util.Optional<SeatHold> existingHold = seatHoldRepository.findActiveHoldBySeat(showtimeId, seatId, LocalDateTime.now());
         if (existingHold.isPresent() && !existingHold.get().getUser().getUserId().equals(user.getUserId())) {
-            throw AppException.badRequest("This seat is currently held by another customer.");
+            throw AppException.badRequest("Ghế này hiện đang được giữ bởi khách hàng khác.");
         }
 
         // Create or update hold
@@ -256,31 +256,31 @@ public class ShowtimeService {
         validateCinemaAccess(request.getCinemaId());
         
         Movie movie = movieRepository.findById(request.getMovieId())
-                .orElseThrow(() -> AppException.notFound("Movie not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy phim."));
         if (movie.getStatus() != null && "Hidden".equalsIgnoreCase(movie.getStatus())) {
-            throw AppException.badRequest("Cannot create showtime for a hidden movie.");
+            throw AppException.badRequest("Không thể tạo suất chiếu cho phim đang ẩn.");
         }
         Cinema cinema = cinemaRepository.findById(request.getCinemaId())
-                .orElseThrow(() -> AppException.notFound("Cinema not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy rạp chiếu phim."));
         Room room = roomRepository.findById(request.getRoomId())
-                .orElseThrow(() -> AppException.notFound("Room not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy phòng chiếu."));
         if (room.getStatus() != null && !"Active".equalsIgnoreCase(room.getStatus())) {
-            throw AppException.badRequest("Cannot create showtime in a room under maintenance.");
+            throw AppException.badRequest("Không thể tạo suất chiếu trong phòng đang bảo trì.");
         }
 
         LocalDateTime startTime = request.getStartTime();
         if (startTime == null) {
-            throw AppException.badRequest("Start time is required.");
+            throw AppException.badRequest("Thời gian bắt đầu là bắt buộc.");
         }
         if (startTime.isBefore(LocalDateTime.now())) {
-            throw AppException.badRequest("Cannot create a showtime in the past.");
+            throw AppException.badRequest("Không thể tạo suất chiếu trong quá khứ.");
         }
         LocalDateTime endTime = startTime.plusMinutes(movie.getDurationMin());
         LocalDateTime endTimeWithBuffer = endTime.plusMinutes(20);
 
         boolean conflict = showtimeRepository.existsConflictingShowtime(room.getRoomId(), startTime, endTimeWithBuffer);
         if (conflict) {
-            throw AppException.badRequest("Conflict Detected — Minimum cleanup gap of 20 minutes violated.");
+            throw AppException.badRequest("Xung đột lịch chiếu - Thời gian dọn dẹp tối thiểu 20 phút không được đảm bảo.");
         }
 
         Showtime showtime = Showtime.builder()
@@ -304,7 +304,7 @@ public class ShowtimeService {
         
         int bookedCount = bookingSeatRepository.findBookedSeatsByShowtime(id).size();
         if (bookedCount > 0) {
-            throw AppException.badRequest("Cannot edit a showtime that already has sold tickets.");
+            throw AppException.badRequest("Không thể chỉnh sửa suất chiếu đã có vé được bán.");
         }
 
         Movie targetMovie = showtime.getMovie();
@@ -312,7 +312,7 @@ public class ShowtimeService {
             targetMovie = movieRepository.findById(request.getMovieId())
                     .orElseThrow(() -> AppException.notFound("Movie not found."));
             if (targetMovie.getStatus() != null && "Hidden".equalsIgnoreCase(targetMovie.getStatus()) && !targetMovie.getMovieId().equals(showtime.getMovie().getMovieId())) {
-                throw AppException.badRequest("Cannot update showtime to a hidden movie.");
+                throw AppException.badRequest("Không thể cập nhật suất chiếu sang một phim đang ẩn.");
             }
             showtime.setMovie(targetMovie);
         }
@@ -327,7 +327,7 @@ public class ShowtimeService {
             targetRoom = roomRepository.findById(request.getRoomId())
                     .orElseThrow(() -> AppException.notFound("Room not found."));
             if (targetRoom.getStatus() != null && !"Active".equalsIgnoreCase(targetRoom.getStatus()) && !targetRoom.getRoomId().equals(showtime.getRoom().getRoomId())) {
-                throw AppException.badRequest("Cannot update showtime to a room under maintenance.");
+                throw AppException.badRequest("Không thể cập nhật suất chiếu sang phòng đang bảo trì.");
             }
             showtime.setRoom(targetRoom);
         }
@@ -335,7 +335,7 @@ public class ShowtimeService {
         if (request.getStartTime() != null) {
             targetStartTime = request.getStartTime();
             if (targetStartTime.isBefore(LocalDateTime.now())) {
-                throw AppException.badRequest("Cannot update a showtime to a time in the past.");
+                throw AppException.badRequest("Không thể cập nhật suất chiếu về một thời điểm trong quá khứ.");
             }
             showtime.setStartTime(targetStartTime);
         }
@@ -370,7 +370,7 @@ public class ShowtimeService {
 
         int bookedCount = bookingSeatRepository.findBookedSeatsByShowtime(id).size();
         if (bookedCount > 0) {
-            throw AppException.badRequest("Cannot cancel a showtime that already has sold tickets.");
+            throw AppException.badRequest("Không thể hủy suất chiếu đã có vé được bán.");
         }
 
         showtime.setStatus("Cancelled");
@@ -390,9 +390,9 @@ public class ShowtimeService {
             if (isScheduleManager) {
                 String email = auth.getName();
                 com.cinebook.backend.modules.users.User user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                        .orElseThrow(() -> AppException.unauthorized("User not found"));
+                        .orElseThrow(() -> AppException.unauthorized("Không tìm thấy người dùng"));
                 if (user.getCinema() != null && !user.getCinema().getCinemaId().equals(cinemaId)) {
-                    throw AppException.forbidden("You do not have permission to manage showtimes for this cinema.");
+                    throw AppException.forbidden("Bạn không có quyền quản lý suất chiếu của rạp này.");
                 }
             }
         }

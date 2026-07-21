@@ -54,7 +54,7 @@ public class BookingService {
     @Transactional(readOnly = true)
     public BookingCalculationResponse calculateBooking(Long customerId, Long showtimeId, List<Long> seatIds, List<FnBItemRequest> fnbItems, String promoCode) {
         Showtime showtime = showtimeRepository.findById(showtimeId)
-                .orElseThrow(() -> AppException.notFound("Showtime not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy suất chiếu."));
 
         BigDecimal vipMultiplier = systemConfigService.getSeatVipMultiplier();
         BigDecimal coupleMultiplier = systemConfigService.getSeatCoupleMultiplier();
@@ -171,7 +171,7 @@ public class BookingService {
     @Transactional
     public Booking createBooking(Long customerId, Long showtimeId, List<Long> seatIds, List<FnBItemRequest> fnbItems, String promoCode) {
         User customer = userRepository.findById(customerId)
-                .orElseThrow(() -> AppException.notFound("Customer not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy khách hàng."));
 
         Showtime showtime = showtimeRepository.findById(showtimeId)
                 .orElseThrow(() -> AppException.notFound("Showtime not found."));
@@ -341,14 +341,14 @@ public class BookingService {
     @Transactional
     public void cancelMyBooking(Long bookingId, String email) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> AppException.notFound("Booking not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy đơn hàng."));
 
         if (!booking.getCustomer().getEmail().equals(email)) {
-            throw AppException.forbidden("You are not authorized to cancel this booking.");
+            throw AppException.forbidden("Bạn không có quyền hủy đơn hàng này.");
         }
 
         if (booking.getStatus() != BookingStatus.Pending) {
-            throw AppException.badRequest("Only pending bookings can be cancelled.");
+            throw AppException.badRequest("Chỉ những đơn hàng đang chờ xử lý mới có thể bị hủy.");
         }
         
         booking.setStatus(BookingStatus.Cancelled);
@@ -379,7 +379,7 @@ public class BookingService {
             if (isScheduleManager) {
                 String email = auth.getName();
                 com.cinebook.backend.modules.users.User user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                        .orElseThrow(() -> AppException.notFound("User not found."));
+                        .orElseThrow(() -> AppException.notFound("Không tìm thấy người dùng."));
                 if (user.getCinema() != null) {
                     bookings = bookingRepository.findByShowtimeCinemaCinemaId(user.getCinema().getCinemaId(), pageable);
                 } else {

@@ -98,7 +98,8 @@ function CreateResaleContent() {
                 const [year, month, day] = b.showDate.split('-');
                 const [hours, minutes] = b.showTime.split(':');
                 const showDateTime = new Date(year, parseInt(month, 10) - 1, day, hours, minutes, 0);
-                return showDateTime > now;
+                const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+                return showDateTime > twoHoursFromNow;
             }
             return true;
           });
@@ -126,7 +127,9 @@ function CreateResaleContent() {
   }
 
   // Filter to only eligible tickets
-  const eligibleTickets = realBookings;
+  const eligibleTickets = preselectedBookingId 
+    ? realBookings.filter(b => String(b.id) === String(preselectedBookingId))
+    : realBookings;
   
   const getListedItems = (ticket) => {
     if (!ticket) return { seats: [], fnb: false };
@@ -169,7 +172,7 @@ function CreateResaleContent() {
         setPriceError(res.error?.message || "Lỗi khi đăng bán vé");
       }
     } catch (err) {
-      setPriceError(err.response?.data?.error?.message || "Lỗi khi đăng bán vé");
+      setPriceError(err.error?.message || err.message || "Lỗi khi đăng bán vé");
     } finally {
       setSubmitting(false);
     }
@@ -323,9 +326,6 @@ function CreateResaleContent() {
             setPriceError('');
           }} />
               {priceError && <p className="text-xs text-destructive">{priceError}</p>}
-              <p className="text-xs text-muted-foreground">
-                Đơn hàng tổng: {selectedTicket.totalAmount?.toLocaleString('vi-VN')}₫
-              </p>
             </div>
 
             <div className="space-y-1.5">

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, CreditCard, Building2, Smartphone, Loader2, Lock, Tag, ShoppingCart, Landmark, Calendar } from 'lucide-react';
+import { ArrowLeft, CreditCard, Building2, Smartphone, Loader2, Lock, Tag, ShoppingCart, Landmark, Calendar, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import bookingApi from '@/api/bookingApi';
@@ -77,6 +77,38 @@ function PaymentContent() {
   const [calcResults, setCalcResults] = useState(null);
   const [isLoadingCalc, setIsLoadingCalc] = useState(false);
 
+  const expiresAtParam = sessionStorage.getItem('bookingExpiresAt');
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (expiresAtParam) {
+      const parsed = Number(expiresAtParam);
+      if (!isNaN(parsed) && parsed > Date.now()) {
+        return Math.floor((parsed - Date.now()) / 1000);
+      }
+    }
+    return 600;
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          toast.error('Phiên đặt vé đã hết hạn. Vui lòng đặt lại từ đầu.');
+          router(-1);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [router]);
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
   const fetchCalculation = async (appliedCode) => {
     setIsLoadingCalc(true);
     setPromoError('');
@@ -107,10 +139,26 @@ function PaymentContent() {
         }
       }
     } catch (err) {
-      setPromoError(err.error?.message || err.message || 'Mã không hợp lệ hoặc không đủ điều kiện.');
+      let errorMsg = err.error?.message || err.message || 'Mã không hợp lệ hoặc không đủ điều kiện.';
+      if (errorMsg.includes('403')) {
+        errorMsg = 'Bạn không có quyền thực hiện thao tác này (Lỗi 403).';
+      } else if (errorMsg.includes('404')) {
+        errorMsg = 'Mã khuyến mãi không tồn tại hoặc đã bị xóa.';
+      } else if (errorMsg.includes('Network Error')) {
+        errorMsg = 'Lỗi kết nối mạng, vui lòng kiểm tra lại.';
+      } else if (errorMsg.toLowerCase().includes('expired')) {
+        errorMsg = 'Mã khuyến mãi đã hết hạn sử dụng.';
+      } else if (errorMsg.toLowerCase().includes('limit')) {
+        errorMsg = 'Mã khuyến mãi đã hết lượt sử dụng.';
+      } else if (errorMsg.toLowerCase().includes('already used')) {
+        errorMsg = 'Bạn đã sử dụng mã khuyến mãi này rồi.';
+      }
+      
+      setPromoError(errorMsg);
       setPromoApplied(false);
       setPromoData(null);
       if (appliedCode) {
+        toast.error(errorMsg);
         // Recalculate without promo code
         fetchCalculation(null);
       }
@@ -213,7 +261,7 @@ function PaymentContent() {
     <div className="min-h-screen bg-background text-foreground pb-16">
       {/* ── Top Header Navigation & Stepper ── */}
       <header className="border-b border-border bg-card/85 backdrop-blur-md sticky top-0 z-50">
-        <div className="container max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="container max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-start gap-12">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -230,12 +278,12 @@ function PaymentContent() {
           <div className="hidden md:flex items-center gap-6 text-sm">
             <div className="flex items-center gap-2">
               <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border border-border text-muted-foreground/60">1</span>
-              <span className="font-bold text-muted-foreground/60">Chọn Vé</span>
+              <span className="font-bold text-muted-foreground/60">Chọn suất chiếu</span>
             </div>
             <div className="h-[1px] w-8 bg-border" />
             <div className="flex items-center gap-2">
               <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border border-border text-muted-foreground/60">2</span>
-              <span className="font-bold text-muted-foreground/60">Bắp Nước</span>
+              <span className="font-bold text-muted-foreground/60">Ghế và Đồ ăn</span>
             </div>
             <div className="h-[1px] w-8 bg-primary" />
             <div className="flex items-center gap-2">
@@ -243,12 +291,16 @@ function PaymentContent() {
               <span className="font-bold text-primary">Thanh Toán</span>
             </div>
           </div>
-
-          <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground/80">
-            <span>VI | EN</span>
-          </div>
         </div>
       </header>
+
+      {/* Floating countdown timer */}
+      <div className="flex justify-center mt-6">
+        <div className="flex items-center gap-2 border border-primary/20 bg-primary/5 text-primary rounded-full px-5 py-1.5 text-xs font-bold shadow-lg shadow-primary/5 animate-pulse">
+          <Clock className="w-4 h-4" />
+          Thời gian giữ ghế: {formatTime(timeLeft)}
+        </div>
+      </div>
 
       {/* ── Main content area ── */}
       <main className="container max-w-[1400px] mx-auto px-4 py-8">
@@ -390,21 +442,6 @@ function PaymentContent() {
                     <div className="w-1.5 h-1.5 rounded-full bg-background" />
                   </div>
                 </div>
-
-                {/* Informative notice block */}
-                <div className="flex items-start gap-3 p-3.5 rounded-xl bg-blue-500/5 border border-blue-500/20 text-xs text-muted-foreground">
-                  <div className="mt-0.5 w-4 h-4 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0 font-bold">i</div>
-                  <div className="space-y-1">
-                    <p className="font-bold text-blue-500">Môi trường thử nghiệm (Sandbox):</p>
-                    <p className="text-muted-foreground/80 leading-relaxed text-[11px]">Trang thanh toán thử nghiệm của VNPay sẽ tự động mở ra. Bạn có thể sử dụng thông tin thẻ ATM NCB test để kiểm tra:</p>
-                    <p className="text-primary font-mono text-[11px] mt-1 bg-muted p-2 rounded border border-border leading-relaxed">
-                      Số thẻ: 9704198526191432119 <br />
-                      Tên chủ thẻ: NGUYEN VAN A <br />
-                      Ngày phát hành: 07/15 <br />
-                      Mã OTP: 123456
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -472,10 +509,6 @@ function PaymentContent() {
                     </>
                   )}
                 </Button>
-
-                <p className="text-[10px] text-center text-muted-foreground/60 font-medium flex items-center justify-center gap-1.5 pt-3">
-                  <span>🛡️</span> Giao dịch được mã hóa và bảo mật bởi VNPay SSL
-                </p>
               </div>
             </div>
           </div>

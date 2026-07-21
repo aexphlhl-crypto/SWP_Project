@@ -80,7 +80,7 @@ public class UserService {
 
     public UserAdminDto updateUserStatus(Long id, UserStatus status) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("User not found"));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy người dùng"));
         user.setStatus(status);
         userRepository.save(user);
 
@@ -130,15 +130,15 @@ public class UserService {
 
     public UserAdminDto createManager(CreateManagerDto dto) {
         if (userRepository.existsByEmailAndDeletedAtIsNull(dto.getEmail())) {
-            throw AppException.badRequest("Email already exists");
+            throw AppException.badRequest("Email đã tồn tại");
         }
 
         if (dto.getCinemaId() == null) {
-            throw AppException.badRequest("Cinema ID is required");
+            throw AppException.badRequest("ID rạp chiếu phim là bắt buộc");
         }
 
         Cinema cinema = cinemaRepository.findById(dto.getCinemaId())
-                .orElseThrow(() -> AppException.badRequest("Cinema not found"));
+                .orElseThrow(() -> AppException.badRequest("Không tìm thấy rạp chiếu phim"));
 
         String tempPassword = generateTempPassword();
 
@@ -174,21 +174,20 @@ public class UserService {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$";
         SecureRandom random = new SecureRandom();
         StringBuilder sb = new StringBuilder();
-        sb.append(chars.charAt(random.nextInt(26))); // uppercase
-        sb.append(chars.charAt(26 + random.nextInt(26))); // lowercase
-        sb.append(chars.charAt(52 + random.nextInt(10))); // digit
-        sb.append(chars.charAt(62 + random.nextInt(4))); // special
-        for (int i = 4; i < 12; i++)
-            sb.append(chars.charAt(random.nextInt(chars.length())));
+        sb.append(chars.charAt(random.nextInt(26)));                   // uppercase
+        sb.append(chars.charAt(26 + random.nextInt(26)));              // lowercase
+        sb.append(chars.charAt(52 + random.nextInt(10)));              // digit
+        sb.append(chars.charAt(62 + random.nextInt(4)));               // special
+        for (int i = 4; i < 12; i++) sb.append(chars.charAt(random.nextInt(chars.length())));
         return sb.toString();
     }
 
     public void deleteManager(Long id) {
         User manager = userRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("Manager not found"));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy quản lý"));
 
         if (manager.getRole() != UserRole.ScheduleManager) {
-            throw AppException.badRequest("Can only delete managers");
+            throw AppException.badRequest("Chỉ có thể xóa tài khoản quản lý");
         }
 
         manager.setDeletedAt(LocalDateTime.now());

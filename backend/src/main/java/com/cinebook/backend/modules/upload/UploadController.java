@@ -23,7 +23,7 @@ public class UploadController {
     @PreAuthorize("hasAnyRole('SystemAdmin', 'ScheduleManager')")
     public ApiResponse<String> uploadFile(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
         if (file.isEmpty()) {
-            return ApiResponse.error("UPLOAD_ERROR", "File is empty");
+            return ApiResponse.error("UPLOAD_ERROR", "Tệp trống");
         }
 
         try {

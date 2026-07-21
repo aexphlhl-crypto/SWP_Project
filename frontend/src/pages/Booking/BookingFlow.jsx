@@ -178,6 +178,8 @@ function BookingContent() {
       seatTotal: seatTotal.toString(),
       vatPercent: (settings?.vatPercent ?? 10).toString()
     });
+    
+    sessionStorage.setItem('bookingExpiresAt', (Date.now() + timeLeft * 1000).toString());
     if (withConcession && orderItems.length > 0) {
       queryParams.set('concessions', JSON.stringify(orderItems.map(o => ({
         id: o.item.id,
@@ -283,8 +285,8 @@ function BookingContent() {
     <div className="min-h-screen bg-background text-foreground pb-12">
       {/* ── Top Header Navigation & Stepper ── */}
       <header className="border-b border-border bg-card/85 backdrop-blur-md sticky top-0 z-50">
-        <div className="container max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="container max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-start gap-12">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
@@ -315,22 +317,18 @@ function BookingContent() {
           <div className="hidden md:flex items-center gap-6 text-sm">
             <div className="flex items-center gap-2">
               <span className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border transition-colors", step >= 1 ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground/60")}>1</span>
-              <span className={cn("font-bold", step >= 1 ? "text-primary" : "text-muted-foreground/60")}>Chọn Vé</span>
+              <span className={cn("font-bold", step >= 1 ? "text-primary" : "text-muted-foreground/60")}>Chọn suất chiếu</span>
             </div>
             <div className={cn("h-[1px] w-8 transition-colors", step >= 2 ? "bg-primary" : "bg-border")} />
             <div className="flex items-center gap-2">
               <span className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border transition-colors", step >= 2 ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground/60")}>2</span>
-              <span className={cn("font-bold", step >= 2 ? "text-primary" : "text-muted-foreground/60")}>Bắp Nước (Snacks)</span>
+              <span className={cn("font-bold", step >= 2 ? "text-primary" : "text-muted-foreground/60")}>Ghế và Đồ ăn</span>
             </div>
             <div className={cn("h-[1px] w-8 transition-colors", concessionOpen ? "bg-primary" : "bg-border")} />
             <div className="flex items-center gap-2">
               <span className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border transition-colors", concessionOpen ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground/60")}>3</span>
               <span className={cn("font-bold", concessionOpen ? "text-primary" : "text-muted-foreground/60")}>Thanh Toán</span>
             </div>
-          </div>
-
-          <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground/80">
-            <span>VI | EN</span>
           </div>
         </div>
       </header>

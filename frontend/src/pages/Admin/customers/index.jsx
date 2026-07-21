@@ -147,16 +147,13 @@ export default function AdminCustomersPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-3">
           {[{
           label: 'Tổng khách hàng',
           value: customers.length
         }, {
           label: 'Đang hoạt động',
           value: activeCount
-        }, {
-          label: 'Khách VIP',
-          value: vipCount
         }, {
           label: 'Tổng chi tiêu',
           value: `${(totalRevenue / 1000000).toFixed(1)}M ₫`
@@ -190,7 +187,6 @@ export default function AdminCustomersPage() {
                   <TableHead>Liên hệ</TableHead>
                   <TableHead>Tổng đơn</TableHead>
                   <TableHead>Tổng chi tiêu</TableHead>
-                  <TableHead>Hạng</TableHead>
                   <TableHead>Ngày tham gia</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead className="w-12" />
@@ -231,9 +227,6 @@ export default function AdminCustomersPage() {
                       <TableCell className="text-sm font-medium">
                         {(customer.totalSpent || 0).toLocaleString('vi-VN')}₫
                       </TableCell>
-                      <TableCell>
-                        <Badge className={tier.className}>{tier.label}</Badge>
-                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString('vi-VN') : '-'}
                       </TableCell>
@@ -257,9 +250,6 @@ export default function AdminCustomersPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="gap-2">
-                              <Eye className="w-4 h-4" /> Xem chi tiết
-                            </DropdownMenuItem>
                             <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleToggleStatus(customer)}>
                               <Ban className="w-4 h-4" />
                               {customer.status === 'Active' ? 'Khóa tài khoản' : 'Mở khóa'}

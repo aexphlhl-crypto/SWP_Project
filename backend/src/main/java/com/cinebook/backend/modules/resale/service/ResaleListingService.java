@@ -35,6 +35,7 @@ public class ResaleListingService {
     private final BookingRepository bookingRepository;
     private final BookingSeatRepository bookingSeatRepository;
     private final UserRepository userRepository;
+    private final com.cinebook.backend.modules.bookings.repository.FnBOrderItemRepository fnbOrderItemRepository;
 
     public Page<ResaleListingResponse> getAllListings(Pageable pageable) {
         return resaleListingRepository.findAll(pageable).map(this::mapToResponse);
@@ -51,15 +52,15 @@ public class ResaleListingService {
     @Transactional
     public ResaleListingResponse createListing(ResaleListingRequest request) {
         Booking booking = bookingRepository.findById(request.getBookingId())
-                .orElseThrow(() -> AppException.notFound("Booking not found"));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy đơn hàng"));
 
         if (!booking.getCustomer().getUserId().equals(request.getSellerId())) {
-            throw AppException.forbidden("You do not own this booking");
+            throw AppException.forbidden("Bạn không phải chủ sở hữu của đơn hàng này");
         }
 
         Showtime listingShowtime = booking.getShowtime();
         if (listingShowtime.getStartTime().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw AppException.badRequest("Ticket listing is not allowed less than 2 hours before the showtime starts.");
+            throw AppException.badRequest("Không được phép bán lại vé khi chỉ còn chưa đầy 2 giờ trước giờ chiếu.");
         }
 
         // Prevent duplicate seats or FNB
@@ -71,7 +72,7 @@ public class ResaleListingService {
         if (request.getIncludesFnb() != null && request.getIncludesFnb()) {
             boolean fnbAlreadyListed = existingListings.stream().anyMatch(l -> l.getIncludesFnb() != null && l.getIncludesFnb());
             if (fnbAlreadyListed) {
-                throw AppException.badRequest("FNB is already included in another active listing.");
+                throw AppException.badRequest("Đồ ăn/nước uống này đã được đăng bán trong một tin khác.");
             }
         }
         
@@ -82,7 +83,7 @@ public class ResaleListingService {
                     java.util.List<String> listedSeats = java.util.Arrays.asList(l.getSeats().split("\\s*,\\s*"));
                     for (String rs : requestedSeats) {
                         if (listedSeats.contains(rs)) {
-                            throw AppException.badRequest("Seat " + rs + " is already listed.");
+                            throw AppException.badRequest("Ghế " + rs + " đã được đăng bán.");
                         }
                     }
                 }
@@ -107,7 +108,7 @@ public class ResaleListingService {
     @Transactional
     public ResaleListingResponse updateStatus(Long id, ResaleStatusUpdateRequest request) {
         TicketExchangeListing listing = resaleListingRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("Listing not found"));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy tin bán vé"));
 
         listing.setStatus(request.getStatus());
 
@@ -161,6 +162,7 @@ public class ResaleListingService {
         Integer originalPrice = 0;
         String seats = listing.getSeats();
         String ticketType = "standard";
+        java.util.List<com.cinebook.backend.modules.bookings.dto.FnBItemDto> fnbItems = new java.util.ArrayList<>();
 
         if (booking != null) {
             Showtime showtime = booking.getShowtime();
@@ -210,6 +212,17 @@ public class ResaleListingService {
                     ticketType = String.join(", ", types);
                 }
             }
+
+            if (listing.getIncludesFnb() != null && listing.getIncludesFnb()) {
+                java.util.List<com.cinebook.backend.modules.bookings.entity.FnBOrderItem> fnbOrderItems = fnbOrderItemRepository.findByBookingId(booking.getId());
+                fnbItems = fnbOrderItems.stream().map(item -> com.cinebook.backend.modules.bookings.dto.FnBItemDto.builder()
+                        .productId(item.getProduct().getId())
+                        .productName(item.getProduct().getName())
+                        .unitPrice(item.getUnitPrice())
+                        .quantity(item.getQuantity())
+                        .subtotal(item.getUnitPrice() * item.getQuantity())
+                        .build()).collect(java.util.stream.Collectors.toList());
+            }
         }
 
         return ResaleListingResponse.builder()
@@ -226,6 +239,7 @@ public class ResaleListingService {
                 .originalPrice(originalPrice)
                 .resalePrice(listing.getAskingPrice())
                 .includesFnb(listing.getIncludesFnb() != null ? listing.getIncludesFnb() : false)
+                .fnbItems(fnbItems)
                 .sellerName(seller != null ? seller.getFullName() : "Unknown")
                 .sellerPhone(listing.getPhone() != null ? listing.getPhone() : (seller != null ? seller.getPhone() : ""))
                 .note(listing.getNote())
