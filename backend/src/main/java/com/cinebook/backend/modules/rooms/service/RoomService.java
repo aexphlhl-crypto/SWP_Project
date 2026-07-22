@@ -92,7 +92,7 @@ public class RoomService {
             if (isScheduleManager) {
                 String email = auth.getName();
                 com.cinebook.backend.modules.users.User user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                        .orElseThrow(() -> AppException.unauthorized("User not found"));
+                        .orElseThrow(() -> AppException.unauthorized("Không tìm thấy người dùng"));
                 if (user.getCinema() != null && !user.getCinema().getCinemaId().equals(cinemaId)) {
                     throw AppException.forbidden("Bạn không có quyền quản lý phòng chiếu của rạp này.");
                 }
@@ -145,7 +145,7 @@ public class RoomService {
     @Transactional
     public RoomDto updateRoomStatus(Long id, String status) {
         Room room = roomRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("Room not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy phòng chiếu."));
         validateCinemaAccess(room.getCinema().getCinemaId());
         room.setStatus(status);
         roomRepository.save(room);
@@ -162,7 +162,7 @@ public class RoomService {
     @Transactional
     public List<SeatConfigDto> configureSeats(Long roomId, List<SeatConfigDto> seatConfigs) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> AppException.notFound("Room not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy phòng chiếu."));
         validateCinemaAccess(room.getCinema().getCinemaId());
 
         if (!"UnderMaintenance".equals(room.getStatus()) && !"Inactive".equals(room.getStatus())) {
@@ -230,7 +230,7 @@ public class RoomService {
     @Transactional
     public void deleteRoom(Long id) {
         Room room = roomRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("Room not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy phòng chiếu."));
         validateCinemaAccess(room.getCinema().getCinemaId());
         boolean hasBookings = bookingRepository.existsByShowtimeRoomRoomId(id);
         if (hasBookings) {

@@ -302,7 +302,7 @@ export default function AdminAnalyticsPage() {
                 fill: 'hsl(var(--muted-foreground))',
                 fontSize: 12
               }} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={{ color: '#fff' }} />
               <Legend />
               <Line type="monotone" dataKey="revenue" name="Doanh thu (M₫)" stroke={CHART_COLORS.red} strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: CHART_COLORS.red, stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
               <Line type="monotone" dataKey="tickets" name="Vé bán (cái)" stroke={CHART_COLORS.amber} strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: CHART_COLORS.amber, stroke: 'hsl(var(--card))', strokeWidth: 2 }} />
@@ -339,7 +339,7 @@ export default function AdminAnalyticsPage() {
                     />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v, name) => [`${v}%`, name]} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={{ color: '#fff' }} formatter={(v, name) => [`${v}%`, name]} />
               </PieChart>
             </ResponsiveContainer>
             <div className="space-y-1.5 mt-2">
@@ -374,7 +374,7 @@ export default function AdminAnalyticsPage() {
                   fill: 'hsl(var(--muted-foreground))',
                   fontSize: 10
                 }} width={90} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.5 }} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={{ color: '#fff' }} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.5 }} />
                 <Bar dataKey="tickets" name="Vé" fill={CHART_COLORS.red} radius={[0, 4, 4, 0]} activeBar={{ fill: CHART_COLORS.pink }} />
               </BarChart>
             </ResponsiveContainer>
@@ -399,7 +399,7 @@ export default function AdminAnalyticsPage() {
                   fill: 'hsl(var(--muted-foreground))',
                   fontSize: 12
                 }} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={v => [v, 'Vé TB']} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.5 }} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={{ color: '#fff' }} formatter={v => [v, 'Vé TB']} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.5 }} />
                 <Bar dataKey="avg" name="Vé TB" fill={CHART_COLORS.blue} radius={[4, 4, 0, 0]} activeBar={{ fill: CHART_COLORS.purple }} />
               </BarChart>
             </ResponsiveContainer>

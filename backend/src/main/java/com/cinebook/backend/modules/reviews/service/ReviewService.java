@@ -110,6 +110,19 @@ public class ReviewService {
         String customerName = userRepository.findById(r.getCustomerId())
                 .map(u -> u.getFullName())
                 .orElse("Unknown");
+                
+        String movieTitle = movieRepository.findById(r.getMovieId())
+                .map(com.cinebook.backend.modules.movies.entity.Movie::getTitle)
+                .orElse("Unknown");
+                
+        String cinemaName = "Unknown";
+        if (r.getBookingId() != null) {
+            cinemaName = bookingRepository.findById(r.getBookingId())
+                    .filter(b -> b.getShowtime() != null && b.getShowtime().getRoom() != null && b.getShowtime().getRoom().getCinema() != null)
+                    .map(b -> b.getShowtime().getRoom().getCinema().getName())
+                    .orElse("Unknown");
+        }
+
         return ReviewDto.builder()
                 .id(r.getId())
                 .customerId(r.getCustomerId())
@@ -118,6 +131,8 @@ public class ReviewService {
                 .comment(r.getComment())
                 .createdAt(r.getCreatedAt())
                 .status(r.getStatus().name())
+                .movieTitle(movieTitle)
+                .cinemaName(cinemaName)
                 .build();
     }
 }

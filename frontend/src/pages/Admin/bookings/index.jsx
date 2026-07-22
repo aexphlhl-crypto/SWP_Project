@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Ticket, Search, MoreHorizontal, Eye, Ban, CheckCircle, Download } from 'lucide-react';
+import { Ticket, Search, Ban, CheckCircle, Download } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import bookingApi from '../../../api/bookingApi';
@@ -220,28 +219,16 @@ export default function AdminBookingsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="w-8 h-8">
-                            <MoreHorizontal className="w-4 h-4" />
+                      {booking.status === 'Pending' && (
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="icon" className="w-8 h-8 text-green-500 hover:text-green-600 hover:bg-green-500/10" onClick={() => handleUpdateStatus(booking.id, 'Confirmed')} title="Xác nhận">
+                            <CheckCircle className="w-4 h-4" />
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="gap-2">
-                            <Eye className="w-4 h-4" /> Xem chi tiết
-                          </DropdownMenuItem>
-                          {booking.status === 'Pending' && (
-                            <>
-                              <DropdownMenuItem className="gap-2 text-green-500 focus:text-green-600" onClick={() => handleUpdateStatus(booking.id, 'Confirmed')}>
-                                <CheckCircle className="w-4 h-4" /> Xác nhận
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleUpdateStatus(booking.id, 'Cancelled')}>
-                                <Ban className="w-4 h-4" /> Hủy đơn
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          <Button variant="ghost" size="icon" className="w-8 h-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleUpdateStatus(booking.id, 'Cancelled')} title="Hủy đơn">
+                            <Ban className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>)}
               </TableBody>

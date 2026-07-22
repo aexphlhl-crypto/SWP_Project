@@ -71,6 +71,18 @@ export default function RegisterPage() {
       setError('Vui lòng nhập đầy đủ thông tin.');
       return;
     }
+    if (form.name.trim().length < 2) {
+      setError('Họ và tên phải có ít nhất 2 ký tự.');
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) {
+      setError('Địa chỉ email không hợp lệ.');
+      return;
+    }
+    if (!/^(0[3|5|7|8|9])+([0-9]{8})$/.test(form.phone.trim())) {
+      setError('Số điện thoại không hợp lệ (VD: 0901234567).');
+      return;
+    }
     if (form.password !== form.confirmPassword) {
       setError('Mật khẩu xác nhận không khớp.');
       return;
@@ -79,6 +91,7 @@ export default function RegisterPage() {
       setError('Mật khẩu phải có ít nhất 6 ký tự.');
       return;
     }
+
     setSendingOtp(true);
     try {
       await register(form.name, form.email, form.phone, form.password);

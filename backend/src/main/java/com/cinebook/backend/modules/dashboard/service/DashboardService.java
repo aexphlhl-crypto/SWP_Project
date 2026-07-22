@@ -1,5 +1,6 @@
 package com.cinebook.backend.modules.dashboard.service;
 
+import com.cinebook.backend.common.enums.UserRole;
 import com.cinebook.backend.modules.bookings.entity.Booking;
 import com.cinebook.backend.modules.bookings.entity.BookingStatus;
 import com.cinebook.backend.modules.bookings.repository.BookingRepository;
@@ -45,34 +46,82 @@ public class DashboardService {
     private final ReviewRepository reviewRepository;
     private final com.cinebook.backend.modules.showtimes.repository.ShowtimeRepository showtimeRepository;
 
-    public KpiResponse getKpiSummary() {
+    private Long getManagerCinemaId(String username) {
+        if (username == null) return null;
+        return userRepository.findByEmailAndDeletedAtIsNull(username)
+            .filter(u -> u.getRole() == UserRole.ScheduleManager && u.getCinema() != null)
+            .map(u -> u.getCinema().getCinemaId())
+            .orElse(null);
+    }
+
+    private List<Booking> getFilteredBookings(Long cinemaId, List<BookingStatus> validStatuses) {
+        List<Booking> bookings = bookingRepository.findByStatusInOrderByCreatedAtDesc(validStatuses);
+        if (cinemaId != null) {
+            return bookings.stream()
+                .filter(b -> b.getShowtime() != null && b.getShowtime().getRoom() != null && b.getShowtime().getRoom().getCinema() != null && b.getShowtime().getRoom().getCinema().getCinemaId().equals(cinemaId))
+                .collect(Collectors.toList());
+        }
+        return bookings;
+    }
+    
+    private List<Booking> getFilteredBookingsInYear(Long cinemaId, List<BookingStatus> validStatuses, LocalDateTime startOfYear, LocalDateTime endOfYear) {
+        List<Booking> bookings = bookingRepository.findByStatusInAndCreatedAtBetween(validStatuses, startOfYear, endOfYear);
+        if (cinemaId != null) {
+            return bookings.stream()
+                .filter(b -> b.getShowtime() != null && b.getShowtime().getRoom() != null && b.getShowtime().getRoom().getCinema() != null && b.getShowtime().getRoom().getCinema().getCinemaId().equals(cinemaId))
+                .collect(Collectors.toList());
+        }
+        return bookings;
+    }
+
+    public KpiResponse getKpiSummary(String username) {
+        Long cinemaId = getManagerCinemaId(username);
         List<BookingStatus> validStatuses = Arrays.asList(BookingStatus.Confirmed, BookingStatus.CheckedIn);
-        Integer totalRevenue = bookingRepository.sumTotalAfterTaxByStatusIn(validStatuses);
-        Long totalTicketsLong = bookingSeatRepository.countByBooking_StatusIn(validStatuses);
-        Integer totalTickets = totalTicketsLong != null ? totalTicketsLong.intValue() : 0;
+        
+        Integer totalRevenue;
+        Integer totalTickets;
+        Long screenedMovies;
+        
+        if (cinemaId != null) {
+            List<Booking> bookings = bookingRepository.findByShowtimeCinemaCinemaIdOrderByCreatedAtDesc(cinemaId).stream()
+                .filter(b -> validStatuses.contains(b.getStatus()))
+                .collect(Collectors.toList());
+            totalRevenue = bookings.stream().mapToInt(Booking::getTotalAfterTax).sum();
+            int total = 0;
+            for(Booking b : bookings) {
+                total += bookingSeatRepository.countByBooking_Id(b.getId());
+            }
+            totalTickets = total;
+            screenedMovies = bookings.stream().map(b -> b.getShowtime().getMovie().getMovieId()).distinct().count();
+        } else {
+            totalRevenue = bookingRepository.sumTotalAfterTaxByStatusIn(validStatuses);
+            Long totalTicketsLong = bookingSeatRepository.countByBooking_StatusIn(validStatuses);
+            totalTickets = totalTicketsLong != null ? totalTicketsLong.intValue() : 0;
+            screenedMovies = showtimeRepository.countDistinctMoviesWithShowtimes();
+        }
         
         YearMonth currentMonth = YearMonth.now();
         LocalDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay();
         LocalDateTime endOfMonth = currentMonth.atEndOfMonth().atTime(23, 59, 59);
         
         Long newUsers = userRepository.countByCreatedAtBetween(startOfMonth, endOfMonth);
-        Long screenedMovies = showtimeRepository.countDistinctMoviesWithShowtimes();
 
         return KpiResponse.builder()
-                .totalRevenue(totalRevenue)
+                .totalRevenue(totalRevenue != null ? totalRevenue : 0)
                 .totalTickets(totalTickets)
                 .newUsers(newUsers)
                 .screenedMovies(screenedMovies)
                 .build();
     }
 
-    public List<ChartResponse> getRevenueChart() {
+    public List<ChartResponse> getRevenueChart(String username) {
+        Long cinemaId = getManagerCinemaId(username);
         List<BookingStatus> validStatuses = Arrays.asList(BookingStatus.Confirmed, BookingStatus.CheckedIn);
         int currentYear = LocalDate.now().getYear();
         LocalDateTime startOfYear = LocalDateTime.of(currentYear, 1, 1, 0, 0);
         LocalDateTime endOfYear = LocalDateTime.of(currentYear, 12, 31, 23, 59, 59);
 
-        List<Booking> bookings = bookingRepository.findByStatusInAndCreatedAtBetween(validStatuses, startOfYear, endOfYear);
+        List<Booking> bookings = getFilteredBookingsInYear(cinemaId, validStatuses, startOfYear, endOfYear);
 
         Map<String, Integer> revenueByMonth = new HashMap<>();
         for (int i = 1; i <= 12; i++) {
@@ -93,9 +142,10 @@ public class DashboardService {
         return result;
     }
 
-    public byte[] exportRevenueToExcel() throws IOException {
+    public byte[] exportRevenueToExcel(String username) throws IOException {
+        Long cinemaId = getManagerCinemaId(username);
         List<BookingStatus> validStatuses = Arrays.asList(BookingStatus.Confirmed, BookingStatus.CheckedIn);
-        List<Booking> bookings = bookingRepository.findByStatusInOrderByCreatedAtDesc(validStatuses);
+        List<Booking> bookings = getFilteredBookings(cinemaId, validStatuses);
 
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Revenue Report");
@@ -121,8 +171,31 @@ public class DashboardService {
         }
     }
 
-    public List<MovieRankingResponse> getTopMoviesByRevenue() {
+    public List<MovieRankingResponse> getTopMoviesByRevenue(String username) {
+        Long cinemaId = getManagerCinemaId(username);
         List<BookingStatus> validStatuses = Arrays.asList(BookingStatus.Confirmed, BookingStatus.CheckedIn);
+        
+        if (cinemaId != null) {
+            List<Booking> bookings = bookingRepository.findByShowtimeCinemaCinemaIdOrderByCreatedAtDesc(cinemaId).stream()
+                .filter(b -> validStatuses.contains(b.getStatus()))
+                .collect(Collectors.toList());
+            
+            Map<Long, BigDecimal> movieRevenue = new HashMap<>();
+            Map<Long, String> movieTitle = new HashMap<>();
+            
+            for (Booking b : bookings) {
+                Long movieId = b.getShowtime().getMovie().getMovieId();
+                movieTitle.put(movieId, b.getShowtime().getMovie().getTitle());
+                movieRevenue.put(movieId, movieRevenue.getOrDefault(movieId, BigDecimal.ZERO).add(new BigDecimal(b.getTotalAfterTax())));
+            }
+            
+            return movieRevenue.entrySet().stream()
+                .map(e -> new MovieRankingResponse(e.getKey(), movieTitle.get(e.getKey()), e.getValue()))
+                .sorted((a, b) -> b.getMetricValue().compareTo(a.getMetricValue()))
+                .limit(5)
+                .collect(Collectors.toList());
+        }
+
         Pageable topFive = PageRequest.of(0, 5);
         List<Object[]> results = bookingRepository.findTopMoviesByRevenue(validStatuses, topFive);
         return results.stream().map(row -> new MovieRankingResponse(
@@ -132,7 +205,7 @@ public class DashboardService {
         )).collect(Collectors.toList());
     }
 
-    public List<MovieRankingResponse> getTopMoviesByRating() {
+    public List<MovieRankingResponse> getTopMoviesByRating(String username) {
         Pageable topFive = PageRequest.of(0, 5);
         List<Object[]> results = reviewRepository.findTopMoviesByRating(ReviewStatus.Active, topFive);
         return results.stream().map(row -> new MovieRankingResponse(
@@ -142,9 +215,17 @@ public class DashboardService {
         )).collect(Collectors.toList());
     }
 
-    public List<RecentBookingResponse> getRecentBookings(int limit) {
+    public List<RecentBookingResponse> getRecentBookings(int limit, String username) {
+        Long cinemaId = getManagerCinemaId(username);
         Pageable pageable = PageRequest.of(0, limit);
-        org.springframework.data.domain.Page<Booking> page = bookingRepository.findAllByOrderByCreatedAtDesc(pageable);
+        org.springframework.data.domain.Page<Booking> page;
+        
+        if (cinemaId != null) {
+            page = bookingRepository.findByShowtimeCinemaCinemaId(cinemaId, pageable);
+        } else {
+            page = bookingRepository.findAllByOrderByCreatedAtDesc(pageable);
+        }
+        
         return page.getContent().stream().map(b -> {
             List<BookingSeat> bookingSeats = bookingSeatRepository.findByBooking_Id(b.getId());
             String seats = "";
@@ -167,9 +248,10 @@ public class DashboardService {
         }).collect(Collectors.toList());
     }
 
-    public List<GenreChartResponse> getGenreChart() {
+    public List<GenreChartResponse> getGenreChart(String username) {
+        Long cinemaId = getManagerCinemaId(username);
         List<BookingStatus> validStatuses = Arrays.asList(BookingStatus.Confirmed, BookingStatus.CheckedIn);
-        List<Booking> bookings = bookingRepository.findByStatusInOrderByCreatedAtDesc(validStatuses);
+        List<Booking> bookings = getFilteredBookings(cinemaId, validStatuses);
 
         // Use double to accumulate fractional tickets per genre
         Map<String, Double> genreCounts = new HashMap<>();
@@ -182,8 +264,6 @@ public class DashboardService {
                 int tickets = bookingSeatRepository.countByBooking_Id(b.getId());
                 totalTickets += tickets;
                 List<Genre> genres = new ArrayList<>(b.getShowtime().getMovie().getGenres());
-                // Distribute tickets evenly across all genres of this movie
-                // so that sum of genre counts == totalTickets (no double-counting)
                 double ticketsPerGenre = (double) tickets / genres.size();
                 for (Genre g : genres) {
                     genreCounts.merge(g.getName(), ticketsPerGenre, Double::sum);
@@ -207,11 +287,10 @@ public class DashboardService {
         return result.stream().limit(7).collect(Collectors.toList());
     }
 
-
-
-    public List<CinemaChartResponse> getCinemaChart() {
+    public List<CinemaChartResponse> getCinemaChart(String username) {
+        Long cinemaId = getManagerCinemaId(username);
         List<BookingStatus> validStatuses = Arrays.asList(BookingStatus.Confirmed, BookingStatus.CheckedIn);
-        List<Booking> bookings = bookingRepository.findByStatusInOrderByCreatedAtDesc(validStatuses);
+        List<Booking> bookings = getFilteredBookings(cinemaId, validStatuses);
 
         Map<String, int[]> cinemaStats = new HashMap<>(); // [tickets, revenue]
 
@@ -236,20 +315,20 @@ public class DashboardService {
         return result;
     }
 
-    public List<WeekdayChartResponse> getWeekdayChart() {
+    public List<WeekdayChartResponse> getWeekdayChart(String username) {
+        Long cinemaId = getManagerCinemaId(username);
         List<BookingStatus> validStatuses = Arrays.asList(BookingStatus.Confirmed, BookingStatus.CheckedIn);
         int currentYear = LocalDate.now().getYear();
         LocalDateTime startOfYear = LocalDateTime.of(currentYear, 1, 1, 0, 0);
         LocalDateTime endOfYear = LocalDateTime.of(currentYear, 12, 31, 23, 59, 59);
 
-        List<Booking> bookings = bookingRepository.findByStatusInAndCreatedAtBetween(validStatuses, startOfYear, endOfYear);
+        List<Booking> bookings = getFilteredBookingsInYear(cinemaId, validStatuses, startOfYear, endOfYear);
 
         Map<java.time.DayOfWeek, List<Integer>> dailyTickets = new EnumMap<>(java.time.DayOfWeek.class);
         for (java.time.DayOfWeek day : java.time.DayOfWeek.values()) {
             dailyTickets.put(day, new ArrayList<>());
         }
 
-        // Group by LocalDate to find total tickets per specific date, then average by day of week
         Map<LocalDate, Integer> dateTickets = new HashMap<>();
         for (Booking b : bookings) {
             if (b.getCreatedAt() != null) {

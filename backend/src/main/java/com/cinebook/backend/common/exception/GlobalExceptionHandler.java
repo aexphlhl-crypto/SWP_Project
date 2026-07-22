@@ -43,14 +43,32 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<?>> handleDataIntegrityViolation(org.springframework.dao.DataIntegrityViolationException ex) {
         log.warn("Data integrity violation: {}", ex.getMessage());
+        String message = "Lỗi toàn vẹn dữ liệu. Vui lòng kiểm tra lại.";
+        String errCode = "DATA_INTEGRITY_VIOLATION";
+        
+        String specificMessage = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+        
+        if (specificMessage != null) {
+            if (specificMessage.contains("Duplicate entry")) {
+                message = "Bản ghi với giá trị này đã tồn tại. Vui lòng kiểm tra trùng lặp.";
+                errCode = "DUPLICATE_ENTRY";
+            } else if (specificMessage.contains("Data truncation") || specificMessage.contains("Data too long") || specificMessage.contains("too long")) {
+                message = "Dữ liệu nhập vào quá dài, vượt quá giới hạn ký tự cho phép. Vui lòng kiểm tra lại.";
+                errCode = "DATA_TOO_LONG";
+            } else if (specificMessage.contains("cannot be null") || specificMessage.contains("doesn't have a default value")) {
+                message = "Thiếu trường dữ liệu bắt buộc.";
+                errCode = "MISSING_REQUIRED_FIELD";
+            }
+        }
+        
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("DUPLICATE_ENTRY", "Bản ghi với giá trị này đã tồn tại. Vui lòng kiểm tra trùng lặp."));
+                .body(ApiResponse.error(errCode, message));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleGeneral(Exception ex) {
         log.error("Unhandled exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("INTERNAL_ERROR", "An unexpected error occurred: " + ex.getMessage()));
+                .body(ApiResponse.error("INTERNAL_ERROR", "Đã xảy ra lỗi không xác định trên hệ thống: " + ex.getMessage()));
     }
 }

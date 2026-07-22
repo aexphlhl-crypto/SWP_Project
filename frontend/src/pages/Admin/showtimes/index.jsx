@@ -207,9 +207,19 @@ export default function AdminShowtimesPage() {
   const handleSave = async () => {
     setErrorMsg('');
     try {
+      // ── Validate ──────────────────────────────────────────
       if (!formData.movieId || !formData.cinemaId || !formData.roomId) {
         throw new Error("Vui lòng chọn đầy đủ Phim, Rạp và Phòng!");
       }
+      if (!formData.date) throw new Error("Vui lòng chọn ngày chiếu");
+      if (!formData.startTime) throw new Error("Vui lòng chọn giờ bắt đầu");
+
+      if (!editingShowtime) {
+        const selectedDate = new Date(formData.date);
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        if (selectedDate < today) throw new Error("Ngày chiếu không được là ngày trong quá khứ");
+      }
+      // ─────────────────────────────────────────────────────
 
       const startTimeStr = `${formData.date}T${formData.startTime}:00`;
 
@@ -235,6 +245,7 @@ export default function AdminShowtimesPage() {
       setErrorMsg(error.error?.message || error.message || "Đã có lỗi xảy ra");
     }
   };
+
 
   // Lọc phòng theo Rạp đã chọn trong Form
   const formRooms = useMemo(() => {
@@ -311,31 +322,28 @@ export default function AdminShowtimesPage() {
 
   // Dynamic statistics calculations
   const seatFillRate = useMemo(() => {
-    if (filtered.length === 0) return 74; // Default mockup value to match figma when empty
+    if (filtered.length === 0) return 0;
     const total = filtered.reduce((acc, s) => acc + s.totalSeats, 0);
     const available = filtered.reduce((acc, s) => acc + s.availableSeats, 0);
-    return total > 0 ? Math.round((1 - available / total) * 100) : 74;
+    return total > 0 ? Math.round((1 - available / total) * 100) : 0;
   }, [filtered]);
 
   const topOccupiedMovie = useMemo(() => {
-    if (filtered.length === 0) return { movieTitle: "Dune: Hành Tinh Cát 3", timeString: "20:00", fillRate: 96 };
+    if (filtered.length === 0) return { movieTitle: "Chưa có dữ liệu", timeString: "", fillRate: 0 };
     let best = filtered[0];
-    let maxRate = 0;
+    let maxRate = -1;
     filtered.forEach(s => {
-      const rate = 1 - s.availableSeats / s.totalSeats;
-      if (rate > maxRate) {
-        maxRate = rate;
-        best = s;
+      if (s.totalSeats > 0) {
+        const rate = 1 - (s.availableSeats / s.totalSeats);
+        if (rate > maxRate) {
+          maxRate = rate;
+          best = s;
+        }
       }
     });
-    return maxRate > 0
+    return maxRate >= 0
       ? { movieTitle: best.movieTitle, timeString: best.timeString, fillRate: Math.round(maxRate * 100) }
-      : { movieTitle: "Dune: Hành Tinh Cát 3", timeString: "20:00", fillRate: 96 };
-  }, [filtered]);
-
-  const activeHoldsCount = useMemo(() => {
-    // Generate realistic active holds for the branch based on showtime size
-    return filtered.length > 0 ? filtered.length * 4 + 6 : 38;
+      : { movieTitle: "Chưa có dữ liệu", timeString: "", fillRate: 0 };
   }, [filtered]);
 
   return (
@@ -357,7 +365,7 @@ export default function AdminShowtimesPage() {
       </div>
 
       {/* ─── Premium Stats Dashboard Cards (Figma style) ─── */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Seat Fill Rate card */}
         <Card className="bg-card border-border rounded-2xl shadow-xl p-6 flex items-center justify-between">
           <div className="space-y-1">
@@ -374,16 +382,8 @@ export default function AdminShowtimesPage() {
               {topOccupiedMovie.movieTitle}
             </div>
             <p className="text-[10px] text-muted-foreground font-semibold mt-0.5 text-center">
-              Hôm nay - {topOccupiedMovie.timeString}
+              {topOccupiedMovie.timeString ? `Hôm nay - ${topOccupiedMovie.timeString}` : "Không có dữ liệu"}
             </p>
-          </div>
-        </Card>
-
-        {/* Đang giữ chỗ card */}
-        <Card className="bg-card border-border rounded-2xl shadow-xl p-6 flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Đang giữ chỗ</p>
-            <div className="text-2xl font-black text-foreground text-center">{activeHoldsCount}</div>
           </div>
         </Card>
       </div>

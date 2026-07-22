@@ -154,6 +154,12 @@ function CreateResaleContent() {
       return;
     }
     
+    const maxAllowedPrice = (selectedTicket.totalAmount || 0) * 2;
+    if (priceNum > maxAllowedPrice) {
+      setPriceError(`Giá bán lại không được vượt quá 200% tổng bill (${maxAllowedPrice.toLocaleString('vi-VN')}₫).`);
+      return;
+    }
+    
     setSubmitting(true);
     try {
       const payload = {

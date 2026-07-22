@@ -29,7 +29,8 @@ public class PromoService {
         }
 
         if (promo.getMinOrderValue() != null && orderValue < promo.getMinOrderValue()) {
-            throw AppException.badRequest("Giá trị đơn hàng không đạt mức tối thiểu " + promo.getMinOrderValue() + " VNĐ để áp dụng mã.");
+            throw AppException.badRequest(
+                    "Giá trị đơn hàng không đạt mức tối thiểu " + promo.getMinOrderValue() + " VNĐ để áp dụng mã.");
         }
 
         if (promo.getUsageLimit() != null && promo.getUsedCount() >= promo.getUsageLimit()) {
@@ -59,7 +60,8 @@ public class PromoService {
         }
 
         if (promo.getMinOrderValue() != null && orderValue < promo.getMinOrderValue()) {
-            throw AppException.badRequest("Order total does not meet the minimum required amount of " + promo.getMinOrderValue() + " VND.");
+            throw AppException.badRequest(
+                    "Order total does not meet the minimum required amount of " + promo.getMinOrderValue() + " VND.");
         }
 
         if (promo.getUsageLimit() != null && promo.getUsedCount() >= promo.getUsageLimit()) {
@@ -86,7 +88,8 @@ public class PromoService {
 
     @org.springframework.transaction.annotation.Transactional
     public void releasePromoUsage(Long promoId, Long bookingId) {
-        java.util.Optional<com.cinebook.backend.modules.promos.entity.PromoUsage> usageOpt = promoUsageRepository.findByBookingId(bookingId);
+        java.util.Optional<com.cinebook.backend.modules.promos.entity.PromoUsage> usageOpt = promoUsageRepository
+                .findByBookingId(bookingId);
         if (usageOpt.isPresent()) {
             promoUsageRepository.deleteByBookingId(bookingId);
             promoCodeRepository.findById(promoId).ifPresent(promo -> {
@@ -98,7 +101,8 @@ public class PromoService {
         }
     }
 
-    public org.springframework.data.domain.Page<PromoCode> getAllPromos(org.springframework.data.domain.Pageable pageable) {
+    public org.springframework.data.domain.Page<PromoCode> getAllPromos(
+            org.springframework.data.domain.Pageable pageable) {
         return promoCodeRepository.findAll(pageable);
     }
 
@@ -135,7 +139,7 @@ public class PromoService {
     public void recordUsage(Long promoId, Long userId, Long bookingId) {
         PromoCode promo = promoCodeRepository.findById(promoId)
                 .orElseThrow(() -> AppException.notFound("Promo code not found."));
-        
+
         promo.setUsedCount(promo.getUsedCount() + 1);
         promoCodeRepository.save(promo);
 
@@ -147,7 +151,8 @@ public class PromoService {
     }
 
     public void expireOldPromos() {
-        java.util.List<PromoCode> expiredPromos = promoCodeRepository.findByStatusAndValidUntilBefore(PromoStatus.Active, LocalDateTime.now());
+        java.util.List<PromoCode> expiredPromos = promoCodeRepository
+                .findByStatusAndValidUntilBefore(PromoStatus.Active, LocalDateTime.now());
         for (PromoCode promo : expiredPromos) {
             promo.setStatus(PromoStatus.Inactive);
             promoCodeRepository.save(promo);

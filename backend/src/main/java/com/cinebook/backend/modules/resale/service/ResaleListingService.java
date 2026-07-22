@@ -58,6 +58,11 @@ public class ResaleListingService {
             throw AppException.forbidden("Bạn không phải chủ sở hữu của đơn hàng này");
         }
 
+        int maxAllowedPrice = booking.getTotalAfterTax() * 2;
+        if (request.getAskingPrice() > maxAllowedPrice) {
+            throw AppException.badRequest("Giá bán lại không được vượt quá 200% tổng hóa đơn.");
+        }
+
         Showtime listingShowtime = booking.getShowtime();
         if (listingShowtime.getStartTime().isBefore(LocalDateTime.now().plusHours(2))) {
             throw AppException.badRequest("Không được phép bán lại vé khi chỉ còn chưa đầy 2 giờ trước giờ chiếu.");
@@ -129,7 +134,7 @@ public class ResaleListingService {
     @Transactional
     public ResaleListingResponse updateListing(Long id, com.cinebook.backend.modules.resale.dto.ResaleListingUpdateRequest request) {
         TicketExchangeListing listing = resaleListingRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("Listing not found"));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy tin bán vé"));
 
         if (request.getAskingPrice() != null) {
             listing.setAskingPrice(request.getAskingPrice());
@@ -144,7 +149,7 @@ public class ResaleListingService {
     @Transactional
     public void deleteListing(Long id) {
         TicketExchangeListing listing = resaleListingRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("Listing not found"));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy tin bán vé"));
         listing.setStatus(ListingStatus.Deleted);
         resaleListingRepository.save(listing);
     }

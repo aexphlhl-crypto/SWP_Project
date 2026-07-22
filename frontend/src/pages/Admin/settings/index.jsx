@@ -67,6 +67,25 @@ export default function AdminSettingsPage() {
   }, []);
 
   const handleSave = async () => {
+    // ── Validate ──────────────────────────────────────────
+    if (!cinemaName?.trim()) return toast.error('Tên hệ thống không được để trống');
+    const bp = Number(basePrice);
+    if (isNaN(bp) || bp < 1000) return toast.error('Giá cơ bản phải từ 1,000₫ trở lên');
+    const vat = Number(vatPercent);
+    if (isNaN(vat) || vat < 0 || vat > 100) return toast.error('VAT phải từ 0 đến 100%');
+    const wkd = Number(weekendSurcharge);
+    if (isNaN(wkd) || wkd < 0 || wkd > 200) return toast.error('Phụ phí cuối tuần phải từ 0 đến 200%');
+    const eve = Number(eveningSurcharge);
+    if (isNaN(eve) || eve < 0 || eve > 200) return toast.error('Phụ phí buổi tối phải từ 0 đến 200%');
+    const vipM = Number(seatVipMultiplier);
+    if (isNaN(vipM) || vipM < 1 || vipM > 10) return toast.error('Hệ số ghế VIP phải từ 1.0 đến 10.0');
+    const coupleM = Number(seatCoupleMultiplier);
+    if (isNaN(coupleM) || coupleM < 1 || coupleM > 10) return toast.error('Hệ số ghế Đôi phải từ 1.0 đến 10.0');
+    const hold = Number(holdTime);
+    if (isNaN(hold) || hold < 1 || hold > 60) return toast.error('Thời gian giữ ghế phải từ 1 đến 60 phút');
+    const maxS = Number(maxSeats);
+    if (isNaN(maxS) || maxS < 1 || maxS > 20) return toast.error('Số ghế tối đa mỗi đặt vé phải từ 1 đến 20');
+    // ─────────────────────────────────────────────────────
     try {
       await Promise.all([
         configApi.updateConfig('vat_rate', String(vatPercent / 100)),

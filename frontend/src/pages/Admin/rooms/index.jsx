@@ -118,17 +118,21 @@ export default function AdminRoomsPage() {
   };
 
   const handleSave = async () => {
-    if (!formData.cinemaId) {
-      toast.error("Vui lòng chọn rạp!");
-      return;
-    }
+    // ── Validate ──────────────────────────────────────────
+    if (!formData.cinemaId) return toast.error('Vui lòng chọn rạp!');
+    if (!formData.name?.trim()) return toast.error('Tên phòng chiếu không được để trống');
+    const r = parseInt(formData.rows);
+    const c = parseInt(formData.columns);
+    if (!r || r < 1 || r > 30) return toast.error('Số hàng ghế phải từ 1 đến 30');
+    if (!c || c < 1 || c > 30) return toast.error('Số cột ghế phải từ 1 đến 30');
+    // ─────────────────────────────────────────────────────
 
     setIsSaving(true);
     const payload = {
       cinemaId: parseInt(formData.cinemaId),
       name: formData.name,
-      rows: parseInt(formData.rows) || 10,
-      columns: parseInt(formData.columns) || 10,
+      rows: r,
+      columns: c,
       baseNormalPrice: 0
     };
 
@@ -145,6 +149,7 @@ export default function AdminRoomsPage() {
       setIsSaving(false);
     }
   };
+
 
   return (
     <div className="space-y-6">

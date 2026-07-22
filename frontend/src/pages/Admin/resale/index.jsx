@@ -115,8 +115,6 @@ export default function AdminResalePage() {
     total: listings.length,
     active: listings.filter(l => l.status === 'active').length,
     hidden: listings.filter(l => l.status === 'hidden').length,
-    expired: listings.filter(l => l.status === 'expired').length,
-    sold: listings.filter(l => l.status === 'sold').length,
     deleted: listings.filter(l => l.status === 'deleted').length
   }), [listings]);
 
@@ -184,7 +182,7 @@ export default function AdminResalePage() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[{
           label: 'Tổng',
           value: counts.total,
@@ -197,14 +195,6 @@ export default function AdminResalePage() {
           label: 'Hidden',
           value: counts.hidden,
           color: 'text-orange-400'
-        }, {
-          label: 'Expired',
-          value: counts.expired,
-          color: 'text-muted-foreground'
-        }, {
-          label: 'Sold',
-          value: counts.sold,
-          color: 'text-blue-400'
         }, {
           label: 'Deleted',
           value: counts.deleted,
@@ -251,8 +241,6 @@ export default function AdminResalePage() {
                 <SelectItem value="all">Tất cả trạng thái</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="hidden">Hidden</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
-                <SelectItem value="sold">Sold</SelectItem>
                 <SelectItem value="deleted">Deleted</SelectItem>
               </SelectContent>
             </Select>
@@ -275,6 +263,7 @@ export default function AdminResalePage() {
                   <TableHead className="text-xs">ID</TableHead>
                   <TableHead className="text-xs">Phim</TableHead>
                   <TableHead className="text-xs">Rạp</TableHead>
+                  <TableHead className="text-xs">Ngày chiếu</TableHead>
                   <TableHead className="text-xs">Người bán</TableHead>
                   <TableHead className="text-xs">Ghế</TableHead>
                   <TableHead className="text-xs">Giá bán</TableHead>
@@ -303,6 +292,10 @@ export default function AdminResalePage() {
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground max-w-[120px]">
                         <span className="line-clamp-1">{listing.cinemaName}</span>
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        <p className="font-medium">{listing.showDate ? new Date(listing.showDate).toLocaleDateString('vi-VN') : '—'}</p>
+                        <p className="text-muted-foreground">{listing.showTime || '—'}</p>
                       </TableCell>
                       <TableCell>
                         <div className="text-xs">

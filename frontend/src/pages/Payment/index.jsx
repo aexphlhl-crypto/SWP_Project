@@ -37,7 +37,7 @@ function PaymentContent() {
   const router = useNavigate();
   const [params] = useSearchParams();
   const { isAuthenticated } = useAuth();
-  const { movies, cinemas } = useData();
+  const { movies, cinemas, settings } = useData();
 
   if (!isAuthenticated) {
     return <Navigate to='/login' replace />;
@@ -85,7 +85,7 @@ function PaymentContent() {
         return Math.floor((parsed - Date.now()) / 1000);
       }
     }
-    return 600;
+    return (settings?.holdTime || 10) * 60;
   });
 
   useEffect(() => {

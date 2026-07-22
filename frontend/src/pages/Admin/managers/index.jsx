@@ -53,6 +53,26 @@ export default function AdminManagersPage() {
     if (!formData.fullName || !formData.email || !formData.cinemaId || formData.cinemaId === 'none') {
       return toast.error('Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Email và Rạp chiếu)');
     }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      return toast.error('Định dạng email không hợp lệ');
+    }
+
+    // Validate phone format if provided
+    if (formData.phone) {
+      const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
+      if (!phoneRegex.test(formData.phone)) {
+        return toast.error('Định dạng số điện thoại không hợp lệ');
+      }
+    }
+
+    // Check if cinema already has a manager
+    const existingManager = managers.find(m => m.cinemaId?.toString() === formData.cinemaId.toString());
+    if (existingManager) {
+      return toast.error('Rạp chiếu phim này đã có người quản lý.');
+    }
     try {
       setIsSubmitting(true);
       const payload = { 

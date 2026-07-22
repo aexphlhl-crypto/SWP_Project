@@ -155,6 +155,7 @@ export default function AdminMoviesPage() {
   };
 
   const handleSave = async () => {
+    // ── Validate ──────────────────────────────────────────
     if (!formData.title.trim()) {
       toast.error('Vui lòng nhập tên phim');
       return;
@@ -163,14 +164,25 @@ export default function AdminMoviesPage() {
       toast.error('Vui lòng nhập hoặc tải lên poster');
       return;
     }
-    if (!formData.duration || Number(formData.duration) <= 0) {
-      toast.error('Vui lòng nhập thời lượng phim hợp lệ');
+    const dur = Number(formData.duration);
+    if (!formData.duration || dur <= 0 || dur > 600) {
+      toast.error('Thời lượng phim phải từ 1 đến 600 phút');
       return;
     }
     if (!formData.genreIds || formData.genreIds.length === 0) {
       toast.error('Vui lòng chọn ít nhất một thể loại');
       return;
     }
+    const rat = Number(formData.rating);
+    if (formData.rating !== '' && formData.rating !== undefined && (isNaN(rat) || rat < 0 || rat > 10)) {
+      toast.error('Điểm đánh giá phải từ 0 đến 10');
+      return;
+    }
+    if (formData.trailerUrl?.trim() && !/^https?:\/\/.+/.test(formData.trailerUrl.trim())) {
+      toast.error('URL trailer không hợp lệ (phải bắt đầu bằng http:// hoặc https://)');
+      return;
+    }
+    // ─────────────────────────────────────────────────────
 
     setIsSaving(true);
     const payload = {

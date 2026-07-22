@@ -63,7 +63,7 @@ public class BookingService {
         int ticketTotal = 0;
         for (Long seatId : seatIds) {
             Seat seat = seatRepository.findById(seatId)
-                    .orElseThrow(() -> AppException.notFound("Seat not found: " + seatId));
+                    .orElseThrow(() -> AppException.notFound("Không tìm thấy ghế: " + seatId));
             
             int seatPrice;
             BigDecimal basePrice = systemConfigService.getBasePrice();
@@ -123,7 +123,7 @@ public class BookingService {
         if (fnbItems != null && !fnbItems.isEmpty()) {
             for (FnBItemRequest fnbReq : fnbItems) {
                 FnBProduct product = fnbProductRepository.findById(fnbReq.getProductId())
-                        .orElseThrow(() -> AppException.notFound("F&B product not found: " + fnbReq.getProductId()));
+                        .orElseThrow(() -> AppException.notFound("Không tìm thấy đồ ăn/nước uống: " + fnbReq.getProductId()));
                 fnbTotal += (product.getPrice() * fnbReq.getQuantity());
             }
         }
@@ -171,10 +171,10 @@ public class BookingService {
     @Transactional
     public Booking createBooking(Long customerId, Long showtimeId, List<Long> seatIds, List<FnBItemRequest> fnbItems, String promoCode) {
         User customer = userRepository.findById(customerId)
-                .orElseThrow(() -> AppException.notFound("Không tìm thấy khách hàng."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy thông tin khách hàng."));
 
         Showtime showtime = showtimeRepository.findById(showtimeId)
-                .orElseThrow(() -> AppException.notFound("Showtime not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy suất chiếu."));
                 
         Room room = showtime.getRoom();
 
@@ -198,7 +198,7 @@ public class BookingService {
 
         for (Long seatId : seatIds) {
             Seat seat = seatRepository.findById(seatId)
-                    .orElseThrow(() -> AppException.notFound("Seat not found: " + seatId));
+                    .orElseThrow(() -> AppException.notFound("Không tìm thấy ghế: " + seatId));
             
             int seatPrice;
             BigDecimal basePrice = systemConfigService.getBasePrice();
@@ -279,7 +279,7 @@ public class BookingService {
             List<FnBOrderItem> fnbOrderItems = new ArrayList<>();
             for (FnBItemRequest fnbReq : fnbItems) {
                 FnBProduct product = fnbProductRepository.findById(fnbReq.getProductId())
-                        .orElseThrow(() -> AppException.notFound("F&B product not found: " + fnbReq.getProductId()));
+                        .orElseThrow(() -> AppException.notFound("Không tìm thấy đồ ăn/nước uống: " + fnbReq.getProductId()));
                 
                 FnBOrderItem fnbOrderItem = new FnBOrderItem();
                 fnbOrderItem.setBookingId(savedBooking.getId());
@@ -331,7 +331,7 @@ public class BookingService {
             } catch (AppException e) {
                 throw e;
             } catch (Exception e) {
-                throw AppException.badRequest("Invalid promo code: " + e.getMessage());
+                throw AppException.badRequest("Mã khuyến mãi không hợp lệ: " + e.getMessage());
             }
         }
 
@@ -423,7 +423,7 @@ public class BookingService {
 
     public com.cinebook.backend.modules.bookings.dto.BookingAdminDto updateBookingStatus(Long id, BookingStatus status) {
         Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("Booking not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy đơn hàng."));
         booking.setStatus(status);
         booking = bookingRepository.save(booking);
 
@@ -523,7 +523,7 @@ public class BookingService {
     }
     public com.cinebook.backend.modules.bookings.dto.MyBookingDto getBookingById(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> AppException.notFound("Booking not found: " + bookingId));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy đơn hàng: " + bookingId));
 
         List<BookingSeat> seats = bookingSeatRepository.findByBooking_Id(booking.getId());
         String seatNames = seats.stream()
@@ -594,7 +594,7 @@ public class BookingService {
             if (isScheduleManager) {
                 String email = auth.getName();
                 com.cinebook.backend.modules.users.User user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                        .orElseThrow(() -> AppException.notFound("User not found."));
+                        .orElseThrow(() -> AppException.notFound("Không tìm thấy người dùng."));
                 if (user.getCinema() != null) {
                     bookings = bookingRepository.findByShowtimeCinemaCinemaIdOrderByCreatedAtDesc(user.getCinema().getCinemaId());
                 } else {

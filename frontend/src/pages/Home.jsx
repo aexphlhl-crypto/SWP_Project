@@ -6,14 +6,14 @@ import { Badge } from '@/components/ui/badge'
 import { useData } from '@/contexts/data-context'
 import { MovieCard } from '@/components/movies/movie-card'
 import newsApi from '@/api/newsApi'
-import { 
-  Play, 
-  ArrowRight, 
-  Star, 
-  ChevronRight, 
-  MapPin, 
-  Calendar as CalendarIcon, 
-  Film 
+import {
+  Play,
+  ArrowRight,
+  Star,
+  ChevronRight,
+  MapPin,
+  Calendar as CalendarIcon,
+  Film
 } from 'lucide-react'
 
 const dummyMovies = [
@@ -173,10 +173,10 @@ export default function HomePage() {
       const d = new Date()
       d.setDate(d.getDate() + i)
       const dateString = d.toISOString().split('T')[0]
-      const label = i === 0 
-        ? 'Hôm nay' 
-        : i === 1 
-          ? 'Ngày mai' 
+      const label = i === 0
+        ? 'Hôm nay'
+        : i === 1
+          ? 'Ngày mai'
           : d.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' })
       days.push({ value: dateString, label })
     }
@@ -290,7 +290,7 @@ export default function HomePage() {
 
       {/* ── Cinema & Date Quick Filter (Lọc rạp & suất chiếu nhanh) ── */}
       <section className="relative z-20 px-4 container mx-auto max-w-[1400px]">
-        <form 
+        <form
           onSubmit={handleQuickBookSubmit}
           className="bg-card/85 backdrop-blur-lg border border-border shadow-2xl rounded-2xl p-4 md:p-6 -mt-12 lg:-mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end"
         >
@@ -366,8 +366,8 @@ export default function HomePage() {
           </div>
 
           {/* Quick Book Button */}
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={!selectedMovie}
             className="w-full bg-primary hover:bg-primary/95 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-bold h-11 rounded-xl shadow-lg shadow-primary/10 transition-colors"
           >
@@ -440,7 +440,7 @@ export default function HomePage() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/45 to-transparent" />
                       </div>
-                      
+
                       {/* Featured text content */}
                       <div className="relative z-10 space-y-3">
                         <span className="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold tracking-wider uppercase bg-primary text-primary-foreground">
