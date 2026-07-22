@@ -171,15 +171,22 @@ public class DashboardService {
         List<BookingStatus> validStatuses = Arrays.asList(BookingStatus.Confirmed, BookingStatus.CheckedIn);
         List<Booking> bookings = bookingRepository.findByStatusInOrderByCreatedAtDesc(validStatuses);
 
-        Map<String, Integer> genreCounts = new HashMap<>();
+        // Use double to accumulate fractional tickets per genre
+        Map<String, Double> genreCounts = new HashMap<>();
         int totalTickets = 0;
 
         for (Booking b : bookings) {
-            if (b.getShowtime() != null && b.getShowtime().getMovie() != null && b.getShowtime().getMovie().getGenres() != null) {
+            if (b.getShowtime() != null && b.getShowtime().getMovie() != null
+                    && b.getShowtime().getMovie().getGenres() != null
+                    && !b.getShowtime().getMovie().getGenres().isEmpty()) {
                 int tickets = bookingSeatRepository.countByBooking_Id(b.getId());
                 totalTickets += tickets;
-                for (Genre g : b.getShowtime().getMovie().getGenres()) {
-                    genreCounts.put(g.getName(), genreCounts.getOrDefault(g.getName(), 0) + tickets);
+                List<Genre> genres = new ArrayList<>(b.getShowtime().getMovie().getGenres());
+                // Distribute tickets evenly across all genres of this movie
+                // so that sum of genre counts == totalTickets (no double-counting)
+                double ticketsPerGenre = (double) tickets / genres.size();
+                for (Genre g : genres) {
+                    genreCounts.merge(g.getName(), ticketsPerGenre, Double::sum);
                 }
             }
         }
@@ -188,15 +195,19 @@ public class DashboardService {
         List<GenreChartResponse> result = new ArrayList<>();
         int colorIdx = 0;
 
-        for (Map.Entry<String, Integer> entry : genreCounts.entrySet()) {
-            int percentage = totalTickets > 0 ? (int) Math.round((double) entry.getValue() * 100 / totalTickets) : 0;
+        for (Map.Entry<String, Double> entry : genreCounts.entrySet()) {
+            int percentage = totalTickets > 0
+                    ? (int) Math.round(entry.getValue() * 100.0 / totalTickets)
+                    : 0;
             result.add(new GenreChartResponse(entry.getKey(), percentage, colors.get(colorIdx % colors.size())));
             colorIdx++;
         }
 
         result.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
-        return result.stream().limit(5).collect(Collectors.toList());
+        return result.stream().limit(7).collect(Collectors.toList());
     }
+
+
 
     public List<CinemaChartResponse> getCinemaChart() {
         List<BookingStatus> validStatuses = Arrays.asList(BookingStatus.Confirmed, BookingStatus.CheckedIn);

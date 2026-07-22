@@ -352,17 +352,6 @@ export default function ResaleTicketPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full sm:w-[180px] h-10 bg-muted border-input rounded-xl text-xs">
-                  <SelectValue placeholder="Sắp xếp" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border-border">
-                  <SelectItem value="newest">Mới nhất</SelectItem>
-                  <SelectItem value="price_asc">Giá rẻ nhất</SelectItem>
-                  <SelectItem value="price_desc">Giá cao nhất</SelectItem>
-                </SelectContent>
-              </Select>
-
               {hasFilters && (
                 <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground hover:text-foreground h-10 rounded-xl gap-2 text-xs">
                   <RefreshCw className="w-3.5 h-3.5" /> Xóa bộ lọc

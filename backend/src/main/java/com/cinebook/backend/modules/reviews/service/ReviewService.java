@@ -32,13 +32,16 @@ public class ReviewService {
             throw AppException.badRequest("Suất chiếu chưa kết thúc. Bạn chỉ có thể đánh giá sau khi suất chiếu hoàn tất.");
         }
 
-        java.util.Optional<Review> existingReview = repository.findByBookingIdAndCustomerId(bookingId, customerId);
+        // Check by (customerId, movieId) — this matches the DB unique constraint uq_review_customer_movie
+        java.util.Optional<Review> existingReview = repository.findByCustomerIdAndMovieId(customerId, movieId);
 
         Review review;
         if (existingReview.isPresent()) {
+            // Update existing review instead of inserting a duplicate
             review = existingReview.get();
             review.setRating(rating);
             review.setComment(comment);
+            review.setBookingId(bookingId);
         } else {
             review = Review.builder()
                     .customerId(customerId)
@@ -49,11 +52,12 @@ public class ReviewService {
                     .status(ReviewStatus.Active)
                     .build();
         }
-        
+
         Review savedReview = repository.save(review);
         updateMovieRating(movieId);
         return savedReview;
     }
+
 
     private void updateMovieRating(Long movieId) {
         List<Review> reviews = repository.findByMovieIdOrderByCreatedAtDesc(movieId).stream()
