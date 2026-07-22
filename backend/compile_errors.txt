@@ -1,0 +1,627 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------------< com.cinebook:backend >------------------------
+[INFO] Building CineBook Backend 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ backend ---
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] Copying 19 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 164 source files with javac [debug parameters release 17] to target\classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/showtimes/dto/ShowtimeDto.java:[9,8] duplicate class: com.cinebook.backend.modules.showtimes.dto.ShowtimeDto
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/showtimes/dto/ShowtimeRequest.java:[7,8] duplicate class: com.cinebook.backend.modules.showtimes.dto.ShowtimeRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/common/exception/GlobalExceptionHandler.java:[28,40] cannot find symbol
+  symbol:   method getStatus()
+  location: variable ex of type com.cinebook.backend.common.exception.AppException
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/common/exception/GlobalExceptionHandler.java:[28,79] cannot find symbol
+  symbol:   method getCode()
+  location: variable ex of type com.cinebook.backend.common.exception.AppException
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/common/exception/GlobalExceptionHandler.java:[45,9] cannot find symbol
+  symbol:   variable log
+  location: class com.cinebook.backend.common.exception.GlobalExceptionHandler
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/common/exception/GlobalExceptionHandler.java:[52,9] cannot find symbol
+  symbol:   variable log
+  location: class com.cinebook.backend.common.exception.GlobalExceptionHandler
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/JwtAuthFilter.java:[41,21] cannot find symbol
+  symbol:   variable log
+  location: class com.cinebook.backend.security.JwtAuthFilter
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/JwtAuthFilter.java:[52,21] cannot find symbol
+  symbol:   variable log
+  location: class com.cinebook.backend.security.JwtAuthFilter
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/JwtUtil.java:[73,13] cannot find symbol
+  symbol:   variable log
+  location: class com.cinebook.backend.security.JwtUtil
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/UserDetailsServiceImpl.java:[38,36] cannot find symbol
+  symbol:   method getLockedUntil()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/UserDetailsServiceImpl.java:[38,69] cannot find symbol
+  symbol:   method getLockedUntil()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/UserDetailsServiceImpl.java:[35,35] cannot find symbol
+  symbol:   method getEmail()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/UserDetailsServiceImpl.java:[36,31] cannot find symbol
+  symbol:   method getPasswordHash()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/UserDetailsServiceImpl.java:[37,79] cannot find symbol
+  symbol:   method getRole()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthController.java:[47,65] cannot find symbol
+  symbol:   method getRefreshToken()
+  location: variable request of type @jakarta.validation.Valid com.cinebook.backend.modules.auth.dto.RefreshTokenRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthController.java:[54,53] cannot find symbol
+  symbol:   method getRefreshToken()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.RefreshTokenRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthController.java:[70,49] constructor VerifyForgotOtpResponse in class com.cinebook.backend.modules.auth.dto.VerifyForgotOtpResponse cannot be applied to given types;
+  required: no arguments
+  found:    java.lang.String
+  reason: actual and formal argument lists differ in length
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthController.java:[109,64] cannot find symbol
+  symbol:   method getIdToken()
+  location: variable request of type @jakarta.validation.Valid com.cinebook.backend.modules.auth.dto.GoogleLoginRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[61,67] cannot find symbol
+  symbol:   method getEmail()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[68,76] cannot find symbol
+  symbol:   method getEmail()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[71,40] cannot find symbol
+  symbol:   method getFullName()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[72,37] cannot find symbol
+  symbol:   method getEmail()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[73,67] cannot find symbol
+  symbol:   method getPassword()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[74,37] cannot find symbol
+  symbol:   method getPhone()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[75,43] cannot find symbol
+  symbol:   method getDateOfBirth()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[76,20] cannot find symbol
+  symbol:   method setOtpCode(java.lang.String)
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[77,20] cannot find symbol
+  symbol:   method setOtpExpiresAt(java.time.LocalDateTime)
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[78,20] cannot find symbol
+  symbol:   method setOtpRetryCount(int)
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[82,53] cannot find symbol
+  symbol:   method getEmail()
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[83,9] cannot find symbol
+  symbol:   variable log
+  location: class com.cinebook.backend.modules.auth.AuthService
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[83,55] cannot find symbol
+  symbol:   method getEmail()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[90,76] cannot find symbol
+  symbol:   method getEmail()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.VerifyOtpRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[93,24] cannot find symbol
+  symbol:   method getOtpExpiresAt()
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[96,24] cannot find symbol
+  symbol:   method getOtpRetryCount()
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[100,45] cannot find symbol
+  symbol:   method getOtp()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.VerifyOtpRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[100,67] cannot find symbol
+  symbol:   method getOtpCode()
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[101,53] cannot find symbol
+  symbol:   method getOtpRetryCount()
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[104,88] cannot find symbol
+  symbol:   method getOtpRetryCount()
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[108,25] cannot find symbol
+  symbol:   method builder()
+  location: class com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[109,38] cannot find symbol
+  symbol:   method getFullName()
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[110,35] cannot find symbol
+  symbol:   method getEmail()
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[111,42] cannot find symbol
+  symbol:   method getPasswordHash()
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[112,35] cannot find symbol
+  symbol:   method getPhone()
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[113,41] cannot find symbol
+  symbol:   method getDateOfBirth()
+  location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[127,73] cannot find symbol
+  symbol:   method getEmail()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.LoginRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[131,17] cannot find symbol
+  symbol:   method getLockedUntil()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[131,50] cannot find symbol
+  symbol:   method getLockedUntil()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[137,17] cannot find symbol
+  symbol:   method getStatus()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[140,17] cannot find symbol
+  symbol:   method getStatus()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[145,45] cannot find symbol
+  symbol:   method getPassword()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.LoginRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[145,65] cannot find symbol
+  symbol:   method getPasswordHash()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[146,32] cannot find symbol
+  symbol:   method getFailedLoginAttempts()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[147,17] cannot find symbol
+  symbol:   method setFailedLoginAttempts(int)
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[149,21] cannot find symbol
+  symbol:   method setLockedUntil(java.time.LocalDateTime)
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[158,13] cannot find symbol
+  symbol:   method setFailedLoginAttempts(int)
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[159,13] cannot find symbol
+  symbol:   method setLockedUntil(<nulltype>)
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[160,13] cannot find symbol
+  symbol:   method setLastLoginAt(java.time.LocalDateTime)
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[172,25] cannot find symbol
+  symbol:   method getExpiresAt()
+  location: variable refreshToken of type com.cinebook.backend.modules.auth.entity.RefreshToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[173,25] cannot find symbol
+  symbol:   method setRevoked(boolean)
+  location: variable refreshToken of type com.cinebook.backend.modules.auth.entity.RefreshToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[179,21] cannot find symbol
+  symbol:   method setRevoked(boolean)
+  location: variable refreshToken of type com.cinebook.backend.modules.auth.entity.RefreshToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[182,33] cannot find symbol
+  symbol:   method getUser()
+  location: variable refreshToken of type com.cinebook.backend.modules.auth.entity.RefreshToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[192,15] cannot find symbol
+  symbol:   method setRevoked(boolean)
+  location: variable rt of type com.cinebook.backend.modules.auth.entity.RefreshToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[199,73] cannot find symbol
+  symbol:   method getEmail()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.ForgotPasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[205,47] cannot find symbol
+  symbol:   method getEmail()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[206,9] cannot find symbol
+  symbol:   variable log
+  location: class com.cinebook.backend.modules.auth.AuthService
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[206,70] cannot find symbol
+  symbol:   method getEmail()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.ForgotPasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[211,73] cannot find symbol
+  symbol:   method getEmail()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.VerifyForgotOtpRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[217,21] cannot find symbol
+  symbol:   method getExpiresAt()
+  location: variable otpToken of type com.cinebook.backend.modules.auth.entity.OtpToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[221,21] cannot find symbol
+  symbol:   method getRetryCount()
+  location: variable otpToken of type com.cinebook.backend.modules.auth.entity.OtpToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[225,45] cannot find symbol
+  symbol:   method getOtpCode()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.VerifyForgotOtpRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[225,68] cannot find symbol
+  symbol:   method getTokenValue()
+  location: variable otpToken of type com.cinebook.backend.modules.auth.entity.OtpToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[226,44] cannot find symbol
+  symbol:   method getRetryCount()
+  location: variable otpToken of type com.cinebook.backend.modules.auth.entity.OtpToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[228,107] cannot find symbol
+  symbol:   method getRetryCount()
+  location: variable otpToken of type com.cinebook.backend.modules.auth.entity.OtpToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[236,55] cannot find symbol
+  symbol:   method getEmail()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[243,48] cannot find symbol
+  symbol:   method getToken()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.ResetPasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[251,61] cannot find symbol
+  symbol:   method getEmail()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.ResetPasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[255,73] cannot find symbol
+  symbol:   method getEmail()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.ResetPasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[258,60] cannot find symbol
+  symbol:   method getNewPassword()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.ResetPasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[270,45] cannot find symbol
+  symbol:   method getCurrentPassword()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.ChangePasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[270,72] cannot find symbol
+  symbol:   method getPasswordHash()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[273,44] cannot find symbol
+  symbol:   method getNewPassword()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.ChangePasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[273,67] cannot find symbol
+  symbol:   method getPasswordHash()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[276,60] cannot find symbol
+  symbol:   method getNewPassword()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.ChangePasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[287,33] cannot find symbol
+  symbol:   method getFullName()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.UpdateProfileRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[288,30] cannot find symbol
+  symbol:   method getPhone()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.UpdateProfileRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[289,36] cannot find symbol
+  symbol:   method getDateOfBirth()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.UpdateProfileRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[290,32] cannot find symbol
+  symbol:   method getAddress()
+  location: variable request of type com.cinebook.backend.modules.auth.dto.UpdateProfileRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[293,37] cannot find symbol
+  symbol:   method builder()
+  location: class com.cinebook.backend.modules.auth.dto.AuthResponse.UserInfo
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[294,29] cannot find symbol
+  symbol:   method getUserId()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[295,31] cannot find symbol
+  symbol:   method getFullName()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[296,28] cannot find symbol
+  symbol:   method getEmail()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[297,27] cannot find symbol
+  symbol:   method getRole()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[298,32] cannot find symbol
+  symbol:   method getAvatarUrl()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[299,28] cannot find symbol
+  symbol:   method getPhone()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[300,34] cannot find symbol
+  symbol:   method getDateOfBirth()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[301,30] cannot find symbol
+  symbol:   method getAddress()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[302,31] cannot find symbol
+  symbol:   method getCinema()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[302,58] cannot find symbol
+  symbol:   method getCinema()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[309,37] cannot find symbol
+  symbol:   method builder()
+  location: class com.cinebook.backend.modules.auth.dto.AuthResponse.UserInfo
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[310,29] cannot find symbol
+  symbol:   method getUserId()
+  location: variable user of type com.cinebook.backend.modules.users.User
+[INFO] 100 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.238 s
+[INFO] Finished at: 2026-07-22T08:24:21+07:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/showtimes/dto/ShowtimeDto.java:[9,8] duplicate class: com.cinebook.backend.modules.showtimes.dto.ShowtimeDto
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/showtimes/dto/ShowtimeRequest.java:[7,8] duplicate class: com.cinebook.backend.modules.showtimes.dto.ShowtimeRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/common/exception/GlobalExceptionHandler.java:[28,40] cannot find symbol
+[ERROR]   symbol:   method getStatus()
+[ERROR]   location: variable ex of type com.cinebook.backend.common.exception.AppException
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/common/exception/GlobalExceptionHandler.java:[28,79] cannot find symbol
+[ERROR]   symbol:   method getCode()
+[ERROR]   location: variable ex of type com.cinebook.backend.common.exception.AppException
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/common/exception/GlobalExceptionHandler.java:[45,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.cinebook.backend.common.exception.GlobalExceptionHandler
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/common/exception/GlobalExceptionHandler.java:[52,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.cinebook.backend.common.exception.GlobalExceptionHandler
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/JwtAuthFilter.java:[41,21] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.cinebook.backend.security.JwtAuthFilter
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/JwtAuthFilter.java:[52,21] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.cinebook.backend.security.JwtAuthFilter
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/JwtUtil.java:[73,13] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.cinebook.backend.security.JwtUtil
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/UserDetailsServiceImpl.java:[38,36] cannot find symbol
+[ERROR]   symbol:   method getLockedUntil()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/UserDetailsServiceImpl.java:[38,69] cannot find symbol
+[ERROR]   symbol:   method getLockedUntil()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/UserDetailsServiceImpl.java:[35,35] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/UserDetailsServiceImpl.java:[36,31] cannot find symbol
+[ERROR]   symbol:   method getPasswordHash()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/security/UserDetailsServiceImpl.java:[37,79] cannot find symbol
+[ERROR]   symbol:   method getRole()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthController.java:[47,65] cannot find symbol
+[ERROR]   symbol:   method getRefreshToken()
+[ERROR]   location: variable request of type @jakarta.validation.Valid com.cinebook.backend.modules.auth.dto.RefreshTokenRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthController.java:[54,53] cannot find symbol
+[ERROR]   symbol:   method getRefreshToken()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.RefreshTokenRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthController.java:[70,49] constructor VerifyForgotOtpResponse in class com.cinebook.backend.modules.auth.dto.VerifyForgotOtpResponse cannot be applied to given types;
+[ERROR]   required: no arguments
+[ERROR]   found:    java.lang.String
+[ERROR]   reason: actual and formal argument lists differ in length
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthController.java:[109,64] cannot find symbol
+[ERROR]   symbol:   method getIdToken()
+[ERROR]   location: variable request of type @jakarta.validation.Valid com.cinebook.backend.modules.auth.dto.GoogleLoginRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[61,67] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[68,76] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[71,40] cannot find symbol
+[ERROR]   symbol:   method getFullName()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[72,37] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[73,67] cannot find symbol
+[ERROR]   symbol:   method getPassword()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[74,37] cannot find symbol
+[ERROR]   symbol:   method getPhone()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[75,43] cannot find symbol
+[ERROR]   symbol:   method getDateOfBirth()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[76,20] cannot find symbol
+[ERROR]   symbol:   method setOtpCode(java.lang.String)
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[77,20] cannot find symbol
+[ERROR]   symbol:   method setOtpExpiresAt(java.time.LocalDateTime)
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[78,20] cannot find symbol
+[ERROR]   symbol:   method setOtpRetryCount(int)
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[82,53] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[83,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.cinebook.backend.modules.auth.AuthService
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[83,55] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.RegisterRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[90,76] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.VerifyOtpRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[93,24] cannot find symbol
+[ERROR]   symbol:   method getOtpExpiresAt()
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[96,24] cannot find symbol
+[ERROR]   symbol:   method getOtpRetryCount()
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[100,45] cannot find symbol
+[ERROR]   symbol:   method getOtp()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.VerifyOtpRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[100,67] cannot find symbol
+[ERROR]   symbol:   method getOtpCode()
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[101,53] cannot find symbol
+[ERROR]   symbol:   method getOtpRetryCount()
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[104,88] cannot find symbol
+[ERROR]   symbol:   method getOtpRetryCount()
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[108,25] cannot find symbol
+[ERROR]   symbol:   method builder()
+[ERROR]   location: class com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[109,38] cannot find symbol
+[ERROR]   symbol:   method getFullName()
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[110,35] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[111,42] cannot find symbol
+[ERROR]   symbol:   method getPasswordHash()
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[112,35] cannot find symbol
+[ERROR]   symbol:   method getPhone()
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[113,41] cannot find symbol
+[ERROR]   symbol:   method getDateOfBirth()
+[ERROR]   location: variable pendingUser of type com.cinebook.backend.modules.auth.entity.PendingUser
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[127,73] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.LoginRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[131,17] cannot find symbol
+[ERROR]   symbol:   method getLockedUntil()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[131,50] cannot find symbol
+[ERROR]   symbol:   method getLockedUntil()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[137,17] cannot find symbol
+[ERROR]   symbol:   method getStatus()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[140,17] cannot find symbol
+[ERROR]   symbol:   method getStatus()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[145,45] cannot find symbol
+[ERROR]   symbol:   method getPassword()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.LoginRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[145,65] cannot find symbol
+[ERROR]   symbol:   method getPasswordHash()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[146,32] cannot find symbol
+[ERROR]   symbol:   method getFailedLoginAttempts()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[147,17] cannot find symbol
+[ERROR]   symbol:   method setFailedLoginAttempts(int)
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[149,21] cannot find symbol
+[ERROR]   symbol:   method setLockedUntil(java.time.LocalDateTime)
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[158,13] cannot find symbol
+[ERROR]   symbol:   method setFailedLoginAttempts(int)
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[159,13] cannot find symbol
+[ERROR]   symbol:   method setLockedUntil(<nulltype>)
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[160,13] cannot find symbol
+[ERROR]   symbol:   method setLastLoginAt(java.time.LocalDateTime)
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[172,25] cannot find symbol
+[ERROR]   symbol:   method getExpiresAt()
+[ERROR]   location: variable refreshToken of type com.cinebook.backend.modules.auth.entity.RefreshToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[173,25] cannot find symbol
+[ERROR]   symbol:   method setRevoked(boolean)
+[ERROR]   location: variable refreshToken of type com.cinebook.backend.modules.auth.entity.RefreshToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[179,21] cannot find symbol
+[ERROR]   symbol:   method setRevoked(boolean)
+[ERROR]   location: variable refreshToken of type com.cinebook.backend.modules.auth.entity.RefreshToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[182,33] cannot find symbol
+[ERROR]   symbol:   method getUser()
+[ERROR]   location: variable refreshToken of type com.cinebook.backend.modules.auth.entity.RefreshToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[192,15] cannot find symbol
+[ERROR]   symbol:   method setRevoked(boolean)
+[ERROR]   location: variable rt of type com.cinebook.backend.modules.auth.entity.RefreshToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[199,73] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.ForgotPasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[205,47] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[206,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.cinebook.backend.modules.auth.AuthService
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[206,70] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.ForgotPasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[211,73] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.VerifyForgotOtpRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[217,21] cannot find symbol
+[ERROR]   symbol:   method getExpiresAt()
+[ERROR]   location: variable otpToken of type com.cinebook.backend.modules.auth.entity.OtpToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[221,21] cannot find symbol
+[ERROR]   symbol:   method getRetryCount()
+[ERROR]   location: variable otpToken of type com.cinebook.backend.modules.auth.entity.OtpToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[225,45] cannot find symbol
+[ERROR]   symbol:   method getOtpCode()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.VerifyForgotOtpRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[225,68] cannot find symbol
+[ERROR]   symbol:   method getTokenValue()
+[ERROR]   location: variable otpToken of type com.cinebook.backend.modules.auth.entity.OtpToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[226,44] cannot find symbol
+[ERROR]   symbol:   method getRetryCount()
+[ERROR]   location: variable otpToken of type com.cinebook.backend.modules.auth.entity.OtpToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[228,107] cannot find symbol
+[ERROR]   symbol:   method getRetryCount()
+[ERROR]   location: variable otpToken of type com.cinebook.backend.modules.auth.entity.OtpToken
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[236,55] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[243,48] cannot find symbol
+[ERROR]   symbol:   method getToken()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.ResetPasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[251,61] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.ResetPasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[255,73] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.ResetPasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[258,60] cannot find symbol
+[ERROR]   symbol:   method getNewPassword()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.ResetPasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[270,45] cannot find symbol
+[ERROR]   symbol:   method getCurrentPassword()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.ChangePasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[270,72] cannot find symbol
+[ERROR]   symbol:   method getPasswordHash()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[273,44] cannot find symbol
+[ERROR]   symbol:   method getNewPassword()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.ChangePasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[273,67] cannot find symbol
+[ERROR]   symbol:   method getPasswordHash()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[276,60] cannot find symbol
+[ERROR]   symbol:   method getNewPassword()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.ChangePasswordRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[287,33] cannot find symbol
+[ERROR]   symbol:   method getFullName()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.UpdateProfileRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[288,30] cannot find symbol
+[ERROR]   symbol:   method getPhone()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.UpdateProfileRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[289,36] cannot find symbol
+[ERROR]   symbol:   method getDateOfBirth()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.UpdateProfileRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[290,32] cannot find symbol
+[ERROR]   symbol:   method getAddress()
+[ERROR]   location: variable request of type com.cinebook.backend.modules.auth.dto.UpdateProfileRequest
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[293,37] cannot find symbol
+[ERROR]   symbol:   method builder()
+[ERROR]   location: class com.cinebook.backend.modules.auth.dto.AuthResponse.UserInfo
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[294,29] cannot find symbol
+[ERROR]   symbol:   method getUserId()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[295,31] cannot find symbol
+[ERROR]   symbol:   method getFullName()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[296,28] cannot find symbol
+[ERROR]   symbol:   method getEmail()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[297,27] cannot find symbol
+[ERROR]   symbol:   method getRole()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[298,32] cannot find symbol
+[ERROR]   symbol:   method getAvatarUrl()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[299,28] cannot find symbol
+[ERROR]   symbol:   method getPhone()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[300,34] cannot find symbol
+[ERROR]   symbol:   method getDateOfBirth()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[301,30] cannot find symbol
+[ERROR]   symbol:   method getAddress()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[302,31] cannot find symbol
+[ERROR]   symbol:   method getCinema()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[302,58] cannot find symbol
+[ERROR]   symbol:   method getCinema()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[309,37] cannot find symbol
+[ERROR]   symbol:   method builder()
+[ERROR]   location: class com.cinebook.backend.modules.auth.dto.AuthResponse.UserInfo
+[ERROR] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/auth/AuthService.java:[310,29] cannot find symbol
+[ERROR]   symbol:   method getUserId()
+[ERROR]   location: variable user of type com.cinebook.backend.modules.users.User
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

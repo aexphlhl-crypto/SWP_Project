@@ -1,0 +1,23 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------------< com.cinebook:backend >------------------------
+[INFO] Building CineBook Backend 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ backend ---
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] Copying 19 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 162 source files with javac [debug parameters release 17] to target\classes
+[WARNING] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/resale/entity/TicketExchangeListing.java:[43,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/promos/entity/PromoCode.java:[42,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/Dell/Downloads/SWP_Project-develop (1)/SWP_Project-develop/backend/src/main/java/com/cinebook/backend/modules/rooms/entity/Room.java:[48,24] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.180 s
+[INFO] Finished at: 2026-07-22T08:25:55+07:00
+[INFO] ------------------------------------------------------------------------
