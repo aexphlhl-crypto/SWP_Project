@@ -17,8 +17,10 @@ public class FnBProductController {
     private final FnBProductService service;
 
     @GetMapping
-    public ApiResponse<Page<FnBProduct>> getAll(Pageable pageable) {
-        return ApiResponse.ok(service.getAllProducts(pageable));
+    public ApiResponse<Page<FnBProduct>> getAll(
+            @RequestParam(required = false) Boolean activeOnly,
+            Pageable pageable) {
+        return ApiResponse.ok(service.getAllProducts(pageable, activeOnly));
     }
 
     @GetMapping("/{id}")

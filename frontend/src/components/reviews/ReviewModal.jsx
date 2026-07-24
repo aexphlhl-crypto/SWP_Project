@@ -64,7 +64,7 @@ export function ReviewModal({ isOpen, onClose, booking, onReviewSuccess }) {
       const rawBookingId = extractBookingId(booking.id);
       const res = await reviewApi.createReview({
         customerId: user?.id,
-        movieId: booking?.showtime?.movieId || booking?.movie?.id || booking?.movieId || 1, // Fallback if missing
+        movieId: booking?.movieId || booking?.showtime?.movieId || booking?.movie?.id || 1,
         bookingId: rawBookingId,
         rating,
         comment

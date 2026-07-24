@@ -289,7 +289,7 @@ public class ShowtimeService {
                 .room(room)
                 .startTime(startTime)
                 .endTime(endTime)
-
+                .status(request.getStatus() != null ? request.getStatus() : "Scheduled")
                 .build();
 
         return mapToDto(showtimeRepository.save(showtime));

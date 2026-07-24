@@ -22,13 +22,16 @@ public class ActorService {
 
     public Actor getActorById(Long id) {
         return actorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Actor not found with id: " + id));
+                .orElseThrow(() -> com.cinebook.backend.common.exception.AppException.notFound("Không tìm thấy diễn viên có ID: " + id));
     }
 
     @Transactional
     public Actor createActor(Actor request) {
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw com.cinebook.backend.common.exception.AppException.badRequest("Tên diễn viên không được để trống.");
+        }
         Actor actor = Actor.builder()
-                .name(request.getName())
+                .name(request.getName().trim())
                 .avatarUrl(request.getAvatarUrl())
                 .build();
         return actorRepository.save(actor);
@@ -36,8 +39,11 @@ public class ActorService {
 
     @Transactional
     public Actor updateActor(Long id, Actor request) {
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw com.cinebook.backend.common.exception.AppException.badRequest("Tên diễn viên không được để trống.");
+        }
         Actor actor = getActorById(id);
-        actor.setName(request.getName());
+        actor.setName(request.getName().trim());
         actor.setAvatarUrl(request.getAvatarUrl());
         return actorRepository.save(actor);
     }

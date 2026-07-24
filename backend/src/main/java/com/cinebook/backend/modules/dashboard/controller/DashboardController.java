@@ -35,20 +35,29 @@ public class DashboardController {
     private final DashboardService dashboardService;
 
     @GetMapping("/kpi")
-    public ApiResponse<KpiResponse> getKpiSummary(@AuthenticationPrincipal UserDetails userDetails) {
-        return ApiResponse.ok(dashboardService.getKpiSummary(userDetails.getUsername()));
+    public ApiResponse<KpiResponse> getKpiSummary(
+            @RequestParam(required = false) Integer year,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ApiResponse.ok(dashboardService.getKpiSummary(userDetails.getUsername(), year));
     }
 
     @GetMapping("/chart/revenue")
-    public ApiResponse<List<ChartResponse>> getRevenueChart(@AuthenticationPrincipal UserDetails userDetails) {
-        return ApiResponse.ok(dashboardService.getRevenueChart(userDetails.getUsername()));
+    public ApiResponse<List<ChartResponse>> getRevenueChart(
+            @RequestParam(required = false) Integer year,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ApiResponse.ok(dashboardService.getRevenueChart(userDetails.getUsername(), year));
     }
 
     @GetMapping("/export/excel")
     @PreAuthorize("hasRole('SystemAdmin')")
-    public ResponseEntity<byte[]> exportRevenueToExcel(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<byte[]> exportRevenueToExcel(
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate,
+            @RequestParam(required = false) Long cinemaId,
+            @RequestParam(required = false) Long movieId,
+            @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            byte[] excelContent = dashboardService.exportRevenueToExcel(userDetails.getUsername());
+            byte[] excelContent = dashboardService.exportRevenueToExcel(userDetails.getUsername(), startDate, endDate, cinemaId, movieId);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"revenue_report.xlsx\"")
                     .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
@@ -74,17 +83,30 @@ public class DashboardController {
     }
 
     @GetMapping("/chart/genre")
-    public ApiResponse<List<GenreChartResponse>> getGenreChart(@AuthenticationPrincipal UserDetails userDetails) {
-        return ApiResponse.ok(dashboardService.getGenreChart(userDetails.getUsername()));
+    public ApiResponse<List<GenreChartResponse>> getGenreChart(
+            @RequestParam(required = false) Integer year,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ApiResponse.ok(dashboardService.getGenreChart(userDetails.getUsername(), year));
     }
 
     @GetMapping("/chart/cinema")
-    public ApiResponse<List<CinemaChartResponse>> getCinemaChart(@AuthenticationPrincipal UserDetails userDetails) {
-        return ApiResponse.ok(dashboardService.getCinemaChart(userDetails.getUsername()));
+    public ApiResponse<List<CinemaChartResponse>> getCinemaChart(
+            @RequestParam(required = false) Integer year,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ApiResponse.ok(dashboardService.getCinemaChart(userDetails.getUsername(), year));
+    }
+
+    @GetMapping("/chart/monthly-tickets")
+    public ApiResponse<List<ChartResponse>> getMonthlyTicketsChart(
+            @RequestParam(required = false) Integer year,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ApiResponse.ok(dashboardService.getMonthlyTicketsChart(userDetails.getUsername(), year));
     }
 
     @GetMapping("/chart/weekday")
-    public ApiResponse<List<WeekdayChartResponse>> getWeekdayChart(@AuthenticationPrincipal UserDetails userDetails) {
-        return ApiResponse.ok(dashboardService.getWeekdayChart(userDetails.getUsername()));
+    public ApiResponse<List<WeekdayChartResponse>> getWeekdayChart(
+            @RequestParam(required = false) Integer weekOffset,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ApiResponse.ok(dashboardService.getWeekdayChart(userDetails.getUsername(), weekOffset));
     }
 }

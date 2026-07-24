@@ -19,32 +19,44 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final com.cinebook.backend.modules.bookings.repository.BookingRepository bookingRepository;
     private final com.cinebook.backend.modules.movies.repository.MovieRepository movieRepository;
+    private final com.cinebook.backend.security.SecurityUtil securityUtil;
 
     public Review createReview(Long customerId, Long movieId, Long bookingId, Integer rating, String comment) {
+        Long authenticatedUserId = securityUtil.getCurrentUserId();
+
         com.cinebook.backend.modules.bookings.entity.Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> AppException.notFound("Không tìm thấy đơn hàng."));
 
-        if (!booking.getCustomer().getUserId().equals(customerId)) {
+        if (!booking.getCustomer().getUserId().equals(authenticatedUserId)) {
             throw AppException.forbidden("Bạn không có quyền đánh giá đơn đặt vé này.");
+        }
+
+        com.cinebook.backend.modules.bookings.entity.BookingStatus status = booking.getStatus();
+        if (status != com.cinebook.backend.modules.bookings.entity.BookingStatus.Confirmed &&
+            status != com.cinebook.backend.modules.bookings.entity.BookingStatus.CheckedIn) {
+            throw AppException.badRequest("Chỉ những đơn hàng đã thanh toán thành công hoặc đã soát vé mới được viết đánh giá.");
         }
 
         if (booking.getShowtime().getEndTime().isAfter(java.time.LocalDateTime.now())) {
             throw AppException.badRequest("Suất chiếu chưa kết thúc. Bạn chỉ có thể đánh giá sau khi suất chiếu hoàn tất.");
         }
 
-        // Check by (customerId, movieId) — this matches the DB unique constraint uq_review_customer_movie
-        java.util.Optional<Review> existingReview = repository.findByCustomerIdAndMovieId(customerId, movieId);
+        // Check by (authenticatedUserId, movieId) — matches DB constraint
+        java.util.Optional<Review> existingReview = repository.findByCustomerIdAndMovieId(authenticatedUserId, movieId);
 
         Review review;
         if (existingReview.isPresent()) {
-            // Update existing review instead of inserting a duplicate
             review = existingReview.get();
+            if (!securityUtil.isCurrentUserAdmin() && review.getCreatedAt() != null &&
+                    java.time.LocalDateTime.now().isAfter(review.getCreatedAt().plusDays(7))) {
+                throw AppException.badRequest("Đã quá thời hạn 7 ngày để chỉnh sửa đánh giá.");
+            }
             review.setRating(rating);
             review.setComment(comment);
             review.setBookingId(bookingId);
         } else {
             review = Review.builder()
-                    .customerId(customerId)
+                    .customerId(authenticatedUserId)
                     .movieId(movieId)
                     .bookingId(bookingId)
                     .rating(rating)
@@ -56,6 +68,24 @@ public class ReviewService {
         Review savedReview = repository.save(review);
         updateMovieRating(movieId);
         return savedReview;
+    }
+
+    public void deleteReview(Long id) {
+        Review review = repository.findById(id).orElseThrow(() -> AppException.notFound("Không tìm thấy đánh giá."));
+        Long authenticatedUserId = securityUtil.getCurrentUserId();
+
+        if (!review.getCustomerId().equals(authenticatedUserId) && !securityUtil.isCurrentUserAdmin()) {
+            throw AppException.forbidden("Bạn không có quyền xóa đánh giá này.");
+        }
+
+        if (!securityUtil.isCurrentUserAdmin() && review.getCreatedAt() != null &&
+                java.time.LocalDateTime.now().isAfter(review.getCreatedAt().plusDays(7))) {
+            throw AppException.badRequest("Đã quá thời hạn 7 ngày để xóa đánh giá.");
+        }
+
+        review.setStatus(ReviewStatus.Deleted);
+        repository.save(review);
+        updateMovieRating(review.getMovieId());
     }
 
 
@@ -95,6 +125,12 @@ public class ReviewService {
     public ReviewDto getReviewByBookingId(Long bookingId) {
         Review review = repository.findByBookingId(bookingId)
                 .orElseThrow(() -> AppException.notFound("Không tìm thấy đánh giá nào cho đơn đặt vé này."));
+
+        Long authenticatedUserId = securityUtil.getCurrentUserId();
+        if (!review.getCustomerId().equals(authenticatedUserId) && !securityUtil.isCurrentUserAdmin()) {
+            throw AppException.forbidden("Bạn không có quyền xem đánh giá này.");
+        }
+
         return mapToDto(review);
     }
 
