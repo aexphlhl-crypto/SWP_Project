@@ -4,8 +4,10 @@ import com.cinebook.backend.common.exception.AppException;
 import com.cinebook.backend.modules.movies.dto.GenreDTO;
 import com.cinebook.backend.modules.movies.entity.Genre;
 import com.cinebook.backend.modules.movies.repository.GenreRepository;
+import com.cinebook.backend.modules.movies.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,6 +16,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GenreService {
     private final GenreRepository genreRepository;
+    private final MovieRepository movieRepository;
 
     public List<GenreDTO> getAllGenres() {
         return genreRepository.findAll().stream()
@@ -27,6 +30,7 @@ public class GenreService {
         return mapToDTO(genre);
     }
 
+    @Transactional
     public GenreDTO createGenre(GenreDTO genreDTO) {
         if (genreRepository.existsByName(genreDTO.getName())) {
             throw AppException.conflict("Genre name already exists.");
@@ -38,6 +42,7 @@ public class GenreService {
         return mapToDTO(savedGenre);
     }
 
+    @Transactional
     public GenreDTO updateGenre(Integer id, GenreDTO genreDTO) {
         Genre genre = genreRepository.findById(id)
                 .orElseThrow(() -> AppException.notFound("Genre not found."));
@@ -52,9 +57,13 @@ public class GenreService {
         return mapToDTO(updatedGenre);
     }
 
+    @Transactional
     public void deleteGenre(Integer id) {
         if (!genreRepository.existsById(id)) {
             throw AppException.notFound("Genre not found.");
+        }
+        if (movieRepository.existsByGenres_GenreId(id)) {
+            throw AppException.badRequest("Không thể xóa thể loại này vì đang có phim thuộc thể loại này.");
         }
         genreRepository.deleteById(id);
     }

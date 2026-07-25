@@ -178,7 +178,7 @@ function BookingContent() {
       seatTotal: seatTotal.toString(),
       vatPercent: (settings?.vatPercent ?? 10).toString()
     });
-    
+
     sessionStorage.setItem('bookingExpiresAt', (Date.now() + timeLeft * 1000).toString());
     if (withConcession && orderItems.length > 0) {
       queryParams.set('concessions', JSON.stringify(orderItems.map(o => ({
@@ -229,7 +229,7 @@ function BookingContent() {
     }
   };
 
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
+  const [timeLeft, setTimeLeft] = useState((settings?.holdTime || 10) * 60);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -238,6 +238,7 @@ function BookingContent() {
   };
 
   useEffect(() => {
+    const holdSeconds = (settings?.holdTime || 10) * 60;
     if (step === 2 && pendingSeats.length > 0) {
       const timer = setInterval(() => {
         setTimeLeft(prev => {
@@ -249,16 +250,16 @@ function BookingContent() {
               variant: 'destructive'
             });
             handleCancelTransaction();
-            return 600;
+            return holdSeconds;
           }
           return prev - 1;
         });
       }, 1000);
       return () => clearInterval(timer);
     } else {
-      setTimeLeft(600);
+      setTimeLeft(holdSeconds);
     }
-  }, [step, pendingSeats]);
+  }, [step, pendingSeats, settings?.holdTime]);
 
   const renderStepper = () => (
     <div className="flex items-center justify-center mb-8 px-4">

@@ -23,6 +23,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     java.util.Optional<Review> findByBookingIdAndCustomerId(Long bookingId, Long customerId);
     
     java.util.Optional<Review> findByCustomerIdAndMovieIdAndBookingId(Long customerId, Long movieId, Long bookingId);
-    
+
+    java.util.Optional<Review> findByCustomerIdAndMovieId(Long customerId, Long movieId);
+
     java.util.Optional<Review> findByBookingId(Long bookingId);
 }

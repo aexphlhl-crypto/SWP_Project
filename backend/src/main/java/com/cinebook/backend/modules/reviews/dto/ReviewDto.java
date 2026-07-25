@@ -14,4 +14,6 @@ public class ReviewDto {
     private String comment;
     private LocalDateTime createdAt;
     private String status;
+    private String movieTitle;
+    private String cinemaName;
 }

@@ -86,6 +86,16 @@ export default function AdminCinemasPage() {
   };
 
   const handleSave = async () => {
+    // ── Validate ──────────────────────────────────────────
+    if (!formData.name?.trim()) return toast.error('Tên rạp không được để trống');
+    if (formData.name.trim().length < 3) return toast.error('Tên rạp phải có ít nhất 3 ký tự');
+    if (!formData.city?.trim()) return toast.error('Thành phố không được để trống');
+    if (!formData.address?.trim()) return toast.error('Địa chỉ không được để trống');
+    if (formData.phone && !/^(0[3|5|7|8|9])+([0-9]{8})$/.test(formData.phone.trim())) {
+      return toast.error('Số điện thoại không hợp lệ (VD: 0901234567)');
+    }
+    // ─────────────────────────────────────────────────────
+
     setIsSaving(true);
     const payload = {
       name: formData.name,
@@ -119,6 +129,7 @@ export default function AdminCinemasPage() {
       setIsSaving(false);
     }
   };
+
 
   const confirmDelete = (id) => {
     setDeletingId(id);

@@ -23,18 +23,14 @@ public class ReviewController {
     @PostMapping
     @PreAuthorize("hasRole('Customer')")
     public ApiResponse<Review> create(@RequestBody ReviewRequest request) {
-        try {
-            Review review = service.createReview(
-                    request.getCustomerId(),
-                    request.getMovieId(),
-                    request.getBookingId(),
-                    request.getRating(),
-                    request.getComment()
-            );
-            return ApiResponse.ok(review);
-        } catch (Exception e) {
-            return ApiResponse.error("BAD_REQUEST", e.getMessage());
-        }
+        Review review = service.createReview(
+                request.getCustomerId(),
+                request.getMovieId(),
+                request.getBookingId(),
+                request.getRating(),
+                request.getComment()
+        );
+        return ApiResponse.ok(review);
     }
 
     @GetMapping("/movie/{movieId}")
@@ -44,17 +40,8 @@ public class ReviewController {
 
     @GetMapping("/booking/{bookingId}")
     @PreAuthorize("hasRole('Customer')")
-    public ApiResponse<ReviewDto> getReviewByBooking(
-            @PathVariable Long bookingId,
-            @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails) {
-        // userDetails.getUsername() is the email, we can use SecurityUtil or assume the service checks the token.
-        // Actually, let's just pass bookingId to service and let it check the currently authenticated user if needed.
-        // Or simpler: just let service return the review for this booking.
-        try {
-            return ApiResponse.ok(service.getReviewByBookingId(bookingId));
-        } catch (Exception e) {
-            return ApiResponse.error("NOT_FOUND", e.getMessage());
-        }
+    public ApiResponse<ReviewDto> getReviewByBooking(@PathVariable Long bookingId) {
+        return ApiResponse.ok(service.getReviewByBookingId(bookingId));
     }
 
     @GetMapping("/admin")
@@ -69,5 +56,12 @@ public class ReviewController {
             @PathVariable Long id,
             @RequestParam ReviewStatus status) {
         return ApiResponse.ok(service.updateReviewStatus(id, status));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('Customer', 'SystemAdmin')")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        service.deleteReview(id);
+        return ApiResponse.ok(null);
     }
 }

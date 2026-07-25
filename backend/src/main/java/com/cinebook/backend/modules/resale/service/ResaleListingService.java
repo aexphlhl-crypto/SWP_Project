@@ -36,6 +36,7 @@ public class ResaleListingService {
     private final BookingSeatRepository bookingSeatRepository;
     private final UserRepository userRepository;
     private final com.cinebook.backend.modules.bookings.repository.FnBOrderItemRepository fnbOrderItemRepository;
+    private final com.cinebook.backend.security.SecurityUtil securityUtil;
 
     public Page<ResaleListingResponse> getAllListings(Pageable pageable) {
         return resaleListingRepository.findAll(pageable).map(this::mapToResponse);
@@ -46,16 +47,48 @@ public class ResaleListingService {
     }
 
     public Page<ResaleListingResponse> getMyListings(Long sellerId, Pageable pageable) {
-        return resaleListingRepository.findBySellerId(sellerId, pageable).map(this::mapToResponse);
+        Long authenticatedUserId = securityUtil.getCurrentUserId();
+        Long targetSellerId = (sellerId != null) ? sellerId : authenticatedUserId;
+        if (!targetSellerId.equals(authenticatedUserId) && !securityUtil.isCurrentUserAdmin()) {
+            throw AppException.forbidden("Bạn không có quyền xem thông tin bán lại của người dùng khác.");
+        }
+        return resaleListingRepository.findBySellerId(targetSellerId, pageable).map(this::mapToResponse);
+    }
+
+    public ResaleListingResponse getListingById(Long id) {
+        TicketExchangeListing listing = resaleListingRepository.findById(id)
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy tin bán vé"));
+
+        if (listing.getStatus() != ListingStatus.Active) {
+            Long authenticatedUserId = null;
+            try {
+                authenticatedUserId = securityUtil.getCurrentUserId();
+            } catch (Exception ignored) {}
+
+            boolean isOwner = authenticatedUserId != null && authenticatedUserId.equals(listing.getSellerId());
+            boolean isAdmin = securityUtil.isCurrentUserAdmin();
+
+            if (!isOwner && !isAdmin) {
+                throw AppException.notFound("Không tìm thấy tin bán vé");
+            }
+        }
+        return mapToResponse(listing);
     }
 
     @Transactional
     public ResaleListingResponse createListing(ResaleListingRequest request) {
+        Long authenticatedUserId = securityUtil.getCurrentUserId();
+
         Booking booking = bookingRepository.findById(request.getBookingId())
                 .orElseThrow(() -> AppException.notFound("Không tìm thấy đơn hàng"));
 
-        if (!booking.getCustomer().getUserId().equals(request.getSellerId())) {
+        if (!booking.getCustomer().getUserId().equals(authenticatedUserId)) {
             throw AppException.forbidden("Bạn không phải chủ sở hữu của đơn hàng này");
+        }
+
+        int maxAllowedPrice = booking.getTotalAfterTax() * 2;
+        if (request.getAskingPrice() > maxAllowedPrice) {
+            throw AppException.badRequest("Giá bán lại không được vượt quá 200% tổng hóa đơn.");
         }
 
         Showtime listingShowtime = booking.getShowtime();
@@ -92,7 +125,7 @@ public class ResaleListingService {
 
         TicketExchangeListing listing = TicketExchangeListing.builder()
                 .bookingId(request.getBookingId())
-                .sellerId(request.getSellerId())
+                .sellerId(authenticatedUserId)
                 .askingPrice(request.getAskingPrice())
                 .note(request.getNote())
                 .phone(request.getPhone())
@@ -129,7 +162,12 @@ public class ResaleListingService {
     @Transactional
     public ResaleListingResponse updateListing(Long id, com.cinebook.backend.modules.resale.dto.ResaleListingUpdateRequest request) {
         TicketExchangeListing listing = resaleListingRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("Listing not found"));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy tin bán vé"));
+
+        Long authenticatedUserId = securityUtil.getCurrentUserId();
+        if (!listing.getSellerId().equals(authenticatedUserId) && !securityUtil.isCurrentUserAdmin()) {
+            throw AppException.forbidden("Bạn không có quyền chỉnh sửa tin bán vé này");
+        }
 
         if (request.getAskingPrice() != null) {
             listing.setAskingPrice(request.getAskingPrice());
@@ -144,7 +182,13 @@ public class ResaleListingService {
     @Transactional
     public void deleteListing(Long id) {
         TicketExchangeListing listing = resaleListingRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("Listing not found"));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy tin bán vé"));
+
+        Long authenticatedUserId = securityUtil.getCurrentUserId();
+        if (!listing.getSellerId().equals(authenticatedUserId) && !securityUtil.isCurrentUserAdmin()) {
+            throw AppException.forbidden("Bạn không có quyền xóa tin bán vé này");
+        }
+
         listing.setStatus(ListingStatus.Deleted);
         resaleListingRepository.save(listing);
     }

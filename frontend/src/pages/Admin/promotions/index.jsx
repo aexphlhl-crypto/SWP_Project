@@ -116,15 +116,37 @@ export default function AdminPromotionsPage() {
   };
 
   const handleSave = async () => {
-    if (!formData.code || !formData.discountValue || !formData.validFrom || !formData.validUntil) {
-      toast.error("Vui lòng điền đầy đủ các trường bắt buộc");
-      return;
+    // ── Validate ──────────────────────────────────────────
+    if (!formData.code?.trim()) return toast.error('Mã khuyến mãi không được để trống');
+    if (formData.code.trim().length < 3) return toast.error('Mã khuyến mãi phải có ít nhất 3 ký tự');
+    if (!formData.discountValue) return toast.error('Vui lòng nhập giá trị giảm giá');
+    if (!formData.validFrom) return toast.error('Vui lòng chọn ngày bắt đầu');
+    if (!formData.validUntil) return toast.error('Vui lòng chọn ngày kết thúc');
+
+    const discV = Number(formData.discountValue);
+    if (isNaN(discV) || discV <= 0) return toast.error('Giá trị giảm giá phải lớn hơn 0');
+    if (formData.discountType === 'Percentage' && (discV < 1 || discV > 100)) {
+      return toast.error('Giảm giá theo % phải từ 1 đến 100');
     }
+
+    if (new Date(formData.validUntil) <= new Date(formData.validFrom)) {
+      return toast.error('Ngày kết thúc phải sau ngày bắt đầu');
+    }
+
+    if (formData.usageLimit && (isNaN(Number(formData.usageLimit)) || Number(formData.usageLimit) < 1)) {
+      return toast.error('Giới hạn sử dụng phải là số nguyên dương');
+    }
+
+    const minOrder = Number(formData.minOrderValue);
+    if (formData.minOrderValue && (isNaN(minOrder) || minOrder < 0)) {
+      return toast.error('Đơn hàng tối thiểu không được là số âm');
+    }
+    // ─────────────────────────────────────────────────────
 
     const payload = {
       ...formData,
-      discountValue: Number(formData.discountValue),
-      minOrderValue: Number(formData.minOrderValue),
+      discountValue: discV,
+      minOrderValue: Number(formData.minOrderValue) || 0,
       usageLimit: formData.usageLimit ? Number(formData.usageLimit) : null,
       validFrom: formData.validFrom.includes('T') ? formData.validFrom : `${formData.validFrom}T00:00:00`,
       validUntil: formData.validUntil.includes('T') ? formData.validUntil : `${formData.validUntil}T23:59:59`,
@@ -144,6 +166,7 @@ export default function AdminPromotionsPage() {
       toast.error(error.error?.message || error.message || "Lỗi khi lưu khuyến mãi");
     }
   };
+
 
   const getDerivedStatus = (promo) => {
     const now = new Date();

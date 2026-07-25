@@ -40,6 +40,16 @@ export default function ProfilePage() {
   }
 
   const handleSave = async () => {
+    // ── Validate ──────────────────────────────────────────
+    if (!formData.fullName?.trim()) {
+      toast.error('Họ và tên không được để trống');
+      return;
+    }
+    if (formData.phone && !/^(0[3|5|7|8|9])+([0-9]{8})$/.test(formData.phone.trim())) {
+      toast.error('Số điện thoại không hợp lệ (VD: 0901234567)');
+      return;
+    }
+    // ─────────────────────────────────────────────────────
     try {
       setLoading(true);
       const res = await authApi.updateProfile(formData);
@@ -56,6 +66,7 @@ export default function ProfilePage() {
       setLoading(false);
     }
   };
+
 
   const handlePasswordChange = async () => {
     const { currentPassword, newPassword, confirmPassword } = pwData;

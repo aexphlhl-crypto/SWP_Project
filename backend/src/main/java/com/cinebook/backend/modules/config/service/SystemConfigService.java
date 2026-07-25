@@ -71,14 +71,46 @@ public class SystemConfigService {
     }
 
     public SystemConfig updateConfig(String key, String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw com.cinebook.backend.common.exception.AppException.badRequest("Giá trị cấu hình không được để trống.");
+        }
+
+        if ("vat_rate".equals(key)) {
+            try {
+                BigDecimal vat = new BigDecimal(value.trim());
+                if (vat.compareTo(BigDecimal.ZERO) < 0 || vat.compareTo(BigDecimal.ONE) > 0) {
+                    throw com.cinebook.backend.common.exception.AppException.badRequest("Thuế VAT phải là một số thập phân từ 0.00 đến 1.00.");
+                }
+            } catch (NumberFormatException e) {
+                throw com.cinebook.backend.common.exception.AppException.badRequest("Thuế VAT phải là một số thập phân từ 0.00 đến 1.00.");
+            }
+        } else if ("base_price".equals(key) || "seat_vip_multiplier".equals(key) || "seat_couple_multiplier".equals(key)) {
+            try {
+                BigDecimal num = new BigDecimal(value.trim());
+                if (num.compareTo(BigDecimal.ZERO) <= 0) {
+                    throw com.cinebook.backend.common.exception.AppException.badRequest("Giá trị cấu hình " + key + " phải lớn hơn 0.");
+                }
+            } catch (NumberFormatException e) {
+                throw com.cinebook.backend.common.exception.AppException.badRequest("Giá trị cấu hình " + key + " phải là một số hợp lệ.");
+            }
+        } else if ("seat_hold_minutes".equals(key)) {
+            try {
+                int mins = Integer.parseInt(value.trim());
+                if (mins <= 0 || mins > 60) {
+                    throw com.cinebook.backend.common.exception.AppException.badRequest("Thời gian giữ ghế phải từ 1 đến 60 phút.");
+                }
+            } catch (NumberFormatException e) {
+                throw com.cinebook.backend.common.exception.AppException.badRequest("Thời gian giữ ghế phải là số nguyên.");
+            }
+        }
+
         SystemConfig config = systemConfigRepository.findByConfigKey(key)
                 .orElseGet(() -> {
                     SystemConfig newConfig = new SystemConfig();
                     newConfig.setConfigKey(key);
-                    // default type is String
                     return newConfig;
                 });
-        config.setConfigValue(value);
+        config.setConfigValue(value.trim());
         return systemConfigRepository.save(config);
     }
 }

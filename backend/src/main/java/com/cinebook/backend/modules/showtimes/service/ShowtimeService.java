@@ -107,7 +107,7 @@ public class ShowtimeService {
     @Transactional(readOnly = true)
     public List<SeatStatusDto> getSeatsByShowtime(Long showtimeId) {
         Showtime showtime = showtimeRepository.findById(showtimeId)
-                .orElseThrow(() -> AppException.notFound("Showtime not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy suất chiếu."));
 
         List<Seat> allSeats = seatRepository.findByRoomRoomId(showtime.getRoom().getRoomId());
         
@@ -150,7 +150,7 @@ public class ShowtimeService {
     @Transactional
     public void holdSeat(Long showtimeId, Long seatId, String username) {
         Showtime showtime = showtimeRepository.findById(showtimeId)
-                .orElseThrow(() -> AppException.notFound("Showtime not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy suất chiếu."));
         Seat seat = seatRepository.findById(seatId)
                 .orElseThrow(() -> AppException.notFound("Không tìm thấy ghế."));
         User user = userRepository.findByEmailAndDeletedAtIsNull(username)
@@ -189,14 +189,14 @@ public class ShowtimeService {
     @Transactional
     public void releaseSeat(Long showtimeId, Long seatId, String username) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(username)
-                .orElseThrow(() -> AppException.notFound("User not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy người dùng."));
         seatHoldRepository.deleteUserHold(showtimeId, seatId, user.getUserId());
     }
 
     @Transactional
     public void releaseAllHoldsForUser(Long showtimeId, String username) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(username)
-                .orElseThrow(() -> AppException.notFound("User not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy người dùng."));
         seatHoldRepository.deleteByShowtimeAndUser(showtimeId, user.getUserId());
     }
 
@@ -289,7 +289,7 @@ public class ShowtimeService {
                 .room(room)
                 .startTime(startTime)
                 .endTime(endTime)
-
+                .status(request.getStatus() != null ? request.getStatus() : "Scheduled")
                 .build();
 
         return mapToDto(showtimeRepository.save(showtime));
@@ -298,7 +298,7 @@ public class ShowtimeService {
     @Transactional
     public ShowtimeDto updateShowtime(Long id, ShowtimeRequest request) {
         Showtime showtime = showtimeRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("Showtime not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy suất chiếu."));
 
         validateCinemaAccess(showtime.getCinema().getCinemaId());
         
@@ -310,7 +310,7 @@ public class ShowtimeService {
         Movie targetMovie = showtime.getMovie();
         if (request.getMovieId() != null) {
             targetMovie = movieRepository.findById(request.getMovieId())
-                    .orElseThrow(() -> AppException.notFound("Movie not found."));
+                    .orElseThrow(() -> AppException.notFound("Không tìm thấy phim."));
             if (targetMovie.getStatus() != null && "Hidden".equalsIgnoreCase(targetMovie.getStatus()) && !targetMovie.getMovieId().equals(showtime.getMovie().getMovieId())) {
                 throw AppException.badRequest("Không thể cập nhật suất chiếu sang một phim đang ẩn.");
             }
@@ -319,13 +319,13 @@ public class ShowtimeService {
         if (request.getCinemaId() != null) {
             validateCinemaAccess(request.getCinemaId());
             Cinema cinema = cinemaRepository.findById(request.getCinemaId())
-                    .orElseThrow(() -> AppException.notFound("Cinema not found."));
+                    .orElseThrow(() -> AppException.notFound("Không tìm thấy rạp chiếu phim."));
             showtime.setCinema(cinema);
         }
         Room targetRoom = showtime.getRoom();
         if (request.getRoomId() != null) {
             targetRoom = roomRepository.findById(request.getRoomId())
-                    .orElseThrow(() -> AppException.notFound("Room not found."));
+                    .orElseThrow(() -> AppException.notFound("Không tìm thấy phòng chiếu."));
             if (targetRoom.getStatus() != null && !"Active".equalsIgnoreCase(targetRoom.getStatus()) && !targetRoom.getRoomId().equals(showtime.getRoom().getRoomId())) {
                 throw AppException.badRequest("Không thể cập nhật suất chiếu sang phòng đang bảo trì.");
             }
@@ -351,7 +351,7 @@ public class ShowtimeService {
                 targetEndTimeWithBuffer
         );
         if (conflict) {
-            throw AppException.badRequest("Conflict Detected — Minimum cleanup gap of 20 minutes violated.");
+            throw AppException.badRequest("Xung đột lịch chiếu — Thời gian dọn dẹp tối thiểu 20 phút không được đảm bảo.");
         }
 
         if (request.getStatus() != null) {
@@ -364,7 +364,7 @@ public class ShowtimeService {
     @Transactional
     public void deleteShowtime(Long id) {
         Showtime showtime = showtimeRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("Showtime not found."));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy suất chiếu."));
 
         validateCinemaAccess(showtime.getCinema().getCinemaId());
 

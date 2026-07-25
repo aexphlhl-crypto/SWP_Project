@@ -15,4 +15,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByGoogleUidAndDeletedAtIsNull(String googleUid);
     Long countByCreatedAtBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
     Page<User> findByRoleAndDeletedAtIsNull(UserRole role, Pageable pageable);
+    boolean existsByCinema_CinemaIdAndRoleAndDeletedAtIsNull(Long cinemaId, UserRole role);
 }

@@ -11,11 +11,13 @@ import { vi } from 'date-fns/locale';
 import { Input } from '@/components/ui/input';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { ClientPagination } from '@/components/ui/client-pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [selectedMovie, setSelectedMovie] = useState('all');
+  const [selectedCinema, setSelectedCinema] = useState('all');
   const { toast } = useToast();
 
   const fetchReviews = async () => {
@@ -61,10 +63,14 @@ export default function AdminReviewsPage() {
     }
   };
 
-  const filteredReviews = reviews.filter(r => 
-    r.comment?.toLowerCase().includes(search.toLowerCase()) || 
-    r.customerName?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredReviews = reviews.filter(r => {
+    const matchMovie = selectedMovie === 'all' || r.movieTitle === selectedMovie;
+    const matchCinema = selectedCinema === 'all' || r.cinemaName === selectedCinema;
+    return matchMovie && matchCinema;
+  });
+
+  const uniqueMovies = Array.from(new Set(reviews.map(r => r.movieTitle).filter(Boolean)));
+  const uniqueCinemas = Array.from(new Set(reviews.map(r => r.cinemaName).filter(Boolean)));
 
   const { currentDataOnPage, currentPage, totalPages, handlePageChange, startIndex, endIndex, totalItems } = useClientPagination(filteredReviews);
 
@@ -78,19 +84,34 @@ export default function AdminReviewsPage() {
       </div>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0 pb-4 border-b border-border">
           <div>
             <CardTitle className="text-lg">Danh sách Đánh giá</CardTitle>
             <CardDescription>Hiển thị tất cả đánh giá trên hệ thống</CardDescription>
           </div>
-          <div className="relative w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Tìm kiếm nội dung..."
-              className="pl-8"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <Select value={selectedMovie} onValueChange={setSelectedMovie}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Tất cả phim" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả phim</SelectItem>
+                {uniqueMovies.map(movie => (
+                  <SelectItem key={movie} value={movie}>{movie}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedCinema} onValueChange={setSelectedCinema}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Tất cả rạp" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả rạp</SelectItem>
+                {uniqueCinemas.map(cinema => (
+                  <SelectItem key={cinema} value={cinema}>{cinema}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -98,6 +119,8 @@ export default function AdminReviewsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Khách hàng</TableHead>
+                <TableHead>Phim</TableHead>
+                <TableHead>Rạp</TableHead>
                 <TableHead>Chất lượng</TableHead>
                 <TableHead className="max-w-md">Bình luận</TableHead>
                 <TableHead>Thời gian</TableHead>
@@ -123,6 +146,12 @@ export default function AdminReviewsPage() {
                   <TableRow key={review.id}>
                     <TableCell className="font-medium">
                       {review.customerName}
+                    </TableCell>
+                    <TableCell>
+                      {review.movieTitle}
+                    </TableCell>
+                    <TableCell>
+                      {review.cinemaName}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-yellow-500 font-bold text-sm">

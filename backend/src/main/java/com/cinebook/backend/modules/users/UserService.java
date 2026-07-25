@@ -107,7 +107,7 @@ public class UserService {
 
     public UserAdminDto lockUser(Long id, Integer days) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("User not found"));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy người dùng"));
         user.setStatus(UserStatus.Locked);
         if (days != null && days > 0) {
             user.setLockedUntil(LocalDateTime.now().plusDays(days));
@@ -120,7 +120,7 @@ public class UserService {
 
     public UserAdminDto unlockUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> AppException.notFound("User not found"));
+                .orElseThrow(() -> AppException.notFound("Không tìm thấy người dùng"));
         user.setStatus(UserStatus.Active);
         user.setLockedUntil(null);
         user.setFailedLoginAttempts(0);
@@ -135,6 +135,10 @@ public class UserService {
 
         if (dto.getCinemaId() == null) {
             throw AppException.badRequest("ID rạp chiếu phim là bắt buộc");
+        }
+
+        if (userRepository.existsByCinema_CinemaIdAndRoleAndDeletedAtIsNull(dto.getCinemaId(), UserRole.ScheduleManager)) {
+            throw AppException.badRequest("Rạp chiếu phim này đã có người quản lý.");
         }
 
         Cinema cinema = cinemaRepository.findById(dto.getCinemaId())

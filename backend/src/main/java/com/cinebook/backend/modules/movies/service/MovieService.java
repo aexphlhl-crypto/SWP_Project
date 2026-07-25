@@ -39,11 +39,17 @@ public class MovieService {
     }
 
     public Movie getMovieById(Long id) {
-        return movieRepository.findById(id).orElseThrow(() -> new RuntimeException("Movie not found"));
+        return movieRepository.findById(id).orElseThrow(() -> AppException.notFound("Không tìm thấy phim có ID: " + id));
     }
 
     @Transactional
     public Movie createMovie(MovieRequest request) {
+        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+            throw AppException.badRequest("Tên phim không được để trống.");
+        }
+        if (request.getDurationMin() == null || request.getDurationMin() <= 0) {
+            throw AppException.badRequest("Thời lượng phim phải lớn hơn 0 phút.");
+        }
         Movie movie = Movie.builder()
                 .title(request.getTitle())
                 .synopsis(request.getSynopsis())
@@ -75,6 +81,12 @@ public class MovieService {
 
     @Transactional
     public Movie updateMovie(Long id, MovieRequest request) {
+        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+            throw AppException.badRequest("Tên phim không được để trống.");
+        }
+        if (request.getDurationMin() == null || request.getDurationMin() <= 0) {
+            throw AppException.badRequest("Thời lượng phim phải lớn hơn 0 phút.");
+        }
         Movie movie = getMovieById(id);
         movie.setTitle(request.getTitle());
         movie.setSynopsis(request.getSynopsis());
