@@ -34,10 +34,6 @@ const STATUS = {
   used: {
     label: 'Đã sử dụng',
     className: 'bg-secondary text-muted-foreground'
-  },
-  cancelled: {
-    label: 'Đã hủy',
-    className: 'bg-red-500/20 text-red-500'
   }
 };
 
@@ -64,9 +60,9 @@ const mapStatus = (ticket) => {
   if (!ticket) return 'upcoming';
   const backendStatus = ticket.status;
   if (backendStatus === 'Cancelled' || backendStatus === 'Failed' || backendStatus === 'Refunded' || backendStatus === 'cancelled') return 'cancelled';
-  
+
   if (ticket.checkedIn || backendStatus === 'Completed' || backendStatus === 'checkedin') return 'used';
-  
+
   // Also check if show time has passed
   if (ticket.showDate && ticket.showTime) {
     const [year, month, day] = ticket.showDate.split('-');
@@ -91,9 +87,6 @@ const TABS = [{
 }, {
   id: 'used',
   label: 'Đã dùng'
-}, {
-  id: 'cancelled',
-  label: 'Đã hủy'
 }];
 
 export default function MyTicketsPage() {
@@ -108,12 +101,12 @@ export default function MyTicketsPage() {
   // Review state
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
-  
+
   // QR & PDF state
   const [isQrOpen, setIsQrOpen] = useState(false);
   const [currentTicketIdx, setCurrentTicketIdx] = useState(0);
   const ticketRef = useRef(null);
-  
+
   useEffect(() => {
     if (isAuthenticated && user?.userId) {
       Promise.all([
@@ -132,11 +125,11 @@ export default function MyTicketsPage() {
         .finally(() => setLoading(false));
     }
   }, [isAuthenticated, user?.userId]);
-  
+
   if (!isAuthenticated) {
     return <Navigate to='/login' replace />;
   }
-  
+
   const filtered = myTickets.filter(t => {
     const status = mapStatus(t);
     const matchTab = tab === 'all' || status === tab;
@@ -170,48 +163,48 @@ export default function MyTicketsPage() {
     setSelectedTicket(ticket);
     setIsReviewOpen(true);
   };
-  
+
   return (
-      <div className="container mx-auto px-4 py-10 max-w-3xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Vé của tôi</h1>
-            <p className="text-muted-foreground mt-1">Lịch sử đặt vé và vé sắp tới</p>
-          </div>
-          <Button asChild>
-            <Link to="/movies">
-              <Ticket className="w-4 h-4 mr-2" />
-              Đặt vé mới
-            </Link>
-          </Button>
+    <div className="container mx-auto px-4 py-10 max-w-3xl space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Vé của tôi</h1>
+          <p className="text-muted-foreground mt-1">Lịch sử đặt vé và vé sắp tới</p>
         </div>
+        <Button asChild>
+          <Link to="/movies">
+            <Ticket className="w-4 h-4 mr-2" />
+            Đặt vé mới
+          </Link>
+        </Button>
+      </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 flex-wrap">
-          {TABS.map(t => <button key={t.id} onClick={() => setTab(t.id)} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${tab === t.id ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
-              {t.label}
-              {t.id !== 'all' && <span className="ml-1.5 opacity-70">
-                  {myTickets.filter(x => mapStatus(x) === t.id).length}
-                </span>}
-            </button>)}
-        </div>
+      {/* Tabs */}
+      <div className="flex gap-2 flex-wrap">
+        {TABS.map(t => <button key={t.id} onClick={() => setTab(t.id)} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${tab === t.id ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+          {t.label}
+          {t.id !== 'all' && <span className="ml-1.5 opacity-70">
+            {myTickets.filter(x => mapStatus(x) === t.id).length}
+          </span>}
+        </button>)}
+      </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Tìm theo mã vé hoặc tên phim..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input placeholder="Tìm theo mã vé hoặc tên phim..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+      </div>
 
-        {/* Ticket list */}
-        {loading ? <div className="text-center py-16">
-            <RefreshCw className="w-8 h-8 mx-auto mb-3 animate-spin text-primary" />
-            <p className="text-muted-foreground">Đang tải dữ liệu...</p>
-          </div> : filtered.length === 0 ? <div className="text-center py-16 text-muted-foreground">
-            <Ticket className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>Không có vé nào.</p>
-          </div> : <div className="space-y-4">
-            {currentDataOnPage.map(ticket => {
+      {/* Ticket list */}
+      {loading ? <div className="text-center py-16">
+        <RefreshCw className="w-8 h-8 mx-auto mb-3 animate-spin text-primary" />
+        <p className="text-muted-foreground">Đang tải dữ liệu...</p>
+      </div> : filtered.length === 0 ? <div className="text-center py-16 text-muted-foreground">
+        <Ticket className="w-12 h-12 mx-auto mb-3 opacity-30" />
+        <p>Không có vé nào.</p>
+      </div> : <div className="space-y-4">
+        {currentDataOnPage.map(ticket => {
           const statusKey = mapStatus(ticket);
           const status = STATUS[statusKey];
           const displayDate = ticket.showDate ? new Date(ticket.showDate).toLocaleDateString('vi-VN', {
@@ -220,205 +213,205 @@ export default function MyTicketsPage() {
             month: '2-digit',
             year: 'numeric'
           }) : 'Unknown Date';
-          
+
           return <Card key={ticket.id} className="bg-card border-border overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="flex">
-                      {/* Poster */}
-                      <div className="w-20 shrink-0 bg-muted flex items-center justify-center">
-                        <Ticket className="w-8 h-8 text-muted-foreground/30" />
-                      </div>
+            <CardContent className="p-0">
+              <div className="flex">
+                {/* Poster */}
+                <div className="w-20 shrink-0 bg-muted flex items-center justify-center">
+                  <Ticket className="w-8 h-8 text-muted-foreground/30" />
+                </div>
 
-                      {/* Details */}
-                      <div className="flex-1 p-4 space-y-3 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h3 className="font-bold leading-tight">{ticket.movieTitle}</h3>
-                            <p className="text-xs text-muted-foreground font-mono mt-0.5">{ticket.id}</p>
-                          </div>
-                          <Badge className={status?.className}>{status?.label}</Badge>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-1.5 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" /> {displayDate}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> {ticket.showTime}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Armchair className="w-4 h-4 shrink-0" />
-                            <span className="line-clamp-2">
-                              {renderSeatsByType(ticket.tickets)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 col-span-2 truncate">
-                            <MapPin className="w-3 h-3 shrink-0" />
-                            <span className="truncate">{ticket.cinemaName} • {ticket.roomName}</span>
-                          </div>
-                        </div>
-
-                        <Separator className="bg-border" />
-
-                        {ticket.fnbItems && ticket.fnbItems.length > 0 && (
-                          <div className="space-y-1 mb-3">
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                              <ShoppingCart className="w-3.5 h-3.5" /> Bắp nước
-                            </p>
-                            {ticket.fnbItems.map(fnb => (
-                              <div key={fnb.productId} className="flex justify-between text-xs text-muted-foreground pl-4">
-                                <span>{fnb.productName} ×{fnb.quantity}</span>
-                                <span>{(fnb.unitPrice * fnb.quantity).toLocaleString('vi-VN')}₫</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-primary">
-                            {ticket.totalAmount?.toLocaleString('vi-VN')}₫
-                          </span>
-                          <div className="flex gap-2 flex-wrap justify-end">
-                            {statusKey === 'upcoming' && <>
-                                <Button size="sm" variant="outline" className="h-7 gap-1 text-xs" onClick={() => { setSelectedTicket(ticket); setCurrentTicketIdx(0); setIsQrOpen(true); }}>
-                                  <QrCode className="w-3 h-3" /> Xem vé
-                                </Button>
-                                {/* UC-45: Only show resell if not checked-in and showtime not started */}
-                                {(() => {
-                                  // Calculate if it's eligible time (> 2 hours before showtime)
-                                  let isEligibleTime = false;
-                                  if (ticket.showDate && ticket.showTime) {
-                                    const [year, month, day] = ticket.showDate.split('-');
-                                    const [hours, minutes] = ticket.showTime.split(':');
-                                    const showDateTime = new Date(year, parseInt(month, 10) - 1, day, hours, minutes, 0);
-                                    const twoHoursFromNow = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
-                                    isEligibleTime = showDateTime > twoHoursFromNow;
-                                  }
-                                  
-                                  const ticketIdNum = parseInt(String(ticket.id).replace('BK', ''), 10);
-                                  const activeListingsForTicket = myListings.filter(l => 
-                                    parseInt(String(l.bookingId).replace('BK', ''), 10) === ticketIdNum && 
-                                    l.status?.toLowerCase() !== 'deleted' && 
-                                    l.status?.toLowerCase() !== 'cancelled'
-                                  );
-
-                                  let allListed = false;
-                                  if (activeListingsForTicket.length > 0) {
-                                    // Check if EVERYTHING is listed
-                                    const totalSeats = ticket.seatNumber ? ticket.seatNumber.split(',').map(s => s.trim()) : [];
-                                    const hasFnb = ticket.fnbItems && ticket.fnbItems.length > 0;
-                                    
-                                    let listedSeats = [];
-                                    let fnbListed = false;
-                                    
-                                    activeListingsForTicket.forEach(l => {
-                                      if (l.seatNumber) {
-                                        listedSeats.push(...l.seatNumber.split(',').map(s => s.trim()));
-                                      }
-                                      if (l.includesFnb) {
-                                        fnbListed = true;
-                                      }
-                                    });
-                                    
-                                    const allSeatsListed = totalSeats.every(s => listedSeats.includes(s));
-                                    const allFnbListed = hasFnb ? fnbListed : true;
-                                    
-                                    allListed = allSeatsListed && allFnbListed;
-                                  }
-
-                                  if (allListed) {
-                                    return (
-                                      <Button size="sm" variant="outline" className="h-7 gap-1 text-xs border-muted text-muted-foreground bg-muted/50 cursor-not-allowed" disabled title="Vé này đã được đăng bán toàn bộ">
-                                        <RefreshCw className="w-3 h-3" /> Đã đăng bán hết
-                                      </Button>
-                                    );
-                                  }
-
-                                  const isEligibleForResale = !ticket.checkedIn && isEligibleTime;
-
-                                  if (!isEligibleForResale) {
-                                    return (
-                                      <Button size="sm" variant="outline" className="h-7 gap-1 text-xs border-muted text-muted-foreground bg-muted/50 cursor-not-allowed opacity-60" disabled title="Vé đã check-in hoặc còn dưới 2 tiếng trước giờ chiếu">
-                                        <RefreshCw className="w-3 h-3" /> Đăng bán lại
-                                      </Button>
-                                    );
-                                  }
-
-                                  return (
-                                    <Button size="sm" variant="outline" className="h-7 gap-1 text-xs border-amber-500/50 text-amber-400 hover:bg-amber-500/10" asChild>
-                                      <Link to={`/my-resale/create?bookingId=${ticket.id}`}>
-                                        <RefreshCw className="w-3 h-3" /> {activeListingsForTicket.length > 0 ? "Bán phần còn lại" : "Đăng bán lại"}
-                                      </Link>
-                                    </Button>
-                                  );
-                                })()}
-                              </>}
-                            
-                            {statusKey === 'used' && (
-                              <Button size="sm" variant="outline" className="h-7 gap-1 text-xs border-blue-500/50 text-blue-500 hover:bg-blue-500/10" onClick={() => openReviewModal(ticket)}>
-                                <MessageSquare className="w-3 h-3" /> Đánh giá
-                              </Button>
-                            )}
-                            
-                            {statusKey !== 'cancelled' && (
-                              <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs" onClick={() => downloadPDF(ticket)}>
-                                <Download className="w-3 h-3" /> PDF
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                {/* Details */}
+                <div className="flex-1 p-4 space-y-3 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="font-bold leading-tight">{ticket.movieTitle}</h3>
+                      <p className="text-xs text-muted-foreground font-mono mt-0.5">{ticket.id}</p>
                     </div>
-                  </CardContent>
-                </Card>;
+                    <Badge className={status?.className}>{status?.label}</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" /> {displayDate}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {ticket.showTime}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Armchair className="w-4 h-4 shrink-0" />
+                      <span className="line-clamp-2">
+                        {renderSeatsByType(ticket.tickets)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 col-span-2 truncate">
+                      <MapPin className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{ticket.cinemaName} • {ticket.roomName}</span>
+                    </div>
+                  </div>
+
+                  <Separator className="bg-border" />
+
+                  {ticket.fnbItems && ticket.fnbItems.length > 0 && (
+                    <div className="space-y-1 mb-3">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                        <ShoppingCart className="w-3.5 h-3.5" /> Bắp nước
+                      </p>
+                      {ticket.fnbItems.map(fnb => (
+                        <div key={fnb.productId} className="flex justify-between text-xs text-muted-foreground pl-4">
+                          <span>{fnb.productName} ×{fnb.quantity}</span>
+                          <span>{(fnb.unitPrice * fnb.quantity).toLocaleString('vi-VN')}₫</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-primary">
+                      {ticket.totalAmount?.toLocaleString('vi-VN')}₫
+                    </span>
+                    <div className="flex gap-2 flex-wrap justify-end">
+                      {statusKey === 'upcoming' && <>
+                        <Button size="sm" variant="outline" className="h-7 gap-1 text-xs" onClick={() => { setSelectedTicket(ticket); setCurrentTicketIdx(0); setIsQrOpen(true); }}>
+                          <QrCode className="w-3 h-3" /> Xem vé
+                        </Button>
+                        {/* UC-45: Only show resell if not checked-in and showtime not started */}
+                        {(() => {
+                          // Calculate if it's eligible time (> 2 hours before showtime)
+                          let isEligibleTime = false;
+                          if (ticket.showDate && ticket.showTime) {
+                            const [year, month, day] = ticket.showDate.split('-');
+                            const [hours, minutes] = ticket.showTime.split(':');
+                            const showDateTime = new Date(year, parseInt(month, 10) - 1, day, hours, minutes, 0);
+                            const twoHoursFromNow = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
+                            isEligibleTime = showDateTime > twoHoursFromNow;
+                          }
+
+                          const ticketIdNum = parseInt(String(ticket.id).replace('BK', ''), 10);
+                          const activeListingsForTicket = myListings.filter(l =>
+                            parseInt(String(l.bookingId).replace('BK', ''), 10) === ticketIdNum &&
+                            l.status?.toLowerCase() !== 'deleted' &&
+                            l.status?.toLowerCase() !== 'cancelled'
+                          );
+
+                          let allListed = false;
+                          if (activeListingsForTicket.length > 0) {
+                            // Check if EVERYTHING is listed
+                            const totalSeats = ticket.seatNumber ? ticket.seatNumber.split(',').map(s => s.trim()) : [];
+                            const hasFnb = ticket.fnbItems && ticket.fnbItems.length > 0;
+
+                            let listedSeats = [];
+                            let fnbListed = false;
+
+                            activeListingsForTicket.forEach(l => {
+                              if (l.seatNumber) {
+                                listedSeats.push(...l.seatNumber.split(',').map(s => s.trim()));
+                              }
+                              if (l.includesFnb) {
+                                fnbListed = true;
+                              }
+                            });
+
+                            const allSeatsListed = totalSeats.every(s => listedSeats.includes(s));
+                            const allFnbListed = hasFnb ? fnbListed : true;
+
+                            allListed = allSeatsListed && allFnbListed;
+                          }
+
+                          if (allListed) {
+                            return (
+                              <Button size="sm" variant="outline" className="h-7 gap-1 text-xs border-muted text-muted-foreground bg-muted/50 cursor-not-allowed" disabled title="Vé này đã được đăng bán toàn bộ">
+                                <RefreshCw className="w-3 h-3" /> Đã đăng bán hết
+                              </Button>
+                            );
+                          }
+
+                          const isEligibleForResale = !ticket.checkedIn && isEligibleTime;
+
+                          if (!isEligibleForResale) {
+                            return (
+                              <Button size="sm" variant="outline" className="h-7 gap-1 text-xs border-muted text-muted-foreground bg-muted/50 cursor-not-allowed opacity-60" disabled title="Vé đã check-in hoặc còn dưới 2 tiếng trước giờ chiếu">
+                                <RefreshCw className="w-3 h-3" /> Đăng bán lại
+                              </Button>
+                            );
+                          }
+
+                          return (
+                            <Button size="sm" variant="outline" className="h-7 gap-1 text-xs border-amber-500/50 text-amber-400 hover:bg-amber-500/10" asChild>
+                              <Link to={`/my-resale/create?bookingId=${ticket.id}`}>
+                                <RefreshCw className="w-3 h-3" /> {activeListingsForTicket.length > 0 ? "Bán phần còn lại" : "Đăng bán lại"}
+                              </Link>
+                            </Button>
+                          );
+                        })()}
+                      </>}
+
+                      {statusKey === 'used' && (
+                        <Button size="sm" variant="outline" className="h-7 gap-1 text-xs border-blue-500/50 text-blue-500 hover:bg-blue-500/10" onClick={() => openReviewModal(ticket)}>
+                          <MessageSquare className="w-3 h-3" /> Đánh giá
+                        </Button>
+                      )}
+
+                      {statusKey !== 'cancelled' && (
+                        <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs" onClick={() => downloadPDF(ticket)}>
+                          <Download className="w-3 h-3" /> PDF
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>;
         })}
-          </div>}
-          
-        {!loading && filtered.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between mt-6 p-4 bg-card border border-border rounded-lg">
-            <div className="text-sm text-muted-foreground mb-4 sm:mb-0">
-              Hiển thị {startIndex + 1}-{endIndex} trên tổng số {totalItems} vé
-            </div>
-            <ClientPagination 
-              currentPage={currentPage} 
-              totalPages={totalPages} 
-              onPageChange={handlePageChange} 
-            />
+      </div>}
+
+      {!loading && filtered.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between mt-6 p-4 bg-card border border-border rounded-lg">
+          <div className="text-sm text-muted-foreground mb-4 sm:mb-0">
+            Hiển thị {startIndex + 1}-{endIndex} trên tổng số {totalItems} vé
           </div>
-        )}
+          <ClientPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
 
-        <ReviewModal 
-          isOpen={isReviewOpen} 
-          onClose={() => setIsReviewOpen(false)} 
-          booking={selectedTicket}
-          onReviewSuccess={() => {
-            // Optional: Handle state update if needed, like marking ticket as reviewed
-          }}
-        />
+      <ReviewModal
+        isOpen={isReviewOpen}
+        onClose={() => setIsReviewOpen(false)}
+        booking={selectedTicket}
+        onReviewSuccess={() => {
+          // Optional: Handle state update if needed, like marking ticket as reviewed
+        }}
+      />
 
-        {/* QR Code Dialog */}
-        <Dialog open={isQrOpen} onOpenChange={setIsQrOpen}>
-          <DialogContent className="sm:max-w-[350px]">
-            <DialogHeader>
-              <DialogTitle className="text-center">Vé điện tử</DialogTitle>
-            </DialogHeader>
-            {selectedTicket && (() => {
-              const tickets = selectedTicket.tickets || [{
-                ticketCode: selectedTicket.id,
-                qrCodeValue: selectedTicket.id,
-                seatLabel: selectedTicket.seatNumber
-              }];
-              const currentTicket = tickets[currentTicketIdx] || tickets[0];
-              
-              return (
+      {/* QR Code Dialog */}
+      <Dialog open={isQrOpen} onOpenChange={setIsQrOpen}>
+        <DialogContent className="sm:max-w-[350px]">
+          <DialogHeader>
+            <DialogTitle className="text-center">Vé điện tử</DialogTitle>
+          </DialogHeader>
+          {selectedTicket && (() => {
+            const tickets = selectedTicket.tickets || [{
+              ticketCode: selectedTicket.id,
+              qrCodeValue: selectedTicket.id,
+              seatLabel: selectedTicket.seatNumber
+            }];
+            const currentTicket = tickets[currentTicketIdx] || tickets[0];
+
+            return (
               <div className="flex flex-col items-center gap-4 py-2">
                 <div className="p-4 bg-white rounded-xl shadow-sm border">
                   <QRCodeSVG value={currentTicket.qrCodeValue} size={200} level="M" />
                 </div>
-                
+
                 {tickets.length > 1 && (
                   <div className="flex items-center gap-4 my-1">
-                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" 
+                    <Button variant="outline" size="sm" className="h-8 w-8 p-0"
                       onClick={() => setCurrentTicketIdx(prev => Math.max(0, prev - 1))}
                       disabled={currentTicketIdx === 0}>
                       {'<'}
@@ -470,19 +463,19 @@ export default function MyTicketsPage() {
                   )}
                 </div>
               </div>
-              );
-            })()}
-          </DialogContent>
-        </Dialog>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
 
-        {/* Hidden Invoice for PDF Generation */}
-        {selectedTicket && (() => {
-          const tickets = selectedTicket.tickets || [{
-            ticketCode: selectedTicket.id,
-            qrCodeValue: selectedTicket.id,
-            seatLabel: selectedTicket.seatNumber
-          }];
-          return (
+      {/* Hidden Invoice for PDF Generation */}
+      {selectedTicket && (() => {
+        const tickets = selectedTicket.tickets || [{
+          ticketCode: selectedTicket.id,
+          qrCodeValue: selectedTicket.id,
+          seatLabel: selectedTicket.seatNumber
+        }];
+        return (
           <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
             <div ref={ticketRef} className="w-[600px] bg-white text-black p-8" style={{ fontFamily: 'sans-serif' }}>
               <div className="flex justify-between items-center border-b-2 border-black pb-4 mb-6">
@@ -495,7 +488,7 @@ export default function MyTicketsPage() {
                   <p className="text-xs font-mono mt-2">{selectedTicket.id}</p>
                 </div>
               </div>
-              
+
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold mb-1">{selectedTicket.movieTitle}</h2>
@@ -553,15 +546,15 @@ export default function MyTicketsPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="mt-12 text-center text-sm text-gray-400 border-t border-gray-100 pt-4">
                 <p>Cảm ơn bạn đã lựa chọn CineBook!</p>
                 <p className="mt-1">Vui lòng xuất trình mã QR tương ứng từng ghế tại rạp để nhận vé cứng.</p>
               </div>
             </div>
           </div>
-          );
-        })()}
-      </div>
+        );
+      })()}
+    </div>
   );
 }
