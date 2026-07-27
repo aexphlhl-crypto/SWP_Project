@@ -409,10 +409,6 @@ export default function AdminMoviesPage() {
                 <Label className="text-muted-foreground">Đạo diễn</Label>
                 <Input value={formData.director} onChange={e => setFormData({ ...formData, director: e.target.value })} className="bg-background border-border text-foreground" />
               </div>
-              <div className="grid gap-2">
-                <Label className="text-muted-foreground">Mô tả Diễn viên (Chuỗi)</Label>
-                <Input value={formData.castList} onChange={e => setFormData({ ...formData, castList: e.target.value })} className="bg-background border-border text-foreground" />
-              </div>
             </div>
             <div className="grid gap-2">
               <Label className="text-muted-foreground">Thể loại</Label>
