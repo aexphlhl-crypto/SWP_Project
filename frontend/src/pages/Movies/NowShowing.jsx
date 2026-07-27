@@ -1,8 +1,12 @@
+import { useSearchParams } from 'react-router-dom'
 import { MovieGrid } from '@/components/movies/movie-grid'
 import { useData } from '@/contexts/data-context'
 
 export default function NowShowingPage() {
   const { movies, genres, cinemas, showtimes } = useData();
+  const [searchParams] = useSearchParams();
+  const cinemaId = searchParams.get('cinemaId') || 'all';
+
   const filteredMovies = movies.filter(m => m.status === 'now_showing')
   return (
     <div className="container py-8">
@@ -11,6 +15,7 @@ export default function NowShowingPage() {
         genres={genres}
         cinemas={cinemas}
         showtimes={showtimes}
+        initialCinema={cinemaId}
         title="Phim đang chiếu"
         subtitle="Những bộ phim hấp dẫn đang được công chiếu tại rạp"
         hideStatusFilter={true}

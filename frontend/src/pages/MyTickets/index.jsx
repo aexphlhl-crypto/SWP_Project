@@ -537,7 +537,7 @@ export default function MyTicketsPage() {
                     <span className="font-medium">{selectedTicket.totalAmount?.toLocaleString('vi-VN')} VNĐ</span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600">VAT (10%)</span>
+                    <span className="text-gray-600">Thuế VAT</span>
                     <span className="font-medium">Đã bao gồm</span>
                   </div>
                   <div className="flex justify-between items-center mt-4 pt-4 border-t-2 border-dashed border-gray-300">

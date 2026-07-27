@@ -59,19 +59,9 @@ export function AuthProvider({ children }) {
         throw new Error(response.error?.message || "Đăng nhập thất bại");
       }
     } catch (error) {
-      console.warn("Backend login failed, fallback to mock guest user for developer testing.");
-      const mockUser = {
-        userId: 999,
-        id: 999,
-        email: email || "dev@cinebook.com",
-        fullName: "Khách Kiểm Thử",
-        name: "Khách Kiểm Thử",
-        role: email.includes('admin') ? 'admin' : (email.includes('manager') ? 'manager' : 'user'),
-        phone: "0900000000"
-      };
-      localStorage.setItem('accessToken', 'mock-dev-token');
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      setAuthState({ user: mockUser, isAuthenticated: true, isLoading: false });
+      setAuthState(prev => ({ ...prev, isLoading: false }))
+      const errorMessage = error?.error?.message || error?.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.";
+      throw new Error(errorMessage);
     }
   }, [])
 

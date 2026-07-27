@@ -14,7 +14,7 @@ function ArticleCard({ article, featured = false }) {
         <div className="grid md:grid-cols-2 gap-0 overflow-hidden rounded-xl border border-border/60 bg-card hover:border-primary/30 transition-colors">
           <div className="relative overflow-hidden aspect-video md:aspect-auto md:min-h-[280px]">
             <img
-              src={article.thumbnailUrl || FALLBACK_IMG}
+              src={article.thumbnailUrl || article.imageUrl || FALLBACK_IMG}
               alt={article.title}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
@@ -42,7 +42,7 @@ function ArticleCard({ article, featured = false }) {
       <div className="flex flex-col h-full overflow-hidden rounded-xl border border-border/60 bg-card hover:border-primary/30 transition-colors">
         <div className="aspect-video relative overflow-hidden">
           <img
-            src={article.thumbnailUrl || FALLBACK_IMG}
+            src={article.thumbnailUrl || article.imageUrl || FALLBACK_IMG}
             alt={article.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />

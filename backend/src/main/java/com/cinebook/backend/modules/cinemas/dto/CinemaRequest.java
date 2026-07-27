@@ -12,5 +12,6 @@ public class CinemaRequest {
     private BigDecimal longitude;
     private String phone;
     private String operatingHours;
+    private String locationMapUrl;
     private String status;
 }

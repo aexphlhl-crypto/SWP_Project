@@ -49,6 +49,7 @@ public class CinemaService {
                 .longitude(request.getLongitude())
                 .phone(request.getPhone())
                 .operatingHours(request.getOperatingHours())
+                .locationMapUrl(request.getLocationMapUrl())
                 .build();
         return cinemaRepository.save(cinema);
     }
@@ -63,6 +64,7 @@ public class CinemaService {
         cinema.setLongitude(request.getLongitude());
         cinema.setPhone(request.getPhone());
         cinema.setOperatingHours(request.getOperatingHours());
+        cinema.setLocationMapUrl(request.getLocationMapUrl());
         if (request.getStatus() != null) {
             cinema.setStatus(request.getStatus());
         }

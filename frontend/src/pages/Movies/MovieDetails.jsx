@@ -41,164 +41,6 @@ const getYouTubeEmbedUrl = (url) => {
   const videoId = idMatch?.[1] || (!value.includes('/') ? value : '');
   return videoId ? `https://www.youtube.com/embed/${videoId}` : value;
 }
-const dummyMovies = [
-  {
-    id: "m-1",
-    movieId: "m-1",
-    title: "Minions: Sự Trỗi Dậy Của Gru",
-    originalTitle: "Minions: The Rise of Gru",
-    poster: "https://images.unsplash.com/photo-1608889175123-8ec330b86f84?w=500&auto=format&fit=crop&q=80",
-    backdrop: "https://images.unsplash.com/photo-1608889175123-8ec330b86f84?w=1200&auto=format&fit=crop&q=80",
-    ageRating: "P",
-    duration: 88,
-    rating: 4.8,
-    releaseDate: "2026-06-01",
-    genres: ["Hoạt hình", "Hài hước", "Gia đình"],
-    status: "now_showing",
-    director: "Kyle Balda",
-    synopsis: "Hành trình trở thành siêu ác nhân vĩ đại nhất thế giới của cậu bé Gru 12 tuổi cùng sự trợ giúp đắc lực của các sinh vật màu vàng siêu quậy.",
-    description: "Hành trình trở thành siêu ác nhân vĩ đại nhất thế giới của cậu bé Gru 12 tuổi cùng sự trợ giúp đắc lực của các sinh vật màu vàng siêu quậy.",
-    cast: [
-      { id: "a-1", name: "Steve Carell", role: "Gru (Voice)", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop" },
-      { id: "a-2", name: "Pierre Coffin", role: "Minions (Voice)", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop" },
-      { id: "a-3", name: "Alan Arkin", role: "Wild Knuckles (Voice)", avatar: "https://images.unsplash.com/photo-1527983359383-4758693f760c?w=100&h=100&fit=crop" }
-    ],
-    trailer: "https://www.youtube.com/watch?v=6DxjJzmReXo"
-  },
-  {
-    id: "m-2",
-    movieId: "m-2",
-    title: "Spider-Man: Không Còn Đường Về",
-    originalTitle: "Spider-Man: No Way Home",
-    poster: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=500&auto=format&fit=crop&q=80",
-    backdrop: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&auto=format&fit=crop&q=80",
-    ageRating: "C13",
-    duration: 148,
-    rating: 4.9,
-    releaseDate: "2026-06-15",
-    genres: ["Hành động", "Phiêu lưu", "Sci-Fi"],
-    status: "now_showing",
-    director: "Jon Watts",
-    synopsis: "Lần đầu tiên trong lịch sử điện ảnh của Người Nhện, danh tính người hùng hàng xóm thân thiện bị vạch trần, buộc anh phải tìm đến Doctor Strange để giải quyết rắc rối.",
-    description: "Lần đầu tiên trong lịch sử điện ảnh của Người Nhện, danh tính người hùng hàng xóm thân thiện bị vạch trần, buộc anh phải tìm đến Doctor Strange để giải quyết rắc rối.",
-    cast: [
-      { id: "a-4", name: "Tom Holland", role: "Peter Parker / Spider-Man", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop" },
-      { id: "a-5", name: "Zendaya", role: "MJ", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" },
-      { id: "a-6", name: "Benedict Cumberbatch", role: "Doctor Strange", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" }
-    ],
-    trailer: "https://www.youtube.com/watch?v=JfVOs4VSpmA"
-  },
-  {
-    id: "m-3",
-    movieId: "m-3",
-    title: "Người Dơi: Kỵ Sĩ Bóng Đêm",
-    originalTitle: "The Dark Knight",
-    poster: "https://images.unsplash.com/photo-1531259683007-016a7b628fc3?w=500&auto=format&fit=crop&q=80",
-    backdrop: "https://images.unsplash.com/photo-1531259683007-016a7b628fc3?w=1200&auto=format&fit=crop&q=80",
-    ageRating: "C16",
-    duration: 152,
-    rating: 4.9,
-    releaseDate: "2026-06-10",
-    genres: ["Hành động", "Tội phạm", "Tâm lý"],
-    status: "now_showing",
-    director: "Christopher Nolan",
-    synopsis: "Khi mối đe dọa được gọi là Joker phá hoại và gây ra hỗn loạn cho người dân Gotham, Batman phải đối mặt với thử thách tâm lý lớn nhất để chống lại tội ác.",
-    description: "Khi mối đe dọa được gọi là Joker phá hoại và gây ra hỗn loạn cho người dân Gotham, Batman phải đối mặt với thử thách tâm lý lớn nhất để chống lại tội ác.",
-    cast: [
-      { id: "a-7", name: "Christian Bale", role: "Bruce Wayne / Batman", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop" },
-      { id: "a-8", name: "Heath Ledger", role: "Joker", avatar: "https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=100&h=100&fit=crop" }
-    ],
-    trailer: "https://www.youtube.com/watch?v=EXeTwQWrcwY"
-  },
-  {
-    id: "m-4",
-    movieId: "m-4",
-    title: "Inside Out 2: Những Mảnh Ghép Cảm Xúc 2",
-    originalTitle: "Inside Out 2",
-    poster: "https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?w=500&auto=format&fit=crop&q=80",
-    backdrop: "https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?w=1200&auto=format&fit=crop&q=80",
-    ageRating: "P",
-    duration: 96,
-    rating: 4.7,
-    releaseDate: "2026-06-25",
-    genres: ["Hoạt hình", "Hài hước", "Tâm lý"],
-    status: "now_showing",
-    director: "Kelsey Mann",
-    synopsis: "Quay trở lại tâm trí của cô bé Riley lúc này đã là một thiếu niên, trung tâm điều khiển cảm xúc đột ngột trải qua một đợt cải tạo để nhường chỗ cho những Cảm xúc Mới!",
-    description: "Quay trở lại tâm trí của cô bé Riley lúc này đã là một thiếu niên, trung tâm điều khiển có sự xuất hiện của lo âu, xấu hổ, ghen tị và các cảm xúc mới của tuổi dậy thì.",
-    cast: [
-      { id: "a-9", name: "Amy Poehler", role: "Joy (Voice)", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" },
-      { id: "a-10", name: "Maya Hawke", role: "Anxiety (Voice)", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop" }
-    ],
-    trailer: "https://www.youtube.com/watch?v=LEjhY15eCx0"
-  },
-  {
-    id: "m-5",
-    movieId: "m-5",
-    title: "Avatar: Dòng Chảy Của Nước",
-    originalTitle: "Avatar: The Way of Water",
-    poster: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80",
-    backdrop: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80",
-    ageRating: "C13",
-    duration: 192,
-    rating: 4.8,
-    releaseDate: "2026-06-05",
-    genres: ["Hành động", "Phiêu lưu", "Sci-Fi"],
-    status: "now_showing",
-    director: "James Cameron",
-    synopsis: "Jake Sully sống cùng gia đình mới thành lập trên hành tinh Pandora. Khi một mối đe dọa quen thuộc quay trở lại để hoàn thành những gì họ đã bắt đầu, Jake phải hợp tác với Neytiri và quân đội của bộ tộc Na'vi để bảo vệ hành tinh của họ.",
-    description: "Jake Sully sống cùng gia đình mới thành lập trên hành tinh Pandora. Khi một mối đe dọa quen thuộc quay trở lại để hoàn thành những gì họ đã bắt đầu, Jake phải hợp tác với Neytiri và quân đội của bộ tộc Na'vi để bảo vệ hành tinh của họ.",
-    cast: [
-      { id: "a-11", name: "Sam Worthington", role: "Jake Sully", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop" },
-      { id: "a-12", name: "Zoe Saldana", role: "Neytiri", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" }
-    ],
-    trailer: "https://www.youtube.com/watch?v=d9MyW72ELq0"
-  },
-  {
-    id: "m-6",
-    movieId: "m-6",
-    title: "Dune: Hành Tinh Cát - Phần 2",
-    originalTitle: "Dune: Part Two",
-    poster: "https://images.unsplash.com/photo-1547483238-f400e65ccd56?w=500&auto=format&fit=crop&q=80",
-    backdrop: "https://images.unsplash.com/photo-1547483238-f400e65ccd56?w=1200&auto=format&fit=crop&q=80",
-    ageRating: "C13",
-    duration: 166,
-    rating: 4.9,
-    releaseDate: "2026-07-20",
-    genres: ["Sci-Fi", "Phiêu lưu", "Hành động"],
-    status: "coming_soon",
-    director: "Denis Villeneuve",
-    synopsis: "Paul Atreides gia nhập cùng Chani và người Fremen khi đi trên con đường trả thù những kẻ âm mưu tiêu diệt gia đình mình.",
-    description: "Paul Atreides gia nhập cùng Chani và người Fremen khi đi trên con đường trả thù những kẻ âm mưu tiêu diệt gia đình mình.",
-    cast: [
-      { id: "a-13", name: "Timothée Chalamet", role: "Paul Atreides", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop" },
-      { id: "a-14", name: "Zendaya", role: "Chani", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" }
-    ],
-    trailer: "https://www.youtube.com/watch?v=U2Qp5pL3C-Y"
-  },
-  {
-    id: "m-7",
-    movieId: "m-7",
-    title: "Evil Dead Rise: Quỷ Dữ Thức Tỉnh",
-    originalTitle: "Evil Dead Rise",
-    poster: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=500&auto=format&fit=crop&q=80",
-    backdrop: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=1200&auto=format&fit=crop&q=80",
-    ageRating: "C18",
-    duration: 97,
-    rating: 4.5,
-    releaseDate: "2026-07-30",
-    genres: ["Kinh dị", "Bí ẩn"],
-    status: "coming_soon",
-    director: "Lee Cronin",
-    synopsis: "Một câu chuyện rùng rợn về hai chị em bị ghẻ lạnh có cuộc hội ngộ bị cắt ngắn bởi sự trỗi dậy của những con quỷ sở hữu xác thịt.",
-    description: "Một câu chuyện rùng rợn về hai chị em bị ghẻ lạnh có cuộc hội ngộ bị cắt ngắn bởi sự trỗi dậy của những con quỷ sở hữu xác thịt.",
-    cast: [
-      { id: "a-15", name: "Lily Sullivan", role: "Beth", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" },
-      { id: "a-16", name: "Alyssa Sutherland", role: "Ellie", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop" }
-    ],
-    trailer: "https://www.youtube.com/watch?v=BqQNO7Bz-aE"
-  }
-];
 
 export default function MovieDetailPage() {
   const navigate = useNavigate();
@@ -206,7 +48,7 @@ export default function MovieDetailPage() {
   const { user } = useAuth();
   const { id } = useParams()
 
-  const activeMovies = movies.length > 0 ? movies : dummyMovies
+  const activeMovies = movies
   const movie = activeMovies.find((m) => String(m.id) === String(id) || String(m.movieId) === String(id))
   const trailerEmbedUrl = getYouTubeEmbedUrl(movie?.trailer)
   const [trailerOpen, setTrailerOpen] = useState(false)
@@ -312,6 +154,19 @@ export default function MovieDetailPage() {
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
   }, [activeShowtimes]);
 
+  const relatedMovies = useMemo(() => {
+    if (!movie) return [];
+    const nowShowingMovies = activeMovies.filter(
+      (m) => String(m.id) !== String(movie.id) && (m.status === 'now_showing' || m.status === 'NowShowing')
+    );
+    const sameGenre = nowShowingMovies.filter(m =>
+      (m.genres || []).some((g) => (movie.genres || []).includes(g))
+    );
+    if (sameGenre.length >= 6) return sameGenre.slice(0, 6);
+    const otherNowShowing = nowShowingMovies.filter(m => !sameGenre.includes(m));
+    return [...sameGenre, ...otherNowShowing].slice(0, 6);
+  }, [movie, activeMovies]);
+
   const dates = useMemo(() => {
     const result = [];
     for (let i = 0; i < 7; i++) {
@@ -350,6 +205,11 @@ export default function MovieDetailPage() {
 
   const handleBookTickets = () => {
     if (!selectedShowtimeId || !movie) return;
+    const isManagementRole = user?.role === 'admin' || user?.role === 'manager' || user?.role === 'SystemAdmin' || user?.role === 'ScheduleManager';
+    if (isManagementRole) {
+      toast.error('Tài khoản Quản trị viên và Quản lý rạp không thể thực hiện đặt vé cá nhân.');
+      return;
+    }
     const s = activeShowtimes.find(st => st.id === selectedShowtimeId);
     if (!s) return;
     navigate(`/booking/${movie.id}?id=${movie.id}&cinema=${s.cinemaId}&room=${encodeURIComponent(s.roomName)}&date=${s.date}&time=${s.startTime}&showtimeId=${s.id}`);
@@ -832,14 +692,7 @@ export default function MovieDetailPage() {
         <div className="container max-w-[1400px] mx-auto px-4">
           <h2 className="mb-8 text-2xl font-black text-foreground tracking-tight border-l-4 border-primary pl-3">Phim tương tự</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            {activeMovies
-              .filter(
-                (m) =>
-                  m.id !== movie.id &&
-                  (m.genres || []).some((g) => (movie.genres || []).includes(g))
-              )
-              .slice(0, 6)
-              .map((relatedMovie) => (
+            {relatedMovies.map((relatedMovie) => (
                 <Link
                   key={relatedMovie.id}
                   to={`/movies/${relatedMovie.id}`}

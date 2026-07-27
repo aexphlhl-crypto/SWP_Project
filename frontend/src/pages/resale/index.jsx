@@ -39,49 +39,6 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 
-// Programmatically generate 20 realistic dummy listings for developer testing
-const MOCK_TICKET_LISTINGS = Array.from({ length: 20 }, (_, i) => {
-  const index = i + 1;
-  const movieNum = (index % 10) + 1; // Dummy Movie 1 to 10
-  const cinemaNum = (index % 5) + 1; // CineBook Cinema 1 to 5
-  const originalPrice = index % 2 === 0 ? 120000 : 240000;
-  // Asking price is lower than original (showing discount)
-  const askingPrice = originalPrice === 240000 ? 180000 - (index * 2000) : 90000 - (index * 1000);
-
-  const sellerNames = [
-    "Daan V.", "Sophie M.", "Lucas B.", "Emma R.", "Mark T.",
-    "Nora K.", "Trung T.", "Minh A.", "Hoàng N.", "Bảo C."
-  ];
-  const seatsList = [
-    "F7, F8", "E11", "G14, G15", "H3", "J1, J2",
-    "F9", "D5, D6", "A1, A2", "C12", "E8, E9"
-  ];
-
-  return {
-    id: `mock-${index}`,
-    bookingId: `BK20020${index}`,
-    movieTitle: `Dummy Movie ${movieNum}`,
-    moviePoster: "",
-    cinemaName: `CineBook Cinema ${cinemaNum}`,
-    roomName: `Phòng 0${(index % 3) + 1} - IMAX`,
-    showDate: `2026-06-${28 + (index % 3)}`,
-    showTime: `${18 + (index % 4)}:30`,
-    seatNumber: seatsList[index % seatsList.length],
-    ticketType: originalPrice === 240000 ? "VIP" : "Standard",
-    originalPrice,
-    resalePrice: askingPrice,
-    includesFnb: index % 3 === 0,
-    sellerName: sellerNames[index % sellerNames.length],
-    sellerPhone: `0912 345 6${index.toString().padStart(2, '0')}`,
-    facebookUrl: `https://facebook.com/seller.profile.${index}`,
-    note: index % 2 === 0
-      ? `Nhượng lại cặp vé đẹp xem tối nay do gia đình bận việc đột xuất.`
-      : `Mình mua nhầm lịch chiếu nên pass lại lỗ cho bạn nào quan tâm.`,
-    status: "active",
-    createdAt: new Date(Date.now() - index * 3600000).toISOString()
-  };
-});
-
 export default function ResaleTicketPage() {
   const { user, isAuthenticated } = useAuth();
   const { movies, cinemas } = useData();
@@ -106,10 +63,8 @@ export default function ResaleTicketPage() {
     fetchListings();
   }, []);
 
-  // Combined real + mock listings
   const activeListings = useMemo(() => {
-    const realListings = (resaleListings || []).filter(l => l.status?.toLowerCase() === 'active');
-    return [...realListings, ...MOCK_TICKET_LISTINGS];
+    return (resaleListings || []).filter(l => l.status?.toLowerCase() === 'active');
   }, [resaleListings]);
 
   const uniqueMovies = useMemo(() => {

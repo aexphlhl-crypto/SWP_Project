@@ -46,7 +46,7 @@ export default function NewsDetail() {
         
         <div className="w-full aspect-video rounded-xl overflow-hidden mb-12 shadow-sm">
           <img 
-            src={article.thumbnailUrl || 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=800&q=80'} 
+            src={article.thumbnailUrl || article.imageUrl || 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=800&q=80'} 
             alt={article.title}
             className="w-full h-full object-cover"
           />
