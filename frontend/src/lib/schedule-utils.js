@@ -1,7 +1,6 @@
 import { format, addDays, startOfWeek, isToday } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { BUFFER_TIME_MINUTES } from '@/types/schedule';
-import { movies } from './mock-data';
 
 // Mock rooms data
 export const rooms = [{

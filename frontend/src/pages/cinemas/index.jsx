@@ -5,7 +5,7 @@ import { MapPin, ExternalLink, Ticket } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 function CinemaCard({ cinema }) {
-  const mapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(cinema.name + ' ' + cinema.address)}`
+  const mapsUrl = cinema.locationMapUrl || `https://maps.google.com/maps?q=${encodeURIComponent(cinema.name + ' ' + cinema.address)}`
 
   return (
     <div className="group overflow-hidden rounded-xl border border-border/60 bg-card hover:border-primary/30 transition-all duration-300">
@@ -35,7 +35,7 @@ function CinemaCard({ cinema }) {
 
         <div className="flex gap-2 pt-1">
           <Button asChild size="sm" className="flex-1 bg-primary hover:bg-primary/90 text-white font-medium">
-            <Link to={`/movies`}>
+            <Link to={`/movies/now-showing?cinemaId=${cinema.id}`}>
               <Ticket className="w-3.5 h-3.5 mr-1.5" />
               Đặt vé
             </Link>

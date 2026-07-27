@@ -41,6 +41,9 @@ public class Cinema {
     @Column(name = "operating_hours", length = 200)
     private String operatingHours;
 
+    @Column(name = "location_map_url", length = 500)
+    private String locationMapUrl;
+
     @Column(name = "status", nullable = false)
     @Builder.Default
     private String status = "Active";

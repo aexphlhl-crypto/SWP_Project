@@ -66,7 +66,7 @@ export default function AdminNews() {
         title: article.title,
         summary: article.summary,
         content: article.content,
-        thumbnailUrl: article.thumbnailUrl,
+        thumbnailUrl: article.thumbnailUrl || article.imageUrl || '',
         status: article.status
       });
     } else {
@@ -88,6 +88,7 @@ export default function AdminNews() {
         summary: formData.summary,
         content: formData.content,
         category: "Tin tức",
+        thumbnailUrl: formData.thumbnailUrl,
         imageUrl: formData.thumbnailUrl,
         status: formData.status
       };

@@ -1,0 +1,1 @@
+ALTER TABLE Cinemas ADD COLUMN location_map_url VARCHAR(500) NULL;

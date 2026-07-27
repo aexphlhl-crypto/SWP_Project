@@ -16,128 +16,13 @@ import {
   Film
 } from 'lucide-react'
 
-const dummyMovies = [
-  {
-    id: "m-1",
-    title: "Minions: Sự Trỗi Dậy Của Gru",
-    poster: "https://images.unsplash.com/photo-1608889175123-8ec330b86f84?w=500&auto=format&fit=crop&q=80",
-    ageRating: "P",
-    duration: 88,
-    rating: 4.8,
-    genres: ["Hoạt hình", "Hài hước", "Gia đình"],
-    status: "now_showing",
-    synopsis: "Hành trình trở thành siêu ác nhân vĩ đại nhất thế giới của cậu bé Gru 12 tuổi cùng sự trợ giúp đắc lực của các sinh vật màu vàng siêu quậy."
-  },
-  {
-    id: "m-2",
-    title: "Spider-Man: Không Còn Đường Về",
-    poster: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=500&auto=format&fit=crop&q=80",
-    ageRating: "C13",
-    duration: 148,
-    rating: 4.9,
-    genres: ["Hành động", "Phiêu lưu", "Sci-Fi"],
-    status: "now_showing",
-    synopsis: "Lần đầu tiên trong lịch sử điện ảnh của Người Nhện, danh tính người hùng hàng xóm thân thiện bị vạch trần, buộc anh phải tìm đến Doctor Strange để giải quyết rắc rối."
-  },
-  {
-    id: "m-3",
-    title: "Người Dơi: Kỵ Sĩ Bóng Đêm",
-    poster: "https://images.unsplash.com/photo-1531259683007-016a7b628fc3?w=500&auto=format&fit=crop&q=80",
-    ageRating: "C16",
-    duration: 152,
-    rating: 4.9,
-    genres: ["Hành động", "Tội phạm", "Tâm lý"],
-    status: "now_showing",
-    synopsis: "Khi mối đe dọa được gọi là Joker phá hoại và gây ra hỗn loạn cho người dân Gotham, Người Nhện phải chấp nhận một trong những bài kiểm tra tâm lý lớn nhất để chống lại sự bất công."
-  },
-  {
-    id: "m-4",
-    title: "Inside Out 2: Những Mảnh Ghép Cảm Xúc 2",
-    poster: "https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?w=500&auto=format&fit=crop&q=80",
-    ageRating: "P",
-    duration: 96,
-    rating: 4.7,
-    genres: ["Hoạt hình", "Hài hước", "Tâm lý"],
-    status: "now_showing",
-    synopsis: "Quay trở lại tâm trí của cô bé Riley lúc này đã là một thiếu niên, trung tâm điều khiển cảm xúc đột ngột trải qua một đợt cải tạo để nhường chỗ cho những Cảm xúc Mới!"
-  },
-  {
-    id: "m-5",
-    title: "Avatar: Dòng Chảy Của Nước",
-    poster: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80",
-    ageRating: "C13",
-    duration: 192,
-    rating: 4.8,
-    genres: ["Hành động", "Phiêu lưu", "Sci-Fi"],
-    status: "now_showing",
-    synopsis: "Jake Sully sống cùng gia đình mới thành lập trên hành tinh Pandora. Khi một mối đe dọa quen thuộc quay trở lại để hoàn thành những gì họ đã bắt đầu, Jake phải hợp tác với Neytiri và quân đội của bộ tộc Na'vi để bảo vệ hành tinh của họ."
-  },
-  {
-    id: "m-6",
-    title: "Dune: Hành Tinh Cát - Phần 2",
-    poster: "https://images.unsplash.com/photo-1547483238-f400e65ccd56?w=500&auto=format&fit=crop&q=80",
-    ageRating: "C13",
-    duration: 166,
-    rating: 4.9,
-    genres: ["Sci-Fi", "Phiêu lưu", "Hành động"],
-    status: "coming_soon",
-    synopsis: "Paul Atreides gia nhập cùng Chani và người Fremen khi đi trên con đường trả thù những kẻ âm mưu tiêu diệt gia đình mình."
-  },
-  {
-    id: "m-7",
-    title: "Evil Dead Rise: Quỷ Dữ Thức Tỉnh",
-    poster: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=500&auto=format&fit=crop&q=80",
-    ageRating: "C18",
-    duration: 97,
-    rating: 4.5,
-    genres: ["Kinh dị", "Bí ẩn"],
-    status: "coming_soon",
-    synopsis: "Một câu chuyện rùng rợn về hai chị em bị ghẻ lạnh có cuộc hội ngộ bị cắt ngắn bởi sự trỗi dậy của những con quỷ sở hữu xác thịt."
-  }
-];
-
-const dummyNews = [
-  {
-    id: "n-1",
-    title: "Trải nghiệm giải vô địch bóng đá thế giới World Cup trên màn ảnh rộng cùng CineBook!",
-    summary: "Đồng hành cùng đội tuyển yêu thích của bạn với bầu không khí bùng nổ, âm thanh sống động và màn hình IMAX siêu khổng lồ độc quyền tại tất cả các chi nhánh CineBook.",
-    thumbnailUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80",
-    createdAt: new Date().toISOString(),
-    status: "Published"
-  },
-  {
-    id: "n-2",
-    title: "Vé xem siêu phẩm hoạt hình Minions & Quái Thú đã chính thức được mở bán!",
-    summary: "Nhanh tay đặt ngay vé sớm để nhận được những phần quà đặc biệt từ Minions bao gồm ly nước cốc thiết kế độc quyền và cơ hội bốc thăm trúng thưởng chuyến du lịch.",
-    thumbnailUrl: "https://images.unsplash.com/photo-1608889175123-8ec330b86f84?w=800&auto=format&fit=crop&q=80",
-    createdAt: new Date().toISOString(),
-    status: "Published"
-  },
-  {
-    id: "n-3",
-    title: "Đặt vé phim Hành Trình Của Moana 2 sớm nhận quà độc quyền!",
-    summary: "Cơ hội duy nhất dành riêng cho thành viên CineBook nhận bộ sticker đại dương phát sáng đặc biệt khi đặt vé xem trước Moana 2 bắt đầu từ hôm nay.",
-    thumbnailUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80",
-    createdAt: new Date().toISOString(),
-    status: "Published"
-  }
-];
-
-const dummyCinemas = [
-  { id: "c-1", name: "CineBook Nguyễn Du" },
-  { id: "c-2", name: "CineBook Thảo Điền" },
-  { id: "c-3", name: "CineBook Hồ Gươm Plaza" },
-  { id: "c-4", name: "CineBook Đà Nẵng Center" }
-];
-
 export default function HomePage() {
   const { movies, cinemas } = useData()
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
-  // Fallbacks to dummy if context data is empty
-  const activeMovies = movies.length > 0 ? movies : dummyMovies
-  const activeCinemas = cinemas.length > 0 ? cinemas : dummyCinemas
+  const activeMovies = movies
+  const activeCinemas = cinemas
 
   // Quick booking state
   const [selectedMovie, setSelectedMovie] = useState('')
@@ -149,7 +34,7 @@ export default function HomePage() {
   const nowShowing = activeMovies.filter(m => m.status === 'now_showing')
   const comingSoon = activeMovies.filter(m => m.status === 'coming_soon')
   const featured = nowShowing[0] || activeMovies[0]
-  const displayNews = latestNews.length > 0 ? latestNews : dummyNews
+  const displayNews = latestNews
 
   // Fetch latest 3 news articles on mount
   useEffect(() => {
@@ -434,7 +319,7 @@ export default function HomePage() {
                       {/* Thumbnail background overlay */}
                       <div className="absolute inset-0 bg-muted">
                         <img
-                          src={displayNews[0].thumbnailUrl || 'https://picsum.photos/seed/cinebook-news-1/800/450'}
+                          src={displayNews[0].thumbnailUrl || displayNews[0].imageUrl || 'https://picsum.photos/seed/cinebook-news-1/800/450'}
                           alt={displayNews[0].title}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
@@ -468,7 +353,7 @@ export default function HomePage() {
                     <div className="h-full rounded-2xl overflow-hidden border border-border bg-card hover:border-primary/20 transition-all flex flex-col sm:flex-row">
                       <div className="sm:w-2/5 relative aspect-video sm:aspect-auto overflow-hidden min-h-[140px] bg-muted">
                         <img
-                          src={article.thumbnailUrl || `https://picsum.photos/seed/cinebook-news-${idx + 2}/800/450`}
+                          src={article.thumbnailUrl || article.imageUrl || `https://picsum.photos/seed/cinebook-news-${idx + 2}/800/450`}
                           alt={article.title}
                           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />

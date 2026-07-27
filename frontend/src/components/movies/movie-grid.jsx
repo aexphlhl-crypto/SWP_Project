@@ -12,17 +12,22 @@ export function MovieGrid({
   cinemas,
   showtimes = [],
   initialStatus = 'all',
+  initialCinema = 'all',
   title = 'Danh sách phim',
   subtitle,
   hideStatusFilter = false
 }) {
   const [status, setStatus] = useState(initialStatus);
   const [genre, setGenre] = useState('all');
-  const [cinema, setCinema] = useState('all');
+  const [cinema, setCinema] = useState(initialCinema);
 
   useEffect(() => {
     setStatus(initialStatus);
   }, [initialStatus]);
+
+  useEffect(() => {
+    if (initialCinema) setCinema(initialCinema);
+  }, [initialCinema]);
 
   const filteredMovies = useMemo(() => {
     return movies.filter(movie => {

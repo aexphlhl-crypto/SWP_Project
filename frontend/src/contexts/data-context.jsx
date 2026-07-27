@@ -1,5 +1,17 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { movies as initialMovies, cinemas as initialCinemas, concessionItems as initialConcessions, mockResaleListings as initialResaleListings, initialShowtimes, initialNews, initialSettings } from '@/lib/mock-data';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+
+const defaultSettings = {
+  cinemaName: 'CineBook Cinema',
+  vatPercent: 10,
+  weekendSurcharge: 20,
+  eveningSurcharge: 10,
+  basePrice: 75000,
+  seatVipMultiplier: 1.5,
+  seatCoupleMultiplier: 2.0,
+  holdTime: 10,
+  maxSeats: 8,
+  currency: 'VND'
+};
 
 const DataContext = createContext(undefined);
 
@@ -143,28 +155,49 @@ export function DataProvider({ children }) {
   const [cinemas, setCinemas] = useState([]);
 
   // Fetch cinemas from backend
-  useEffect(() => {
-    const fetchCinemas = async () => {
-      try {
-        const { default: cinemaApi } = await import('@/api/cinemaApi');
-        const response = await cinemaApi.getCinemas();
-        if (response.success && response.data?.content) {
-          const mappedCinemas = response.data.content.map(c => ({
-            id: c.cinemaId.toString(),
-            name: c.name,
-            address: c.address,
-            city: c.city
-          }));
-          setCinemas(mappedCinemas);
-        }
-      } catch (err) {
-        console.error('Failed to fetch cinemas from API', err);
+  const refreshCinemas = useCallback(async () => {
+    try {
+      const { default: cinemaApi } = await import('@/api/cinemaApi');
+      const response = await cinemaApi.getCinemas({ page: 0, size: 100 });
+      if (response.success && response.data?.content) {
+        const mappedCinemas = response.data.content.map(c => ({
+          id: c.cinemaId.toString(),
+          cinemaId: c.cinemaId,
+          name: c.name,
+          address: c.address,
+          city: c.city,
+          operatingHours: c.operatingHours,
+          locationMapUrl: c.locationMapUrl,
+          image: c.imageUrl || c.image
+        }));
+        setCinemas(mappedCinemas);
       }
-    };
-    fetchCinemas();
+    } catch (err) {
+      console.error('Failed to fetch cinemas from API', err);
+    }
   }, []);
 
+  useEffect(() => {
+    refreshCinemas();
+  }, [refreshCinemas]);
+
   const [concessions, setConcessions] = useState([]);
+
+  const refreshConcessions = useCallback(async () => {
+    try {
+      const { default: fnbApi } = await import('@/api/fnbApi');
+      const response = await fnbApi.getAllProducts({ size: 100 });
+      if (response.success && response.data?.content) {
+        setConcessions(response.data.content);
+      }
+    } catch (err) {
+      console.error('Failed to fetch concessions from API', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshConcessions();
+  }, [refreshConcessions]);
 
   const [resaleListings, setResaleListings] = useState([]);
 
@@ -203,7 +236,7 @@ export function DataProvider({ children }) {
 
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('cinebook_settings');
-    return saved ? JSON.parse(saved) : initialSettings;
+    return saved ? JSON.parse(saved) : defaultSettings;
   });
 
   // Fetch real settings from backend
@@ -376,7 +409,7 @@ export function DataProvider({ children }) {
   return (
     <DataContext.Provider value={{
       movies, genres, actors, cinemas, concessions, resaleListings, bookings, showtimes, news, settings,
-      refreshMovies, refreshActors, addMovie, updateMovie, deleteMovie,
+      refreshMovies, refreshActors, refreshCinemas, refreshConcessions, addMovie, updateMovie, deleteMovie,
       addShowtime, updateShowtime, deleteShowtime,
       createBooking,
       addConcession, updateConcession, deleteConcession,

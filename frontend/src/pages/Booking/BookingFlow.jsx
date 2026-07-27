@@ -28,11 +28,33 @@ function BookingContent() {
   const router = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { movies, cinemas, concessions, settings } = useData();
-  const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to='/login' replace />;
+  }
+
+  const isManagementRole = user?.role === 'admin' || user?.role === 'manager' || user?.role === 'SystemAdmin' || user?.role === 'ScheduleManager';
+
+  if (isManagementRole) {
+    return (
+      <div className="min-h-[70vh] bg-background pt-24 pb-16 flex items-center justify-center px-4">
+        <div className="bg-card border border-border rounded-2xl p-8 max-w-md text-center space-y-4 shadow-2xl">
+          <div className="w-14 h-14 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mx-auto border border-amber-500/20">
+            <AlertTriangle className="w-7 h-7" />
+          </div>
+          <h2 className="text-xl font-extrabold text-foreground">Không hỗ trợ đặt vé cá nhân</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Tài khoản Quản trị viên (Admin) và Quản lý rạp (Manager) chỉ dành cho việc quản trị hệ thống. Vui lòng đăng nhập tài khoản Khách hàng để thực hiện mua vé.
+          </p>
+          <div className="pt-2">
+            <Button onClick={() => router('/')} className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-bold h-11 rounded-xl">
+              Quay lại Trang chủ
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Derived states from URL
@@ -138,8 +160,9 @@ function BookingContent() {
   const concessionTotal = orderItems.reduce((acc, o) => acc + o.item.price * o.quantity, 0);
   const currentSeatTotal = pendingSeats.reduce((acc, s) => acc + s.price, 0);
   const currentSubtotal = currentSeatTotal + concessionTotal;
-  // Tax is no longer calculated here, deferred to Payment page
-  const currentTotal = currentSubtotal;
+  const vatPercent = settings?.vatPercent ?? 10;
+  const currentVatAmount = Math.round(currentSubtotal * (vatPercent / 100));
+  const currentTotal = currentSubtotal + currentVatAmount;
 
   const handleNextFromStep1 = (selection) => {
     const selectedMovie = movies.find(m => m.id.toString() === selection.movieId.toString());
@@ -489,20 +512,20 @@ function BookingContent() {
                   )}
                 </div>
 
-                {/* Subtotal + Tax VAT 10% */}
+                {/* Subtotal + Tax VAT */}
                 <div className="border-t border-border pt-3.5 space-y-2 text-xs">
                   <div className="flex justify-between text-muted-foreground">
                     <span>Tạm tính (chưa thuế):</span>
                     <span>{new Intl.NumberFormat('vi-VN').format(currentSubtotal)}₫</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
-                    <span>VAT (10%):</span>
-                    <span>{new Intl.NumberFormat('vi-VN').format(Math.round(currentSubtotal * 0.1))}₫</span>
+                    <span>VAT ({vatPercent}%):</span>
+                    <span>{new Intl.NumberFormat('vi-VN').format(currentVatAmount)}₫</span>
                   </div>
                   <div className="flex justify-between text-base font-extrabold text-foreground border-t border-border pt-3">
                     <span>Tổng cộng:</span>
                     <span className="text-xl text-primary font-black">
-                      {new Intl.NumberFormat('vi-VN').format(currentSubtotal + Math.round(currentSubtotal * 0.1))}₫
+                      {new Intl.NumberFormat('vi-VN').format(currentTotal)}₫
                     </span>
                   </div>
                 </div>

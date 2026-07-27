@@ -1,6 +1,7 @@
 package com.cinebook.backend.modules.bookings.service;
 
 import com.cinebook.backend.common.exception.AppException;
+import com.cinebook.backend.common.enums.UserRole;
 import com.cinebook.backend.modules.bookings.entity.Booking;
 import com.cinebook.backend.modules.bookings.entity.BookingSeat;
 import com.cinebook.backend.modules.bookings.entity.BookingStatus;
@@ -172,6 +173,10 @@ public class BookingService {
     public Booking createBooking(Long customerId, Long showtimeId, List<Long> seatIds, List<FnBItemRequest> fnbItems, String promoCode) {
         User customer = userRepository.findById(customerId)
                 .orElseThrow(() -> AppException.notFound("Không tìm thấy thông tin khách hàng."));
+
+        if (customer.getRole() == UserRole.SystemAdmin || customer.getRole() == UserRole.ScheduleManager) {
+            throw AppException.badRequest("Tài khoản Quản trị viên và Quản lý rạp không thể thực hiện đặt vé cá nhân.");
+        }
 
         Showtime showtime = showtimeRepository.findById(showtimeId)
                 .orElseThrow(() -> AppException.notFound("Không tìm thấy suất chiếu."));

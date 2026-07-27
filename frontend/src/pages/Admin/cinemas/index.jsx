@@ -15,9 +15,11 @@ import cinemaApi from '@/api/cinemaApi';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { ClientPagination } from '@/components/ui/client-pagination';
 import { useAuth } from '@/contexts/auth-context';
+import { useData } from '@/contexts/data-context';
 
 export default function AdminCinemasPage() {
   const { user } = useAuth();
+  const { refreshCinemas: refreshGlobalCinemas } = useData();
   const [cinemas, setCinemas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -105,6 +107,7 @@ export default function AdminCinemasPage() {
       longitude: formData.longitude || 0,
       phone: formData.phone || "",
       operatingHours: formData.operatingHours || "",
+      locationMapUrl: formData.locationMapUrl || "",
       status: formData.status || "Active"
     };
 
@@ -114,12 +117,14 @@ export default function AdminCinemasPage() {
         if (res.success) {
           toast.success("Cập nhật rạp thành công!");
           fetchCinemas();
+          refreshGlobalCinemas();
         }
       } else {
         const res = await cinemaApi.createCinema(payload);
         if (res.success) {
           toast.success("Thêm rạp mới thành công!");
           fetchCinemas();
+          refreshGlobalCinemas();
         }
       }
       setIsDialogOpen(false);
@@ -144,6 +149,7 @@ export default function AdminCinemasPage() {
         if (res.success) {
            toast.success("Xóa rạp thành công!");
            fetchCinemas();
+           refreshGlobalCinemas();
         }
       } catch (error) {
         toast.error(error.error?.message || error.message || "Không thể xóa rạp này");
