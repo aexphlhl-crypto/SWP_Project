@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Heart, X } from 'lucide-react';
+import { Clock, Heart, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const seatTypeLabels = {
@@ -72,7 +72,7 @@ export function SeatButton({
               isBooked && 'bg-muted border border-border text-muted-foreground cursor-not-allowed opacity-40',
               
               // Held
-              isHeld && 'bg-red-500/15 dark:bg-red-950/40 border border-red-500/45 dark:border-red-700/60 text-red-500 cursor-not-allowed opacity-60',
+              isHeld && 'bg-amber-500/20 border border-amber-500/60 text-amber-500 cursor-not-allowed opacity-80',
               
               // Disabled state
               disabled && !isSelected && 'opacity-40 cursor-not-allowed hover:scale-100'
@@ -81,6 +81,8 @@ export function SeatButton({
             <span className="text-[10px] font-bold">
               {isBooked ? (
                 <X className="size-3 text-zinc-600 font-extrabold" />
+              ) : isHeld ? (
+                <Clock className="size-3 text-amber-500 font-bold" />
               ) : seat.type === 'couple' ? (
                 <span className="flex items-center justify-center gap-1 px-1">
                   <Heart className="size-3 fill-red-500 text-red-500 shrink-0" />

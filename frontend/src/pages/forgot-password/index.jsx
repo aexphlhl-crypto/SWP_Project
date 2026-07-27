@@ -83,8 +83,9 @@ export default function ForgotPasswordPage() {
       setError('Mật khẩu xác nhận không khớp.');
       return;
     }
-    if (password.length < 6) {
-      setError('Mật khẩu phải có ít nhất 6 ký tự.');
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':,./<>?]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      setError('Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ số và ký tự đặc biệt.');
       return;
     }
     setIsLoading(true);

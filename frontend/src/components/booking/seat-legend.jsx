@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, X } from 'lucide-react';
+import { Clock, Heart, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function SeatLegend() {
@@ -21,6 +21,11 @@ export function SeatLegend() {
       label: 'Sold',
       style: 'bg-muted border border-border text-muted-foreground opacity-40',
       icon: <X className="size-3 text-muted-foreground font-extrabold" />
+    },
+    {
+      label: 'Holding',
+      style: 'bg-amber-500/20 border border-amber-500/60 text-amber-500',
+      icon: <Clock className="size-3 text-amber-500 font-bold" />
     },
     {
       label: 'Couple',
